@@ -2,6 +2,7 @@ use candid::Principal;
 use ic_cdk::caller;
 
 #[ic_cdk::update]
+#[allow(clippy::needless_pass_by_value)]
 fn sign(name: String) -> String {
     let caller = caller();
     let caller_str = if caller == Principal::anonymous() {
@@ -9,9 +10,10 @@ fn sign(name: String) -> String {
     } else {
         format!("{caller}")
     };
-    format!("Hello, {} ({})!", name, caller_str)
+    format!("Hello, {name} ({caller_str})!")
 }
 
+/*
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 //#[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
@@ -27,6 +29,7 @@ async fn personal_sign(plaintext: String) -> String {
 async fn sign_prehash(prehash: String) -> String {
     todo!()
 }
+*/
 
 // Enable Candid export
 ic_cdk::export_candid!();
