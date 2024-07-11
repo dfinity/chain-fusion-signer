@@ -1,0 +1,37 @@
+name: 'PR'
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - labeled
+jobs:
+  pr:
+    name: 'PR'
+    runs-on: ubuntu-latest
+    env:
+      TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      - name: Conventional commits
+        run: |
+          if [[ "$TITLE" =~ ^(feat|fix|chore|build|ci|docs|style|refactor|perf|test)( ?\([-a-zA-Z0-9,]+\))\!?\: ]]; then
+              echo "PR Title passes"
+          else
+              echo "PR Title does not match conventions: $TITLE"
+              echo "   verb(scope): description"
+              echo "or for a breaking change:"
+              echo "   verb(scope)!: description"
+              echo "For scope, please use the affected canister name(s), rust crate name(s) or 'ci' for infrastructure changes."
+              exit 1
+          fi
+  pr-pass:
+    needs: ["pr"]
+    if: ${{ always() }}
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/needs_success
+        with:
+          needs: '${{ toJson(needs) }}'
