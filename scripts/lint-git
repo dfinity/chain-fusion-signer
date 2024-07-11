@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+untracked_files="$(git ls-files --others --exclude-standard)"
+[[ "${untracked_files:-}" == "" ]] || {
+  echo "ERROR: Untracked files:"
+  echo
+  echo "$untracked_files"
+  echo
+  echo "Please add these files to git or to .gitignore or remove them."
+  exit 1
+}

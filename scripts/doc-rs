@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cargo_packages() {
+  yq -oy .workspace.members[] Cargo.toml | xargs -I{} yq -oy .package.name "{}/Cargo.toml"
+}
+
+document_package() {
+  cargo doc --document-private-items --package "${@}"
+}
+
+readarray -t packages < <(cargo_packages)
+for package in "${packages[@]}"; do
+  document_package "$package"
+done
