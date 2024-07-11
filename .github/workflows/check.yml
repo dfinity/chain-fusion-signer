@@ -28,7 +28,6 @@ jobs:
                   git diff
                   exit 1
           }
-
   pr-pass:
     needs: ["format"]
     if: ${{ always() }}

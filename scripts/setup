@@ -2,27 +2,30 @@
 set -euo pipefail
 echo "$PATH" | tr : "\n"
 
-for tool in "${@}" ; do
-	echo "Installing '$tool'..."
-    export tool
-    install_method="$(jq -r '.[env.tool].method' dev-tools.json)"
-    echo "  install_method: $install_method"
-    case "$install_method" in
-	    "sh")
-		    version="$(jq -r '.[env.tool].version' dev-tools.json)" "$0-$tool"
-		    ;;
-	    "cargo-install")
-		    cargo install "$tool@$(jq -r '.[env.tool].version' dev-tools.json)"
-		    ;;
-	    "cargo-binstall")
-		    cargo binstall --force --no-confirm "${tool}@$(jq -r '.[env.tool].version' dev-tools.json)"
-		    ;;
-            "go")
-		    GOBIN="$HOME/.local/bin" go install "$(jq -r '.[env.tool].source' dev-tools.json)@$(jq -r '.[env.tool].version' dev-tools.json)"
-		    ;;
-            "snap") sudo snap install "$tool"
-		    ;;
-	    *) echo "ERROR: Unsupported install method '$install_method'"
-		   exit 1 ;;
-    esac
+for tool in "${@}"; do
+  echo "Installing '$tool'..."
+  export tool
+  install_method="$(jq -r '.[env.tool].method' dev-tools.json)"
+  echo "  install_method: $install_method"
+  case "$install_method" in
+  "sh")
+    version="$(jq -r '.[env.tool].version' dev-tools.json)" "$0-$tool"
+    ;;
+  "cargo-install")
+    cargo install "$tool@$(jq -r '.[env.tool].version' dev-tools.json)"
+    ;;
+  "cargo-binstall")
+    cargo binstall --force --no-confirm "${tool}@$(jq -r '.[env.tool].version' dev-tools.json)"
+    ;;
+  "go")
+    GOBIN="$HOME/.local/bin" go install "$(jq -r '.[env.tool].source' dev-tools.json)@$(jq -r '.[env.tool].version' dev-tools.json)"
+    ;;
+  "snap")
+    sudo snap install "$tool"
+    ;;
+  *)
+    echo "ERROR: Unsupported install method '$install_method'"
+    exit 1
+    ;;
+  esac
 done

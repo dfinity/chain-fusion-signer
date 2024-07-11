@@ -12,7 +12,6 @@ fn sign(name: String) -> String {
     format!("Hello, {} ({})!", name, caller_str)
 }
 
-
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 //#[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {

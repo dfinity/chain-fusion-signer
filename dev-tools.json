@@ -1,49 +1,45 @@
 {
-  "rustup": {
-    "method": "curl",
-    "version": "1.25.2",
-    "url": "https://raw.githubusercontent.com/rust-lang/rustup/1.25.2/rustup-init.sh",
-    "pipe": [
-      [
-        "sh"
-      ]
-    ]
-  },
-  "n": {
-    "method": "curl",
-    "version": "v9.0.1",
-    "url": "https://github.com/tj/n/blob/v9.0.1/bin/n"
-  },
-  "shfmt": {
-    "method": "go",
-    "version": "v3.5.1",
-    "source": "mvdan.cc/sh/v3/cmd/shfmt"
-  },
-  "yq": {
-    "method": "snap"
-  },
-  "node": {
-    "method": "n",
-    "version": "18.14.2"
-  },
-  "cargo-binstall": {
-    "method": "sh",
-    "version": "1.7.4"
-  },
-  "cargo-audit": {
-    "method": "cargo-binstall",
-    "version": "0.13.1"
-  },
-  "cargo-sort": {
-    "method": "cargo-binstall",
-    "version": "1.0.9"
-  },
-  "candid-extractor": {
-    "method": "cargo-binstall",
-    "version": "0.1.4"
-  },
-  "cargo-tarpaulin": {
-    "method": "cargo-binstall",
-    "version": "0.26.1"
-  }
+	"rustup": {
+		"method": "curl",
+		"version": "1.25.2",
+		"url": "https://raw.githubusercontent.com/rust-lang/rustup/1.25.2/rustup-init.sh",
+		"pipe": [["sh"]]
+	},
+	"n": {
+		"method": "curl",
+		"version": "v9.0.1",
+		"url": "https://github.com/tj/n/blob/v9.0.1/bin/n"
+	},
+	"shfmt": {
+		"method": "go",
+		"version": "v3.5.1",
+		"source": "mvdan.cc/sh/v3/cmd/shfmt"
+	},
+	"yq": {
+		"method": "snap"
+	},
+	"node": {
+		"method": "n",
+		"version": "18.14.2"
+	},
+	"cargo-binstall": {
+		"method": "sh",
+		"version": "1.7.4"
+	},
+	"cargo-audit": {
+		"method": "cargo-binstall",
+		"version": "0.13.1"
+	},
+	"cargo-sort": {
+		"method": "cargo-binstall",
+		"version": "1.0.9"
+	},
+	"candid-extractor": {
+		"method": "cargo-binstall",
+		"version": "0.1.4"
+	},
+	"cargo-tarpaulin": {
+		"method": "cargo-binstall",
+		"version": "0.26.1"
+	}
 }
