@@ -28,8 +28,27 @@ jobs:
                   git diff
                   exit 1
           }
+  rust-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-1
+      - name: Lint rust code
+        run: ./scripts/lint-rs
+      - name: Run Unit Tests
+        shell: bash
+        run: scripts/test-rs
   check-pass:
-    needs: ["format"]
+    needs: ["format", "rust-tests"]
     if: ${{ always() }}
     runs-on: ubuntu-20.04
     steps:
