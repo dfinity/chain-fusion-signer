@@ -28,7 +28,7 @@ jobs:
                   git diff
                   exit 1
           }
-  pr-pass:
+  check-pass:
     needs: ["format"]
     if: ${{ always() }}
     runs-on: ubuntu-20.04
