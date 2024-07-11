@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+echo "$PATH" | tr : "\n"
 
 for tool in "${@}" ; do
 	echo "Installing '$tool'..."
@@ -17,7 +18,7 @@ for tool in "${@}" ; do
 		    cargo binstall --force --no-confirm "${tool}@$(jq -r '.[env.tool].version' dev-tools.json)"
 		    ;;
             "go")
-		    go install "$(jq -r '.[env.tool].source' dev-tools.json)@$(jq -r '.[env.tool].version' dev-tools.json)"
+		    GOBIN="$HOME/.local/bin" go install "$(jq -r '.[env.tool].source' dev-tools.json)@$(jq -r '.[env.tool].version' dev-tools.json)"
 		    ;;
             "snap") sudo snap install "$tool"
 		    ;;
