@@ -1,0 +1,26 @@
+{
+	"engines": {
+		"node": ">=16.0.0",
+		"npm": ">=7.0.0"
+	},
+	"name": "cf-signer",
+	"scripts": {
+		"build": "npm run build --workspaces --if-present",
+		"format": "prettier --write './**/*.{ts,js,mjs,json,scss,css,svelte,html,md}'",
+		"prebuild": "npm run prebuild --workspaces --if-present",
+		"pretest": "npm run prebuild --workspaces --if-present",
+		"start": "npm start --workspaces --if-present",
+		"test": "npm test --workspaces --if-present"
+	},
+	"type": "module",
+	"workspaces": [
+		"src/example-frontend"
+	],
+	"devDependencies": {
+		"@dfinity/auth-client": "^1.4.0",
+		"@dfinity/identity": "^1.4.0",
+		"prettier": "^3.3.2",
+		"prettier-plugin-organize-imports": "^3.2.4",
+		"prettier-plugin-svelte": "^3.2.5"
+	}
+}
