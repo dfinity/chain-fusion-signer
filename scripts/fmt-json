@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$(realpath "$0")")/.."
+
+json_files() {
+  git ls-files | grep -E "[.]json$"
+}
+format_json() {
+  # shellcheck disable=SC2094 # The file is completely read before it is written so this is correct and safe.
+  cat <<<"$(jq . "$1")" >"$1"
+}
+
+readarray -t files < <(json_files)
+for file in "${files[@]}"; do
+  format_json "$file"
+  git diff --exit-code "$file" >/dev/null || echo "$file"
+done

@@ -1,0 +1,1 @@
+yq -oy .workspace.members[] Cargo.toml  | xargs -I{} yq -oy .package.name "{}/Cargo.toml"

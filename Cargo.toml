@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "src/example-backend"
+,
+    "src/ic-chainfusion-signer"]
+resolver = "2"

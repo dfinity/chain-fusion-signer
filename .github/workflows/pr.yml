@@ -10,7 +10,7 @@ on:
 jobs:
   pr:
     name: 'PR'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       TITLE: ${{ github.event.pull_request.title }}
     steps:
