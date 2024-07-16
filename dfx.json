@@ -1,45 +1,41 @@
 {
-  "dfx": "0.20.0",
-  "canisters": {
-    "ic-chainfusion-signer": {
-      "candid": "src/ic-chainfusion-signer/ic-chainfusion-signer.did",
-      "package": "ic-chainfusion-signer",
-      "type": "rust"
-    },
-    "example-backend": {
-      "candid": "src/example-backend/example-backend.did",
-      "package": "example-backend",
-      "type": "rust"
-    },
-    "example-frontend": {
-      "build": "npm ci && npm run build",
-      "dependencies": [
-        "example-backend"
-      ],
-      "source": [
-        "src/example-frontend/dist"
-      ],
-      "type": "assets",
-      "workspace": "example-frontend"
-    },
-    "internet_identity": {
-      "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
-      "remote": {
-        "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-        }
-      },
-      "frontend": {}
-    }
-  },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
-    }
-  },
-  "output_env_file": ".env",
-  "version": 1
+	"dfx": "0.20.0",
+	"canisters": {
+		"ic-chainfusion-signer": {
+			"candid": "src/ic-chainfusion-signer/ic-chainfusion-signer.did",
+			"package": "ic-chainfusion-signer",
+			"type": "rust"
+		},
+		"example-backend": {
+			"candid": "src/example-backend/example-backend.did",
+			"package": "example-backend",
+			"type": "rust"
+		},
+		"example-frontend": {
+			"build": "npm ci && npm run build",
+			"dependencies": ["example-backend"],
+			"source": ["src/example-frontend/dist"],
+			"type": "assets",
+			"workspace": "example-frontend"
+		},
+		"internet_identity": {
+			"type": "custom",
+			"candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+			"wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+			"remote": {
+				"id": {
+					"ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+				}
+			},
+			"frontend": {}
+		}
+	},
+	"defaults": {
+		"build": {
+			"args": "",
+			"packtool": ""
+		}
+	},
+	"output_env_file": ".env",
+	"version": 1
 }
