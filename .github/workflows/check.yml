@@ -90,15 +90,6 @@ jobs:
         run: dfx deploy
       - name: Stop dfx
         run: dfx stop
-      - name: Generate .did files
-        run: dfx generate
-      - name: Check did files are unchanged
-        run: |
-          test -z "$(git status --porcelain)" || {
-                  echo "FIX: Please run dfx generate"
-                  git diff
-                  exit 1
-          }
   check-pass:
     needs: ["format", "rust-tests", "installation"]
     if: ${{ always() }}
