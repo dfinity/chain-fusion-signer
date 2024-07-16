@@ -60,8 +60,47 @@ jobs:
         if: steps.changes.outputs.test == 'true'
         shell: bash
         run: scripts/test-rs
+  installation:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Have relevant files changed?
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            test:
+               - '!**/*.md'
+      - uses: actions/cache@v4
+        if: steps.changes.outputs.test == 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-1
+      - name: Install dfx
+        uses: dfinity/setup-dfx@main
+      - name: Start dfx
+        run: dfx start --clean --background
+      - name: Deploy all canisters
+        run: dfx deploy
+      - name: Stop dfx
+        run: dfx stop
+      - name: Generate .did files
+        run: dfx generate
+      - name: Check did files are unchanged
+        run: |
+          test -z "$(git status --porcelain)" || {
+                  echo "FIX: Please run dfx generate"
+                  git diff
+                  exit 1
+          }
   check-pass:
-    needs: ["format", "rust-tests"]
+    needs: ["format", "rust-tests", "installation"]
     if: ${{ always() }}
     runs-on: ubuntu-20.04
     steps:
