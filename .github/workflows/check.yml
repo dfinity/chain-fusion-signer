@@ -35,7 +35,18 @@ jobs:
         os: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v4
+      - name: Have relevant files changed?
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            test:
+               - '.github/workflows/check.yml'
+               - '**/*.rs'
+               - '**/Cargo.*'
+               - 'rust-toolchain.toml'
       - uses: actions/cache@v4
+        if: steps.changes.outputs.test == 'true'
         with:
           path: |
             ~/.cargo/registry
@@ -43,8 +54,10 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-1
       - name: Lint rust code
+        if: steps.changes.outputs.test == 'true'
         run: ./scripts/lint-rs
       - name: Run Unit Tests
+        if: steps.changes.outputs.test == 'true'
         shell: bash
         run: scripts/test-rs
   check-pass:
