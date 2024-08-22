@@ -22,7 +22,6 @@ pub struct SupportedCredential {
 #[derive(CandidType, Deserialize)]
 pub struct InitArg {
     pub ecdsa_key_name: String,
-    pub allowed_callers: Vec<Principal>,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_der: Option<Vec<u8>>,
     /// Enables or disables APIs
@@ -62,8 +61,6 @@ pub enum Arg {
 #[derive(CandidType, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Config {
     pub ecdsa_key_name: String,
-    // A list of allowed callers to restrict access to endpoints that do not particularly check or use the caller()
-    pub allowed_callers: Vec<Principal>,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_raw: Option<Vec<u8>>,
     /// Enables or disables APIs

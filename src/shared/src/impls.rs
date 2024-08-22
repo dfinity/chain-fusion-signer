@@ -37,7 +37,6 @@ impl From<InitArg> for Config {
     fn from(arg: InitArg) -> Self {
         let InitArg {
             ecdsa_key_name,
-            allowed_callers,
             ic_root_key_der,
             api,
         } = arg;
@@ -49,7 +48,6 @@ impl From<InitArg> for Config {
         };
         Config {
             ecdsa_key_name,
-            allowed_callers,
             ic_root_key_raw: Some(ic_root_key_raw),
             api,
         }
