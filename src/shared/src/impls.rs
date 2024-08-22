@@ -1,14 +1,9 @@
-use crate::types::custom_token::{CustomToken, CustomTokenId, Token};
+use crate::types::custom_token::{CustomTokenId, Token};
 use crate::types::token::UserToken;
 use crate::types::{
-    ApiEnabled, Config, CredentialType, InitArg, MigrationProgress,
-    Timestamp, TokenVersion, Version,
+    ApiEnabled, Config, InitArg, MigrationProgress, TokenVersion, Version,
 };
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
-use std::collections::BTreeMap;
-use std::fmt;
-#[cfg(test)]
-use strum::IntoEnumIterator;
 
 impl From<&Token> for CustomTokenId {
     fn from(token: &Token) -> Self {
