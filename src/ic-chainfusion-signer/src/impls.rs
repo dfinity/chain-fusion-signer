@@ -1,11 +1,9 @@
 use crate::{
     types::{Candid, StoredPrincipal},
-    State,
 };
 use candid::{CandidType, Deserialize, Principal};
 use core::ops::Deref;
 use ic_stable_structures::storable::{Blob, Bound, Storable};
-use shared::types::Stats;
 use std::borrow::Cow;
 
 impl<T> Storable for Candid<T>
@@ -31,17 +29,6 @@ where
 
     fn deref(&self) -> &T {
         &self.0
-    }
-}
-
-impl From<&State> for Stats {
-    fn from(state: &State) -> Self {
-        Stats {
-            user_profile_count: state.user_profile.len(),
-            user_timestamps_count: state.user_profile_updated.len(),
-            user_token_count: state.user_token.len(),
-            custom_token_count: state.custom_token.len(),
-        }
     }
 }
 
