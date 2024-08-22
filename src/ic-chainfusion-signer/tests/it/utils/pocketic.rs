@@ -2,12 +2,9 @@ use crate::utils::mock::CALLER;
 use candid::{decode_one, encode_one, CandidType, Principal};
 use pocket_ic::{CallError, PocketIc, WasmResult};
 use serde::Deserialize;
-use shared::types::user_profile::{OisyUser, UserProfile};
 use shared::types::{Arg, CredentialType, InitArg, SupportedCredential};
 use std::fs::read;
-use std::ops::RangeBounds;
 use std::sync::Arc;
-use std::time::UNIX_EPOCH;
 use std::{env, time::Duration};
 
 use super::mock::{CONTROLLER, II_CANISTER_ID, II_ORIGIN, ISSUER_CANISTER_ID, ISSUER_ORIGIN};
