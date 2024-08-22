@@ -28,7 +28,6 @@ fn test_upgrade_credential_init_args() {
         ecdsa_key_name: ecdsa_key_name.clone(),
         allowed_callers: allowed_callers.clone(),
         ic_root_key_der: None,
-        supported_credentials: None,
         api: None,
     });
     let encoded_updated_arg = encode_one(updated_arg).unwrap();

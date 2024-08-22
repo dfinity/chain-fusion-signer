@@ -253,15 +253,6 @@ pub(crate) fn init_arg() -> Arg {
         ecdsa_key_name: format!("master_ecdsa_public_key_{}", SUBNET_ID).to_string(),
         allowed_callers: vec![Principal::from_text(CALLER).unwrap()],
         ic_root_key_der: None,
-        supported_credentials: Some(vec![SupportedCredential {
-            ii_canister_id: Principal::from_text(II_CANISTER_ID.to_string())
-                .expect("wrong ii canister id"),
-            ii_origin: II_ORIGIN.to_string(),
-            issuer_canister_id: Principal::from_text(ISSUER_CANISTER_ID.to_string())
-                .expect("wrong issuer canister id"),
-            issuer_origin: ISSUER_ORIGIN.to_string(),
-            credential_type: CredentialType::ProofOfUniqueness,
-        }]),
         api: None,
     })
 }
