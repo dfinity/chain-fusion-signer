@@ -1,6 +1,4 @@
-use crate::{
-    types::{Candid, StoredPrincipal},
-};
+use crate::types::{Candid, StoredPrincipal};
 use candid::{CandidType, Deserialize, Principal};
 use core::ops::Deref;
 use ic_stable_structures::storable::{Blob, Bound, Storable};

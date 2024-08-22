@@ -1,8 +1,9 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::{
-    caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys, may_threshold_sign};
+    caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys,
+    may_threshold_sign,
+};
 use candid::{Nat, Principal};
-use shared::http::HttpRequest;
 use ethers_core::abi::ethereum_types::{Address, U256, U64};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::types::Bytes;
@@ -17,21 +18,18 @@ use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
 };
-use shared::http::HttpResponse;
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use serde_bytes::ByteBuf;
+use shared::http::HttpRequest;
+use shared::http::HttpResponse;
 use shared::metrics::get_metrics;
 use shared::std_canister_status;
 use shared::types::transaction::SignRequest;
-use shared::types::{
-    Arg, Config, InitArg,
-};
+use shared::types::{Arg, Config, InitArg};
 use std::cell::RefCell;
 use std::str::FromStr;
-use types::{
-    Candid, ConfigCell
-};
+use types::{Candid, ConfigCell};
 
 mod bitcoin_utils;
 mod guards;
@@ -320,7 +318,6 @@ async fn sign_prehash(prehash: String) -> String {
 async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }
-
 
 /// Computes the parity bit allowing to recover the public key from the signature.
 fn y_parity(prehash: &[u8], sig: &[u8], pubkey: &[u8]) -> u64 {

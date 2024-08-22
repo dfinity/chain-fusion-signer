@@ -1,8 +1,6 @@
 use crate::types::custom_token::{CustomTokenId, Token};
 use crate::types::token::UserToken;
-use crate::types::{
-    ApiEnabled, Config, InitArg, MigrationProgress, TokenVersion, Version,
-};
+use crate::types::{ApiEnabled, Config, InitArg, MigrationProgress, TokenVersion, Version};
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
 
 impl From<&Token> for CustomTokenId {
@@ -57,8 +55,6 @@ impl From<InitArg> for Config {
         }
     }
 }
-
-
 
 impl Default for ApiEnabled {
     fn default() -> Self {

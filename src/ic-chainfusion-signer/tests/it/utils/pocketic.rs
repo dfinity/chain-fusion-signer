@@ -2,12 +2,12 @@ use crate::utils::mock::CALLER;
 use candid::{decode_one, encode_one, CandidType, Principal};
 use pocket_ic::{CallError, PocketIc, WasmResult};
 use serde::Deserialize;
-use shared::types::{Arg, CredentialType, InitArg, SupportedCredential};
+use shared::types::{Arg, InitArg};
 use std::fs::read;
 use std::sync::Arc;
 use std::{env, time::Duration};
 
-use super::mock::{CONTROLLER, II_CANISTER_ID, II_ORIGIN, ISSUER_CANISTER_ID, ISSUER_ORIGIN};
+use super::mock::CONTROLLER;
 
 const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/ic_chainfusion_signer.wasm";
 

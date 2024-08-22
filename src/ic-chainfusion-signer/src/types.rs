@@ -1,7 +1,5 @@
 use candid::{CandidType, Deserialize, Principal};
-use ic_stable_structures::{
-    memory_manager::VirtualMemory, Cell as StableCell, DefaultMemoryImpl
-};
+use ic_stable_structures::{memory_manager::VirtualMemory, Cell as StableCell, DefaultMemoryImpl};
 use shared::types::Config;
 
 pub type VMem = VirtualMemory<DefaultMemoryImpl>;

@@ -8,10 +8,3 @@ pub const CONTROLLER: &str = "l3lfs-gak7g-xrbil-j4v4h-aztjn-4jyki-wprso-m27h3-ib
 /// A normal user, without any special permissions.
 
 pub const SEPOLIA_CHAIN_ID: u64 = 11155111;
-
-// TODO: Use a VP from DECIDE AI. We can't yet, because they don't create valid credentials yet.
-// This is a VP of ProofOfUniqueness from the dummy issuer
-pub const ISSUER_CANISTER_ID: &str = "qdiif-2iaaa-aaaap-ahjaq-cai";
-pub const ISSUER_ORIGIN: &str = "https://dummy-issuer.vc/";
-pub const II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
-pub const II_ORIGIN: &str = "https://identity.ic0.app/";
