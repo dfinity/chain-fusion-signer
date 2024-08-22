@@ -1,12 +1,8 @@
-use crate::assertions::{assert_token_enabled_is_some, assert_token_symbol_length};
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::{
-    caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys,
-    may_read_user_data, may_threshold_sign, may_write_user_data,
-};
-use crate::token::{add_to_user_token, remove_from_user_token};
+    caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys, may_threshold_sign};
 use candid::{Nat, Principal};
-use config::find_credential_config;
+use shared::http::HttpRequest;
 use ethers_core::abi::ethereum_types::{Address, H160, U256, U64};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::types::Bytes;
@@ -16,61 +12,38 @@ use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
-use ic_cdk::api::time;
-use ic_cdk::eprintln;
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
-use ic_cdk_timers::{clear_timer, set_timer_interval};
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
 };
-use ic_verifiable_credentials::validate_ii_presentation_and_claims;
+use shared::http::HttpResponse;
 use k256::PublicKey;
-use oisy_user::oisy_users;
 use pretty_assertions::assert_eq;
 use serde_bytes::ByteBuf;
-use shared::http::{HttpRequest, HttpResponse};
 use shared::metrics::get_metrics;
 use shared::std_canister_status;
-use shared::types::custom_token::{CustomToken, CustomTokenId};
-use shared::types::token::{UserToken, UserTokenId};
 use shared::types::transaction::SignRequest;
-use shared::types::user_profile::{
-    AddUserCredentialError, AddUserCredentialRequest, GetUserProfileError, ListUsersRequest,
-    ListUsersResponse, OisyUser, UserProfile,
-};
 use shared::types::{
-    Arg, Config, Guards, InitArg, Migration, MigrationProgress, MigrationReport, Stats,
+    Arg, Config, InitArg, Migration,
 };
 use std::cell::RefCell;
 use std::str::FromStr;
-use std::time::Duration;
 use types::{
-    Candid, ConfigCell, CustomTokenMap, StoredPrincipal, UserProfileMap, UserProfileUpdatedMap,
+    Candid, ConfigCell, CustomTokenMap, UserProfileMap, UserProfileUpdatedMap,
     UserTokenMap,
 };
-use user_profile::{add_credential, create_profile, find_profile};
-use user_profile_model::UserProfileModel;
 
-mod assertions;
 mod bitcoin_utils;
-mod config;
 mod guards;
 mod impls;
-mod migrate;
-mod oisy_user;
-mod token;
 mod types;
-mod user_profile;
-mod user_profile_model;
 
 const CONFIG_MEMORY_ID: MemoryId = MemoryId::new(0);
 const USER_TOKEN_MEMORY_ID: MemoryId = MemoryId::new(1);
 const USER_CUSTOM_TOKEN_MEMORY_ID: MemoryId = MemoryId::new(2);
 const USER_PROFILE_MEMORY_ID: MemoryId = MemoryId::new(3);
 const USER_PROFILE_UPDATED_MEMORY_ID: MemoryId = MemoryId::new(4);
-
-const MAX_SYMBOL_LENGTH: usize = 20;
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
@@ -391,34 +364,6 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }
 
-/// Gets the state of any migration currently in progress.
-#[query(guard = "caller_is_allowed")]
-fn migration() -> Option<MigrationReport> {
-    read_state(|s| s.migration.as_ref().map(MigrationReport::from))
-}
-
-/// Sets the lock state of the canister APIs.  This can be used to enable or disable the APIs, or to enable an API in read-only mode.
-#[update(guard = "caller_is_allowed")]
-fn set_guards(guards: Guards) {
-    mutate_state(|state| modify_state_config(state, |config| config.api = Some(guards)));
-}
-
-/// Gets statistics about the canister.
-///
-/// Note: This is a private method, restricted to authorized users, as some stats may not be suitable for public consumption.
-#[query(guard = "caller_is_allowed")]
-fn stats() -> Stats {
-    read_state(|s| Stats::from(s))
-}
-
-/// Bulk uploads data to this canister.
-///
-/// Note: In case of conflict, existing data is overwritten.  This situation is expected to occur only if a migration failed and had to be restarted.
-#[update(guard = "caller_is_allowed")]
-#[allow(clippy::needless_pass_by_value)]
-fn bulk_up(data: Vec<u8>) {
-    migrate::bulk_up(&data);
-}
 
 /// Computes the parity bit allowing to recover the public key from the signature.
 fn y_parity(prehash: &[u8], sig: &[u8], pubkey: &[u8]) -> u64 {
