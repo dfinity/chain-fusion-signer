@@ -1,7 +1,7 @@
 #!/bin/bash
 
 POCKET_IC_SERVER_VERSION=3.0.1
-OISY_UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
+UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
 
 # If a ic-chainfusion-signer wasm file exists at the root, it will be used for the tests.
 
@@ -17,13 +17,13 @@ fi
 
 # We use a previous version of the release to ensure upgradability
 
-IFS=',' read -r -a versions <<<"$OISY_UPGRADE_VERSIONS"
+IFS=',' read -r -a versions <<<"$UPGRADE_VERSIONS"
 
 for version in "${versions[@]}"; do
-  OISY_UPGRADE_PATH="./ic-chainfusion-signer-${version}.wasm.gz"
+  UPGRADE_PATH="./ic-chainfusion-signer-${version}.wasm.gz"
 
-  if [ ! -f "$OISY_UPGRADE_PATH" ]; then
-    curl -sSL "https://github.com/dfinity/oisy-wallet/releases/download/${version}/ic-chainfusion-signer.wasm.gz" -o "$OISY_UPGRADE_PATH"
+  if [ ! -f "$UPGRADE_PATH" ]; then
+    curl -sSL "https://github.com/dfinity/chain-fusion-signer/releases/download/${version}/ic-chainfusion-signer.wasm.gz" -o "$UPGRADE_PATH"
   fi
 done
 
