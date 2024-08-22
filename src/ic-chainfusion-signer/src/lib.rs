@@ -3,7 +3,7 @@ use crate::guards::{
     caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys, may_threshold_sign};
 use candid::{Nat, Principal};
 use shared::http::HttpRequest;
-use ethers_core::abi::ethereum_types::{Address, H160, U256, U64};
+use ethers_core::abi::ethereum_types::{Address, U256, U64};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::types::Bytes;
 use ethers_core::utils::keccak256;
@@ -83,21 +83,6 @@ pub fn read_config<R>(f: impl FnOnce(&Config) -> R) -> R {
             .as_ref()
             .expect("config is not initialized"))
     })
-}
-
-/// Modifies `state.config` with the provided function.
-fn modify_state_config(state: &mut State, f: impl FnOnce(&mut Config)) {
-    let config: &Candid<Config> = state
-        .config
-        .get()
-        .as_ref()
-        .expect("config is not initialized");
-    let mut config: Config = (*config).clone();
-    f(&mut config);
-    state
-        .config
-        .set(Some(Candid(config)))
-        .expect("setting config should succeed");
 }
 
 pub struct State {
@@ -207,15 +192,6 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     .await
     .expect("failed to get public key");
     key.public_key
-}
-
-fn parse_eth_address(address: &str) -> [u8; 20] {
-    match address.parse() {
-        Ok(H160(addr)) => addr,
-        Err(err) => ic_cdk::trap(&format!(
-            "failed to parse contract address {address}: {err}",
-        )),
-    }
 }
 
 /// Returns the Ethereum address of the caller.
