@@ -104,26 +104,31 @@ impl Default for BackendBuilder {
 // Customisation
 impl BackendBuilder {
     /// Sets a custom argument for the backend canister.
+    #[allow(dead_code)]
     pub fn with_arg(mut self, arg: Vec<u8>) -> Self {
         self.arg = arg;
         self
     }
     /// Deploys to an existing canister with the given ID.
+    #[allow(dead_code)]
     pub fn with_canister(mut self, canister_id: Principal) -> Self {
         self.canister_id = Some(canister_id);
         self
     }
     /// Sets custom controllers for the backend canister.
+    #[allow(dead_code)]
     pub fn with_controllers(mut self, controllers: Vec<Principal>) -> Self {
         self.controllers = controllers;
         self
     }
     /// Sets the cycles to add to the backend canister.
+    #[allow(dead_code)]
     pub fn with_cycles(mut self, cycles: u128) -> Self {
         self.cycles = cycles;
         self
     }
     /// Configures the deployment to use a custom Wasm file.
+    #[allow(dead_code)]
     pub fn with_wasm(mut self, wasm_path: &str) -> Self {
         self.wasm_path = wasm_path.to_string();
         self
@@ -310,6 +315,7 @@ pub trait PicCanisterTrait {
     }
 
     /// Makes a query call to the canister.
+    #[allow(dead_code)]
     fn query<T>(&self, caller: Principal, method: &str, arg: impl CandidType) -> Result<T, String>
     where
         T: for<'a> Deserialize<'a> + CandidType,
