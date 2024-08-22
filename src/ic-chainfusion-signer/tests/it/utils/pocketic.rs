@@ -276,33 +276,6 @@ impl PicCanisterTrait for PicBackend {
         self.canister_id.clone()
     }
 }
-impl PicBackend {
-    /// Creates toy users with the given range of principals.
-    pub fn create_users<R>(&self, range: R) -> Vec<OisyUser>
-    where
-        R: RangeBounds<u8> + Iterator<Item = u8>,
-    {
-        let mut expected_users: Vec<OisyUser> = Vec::new();
-        for i in range {
-            self.pic.advance_time(Duration::new(10, 0));
-            let caller = Principal::self_authenticating(i.to_string());
-            let response = self.update::<UserProfile>(caller, "create_user_profile", ());
-            let timestamp = self.pic.get_time();
-            let timestamp_nanos = timestamp
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_nanos();
-            let expected_user = OisyUser {
-                updated_timestamp: timestamp_nanos as u64,
-                pouh_verified: false,
-                principal: caller,
-            };
-            expected_users.push(expected_user);
-            assert!(response.is_ok());
-        }
-        expected_users
-    }
-}
 
 /// Common methods for interacting with a canister using `PocketIc`.
 pub trait PicCanisterTrait {
