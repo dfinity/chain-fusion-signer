@@ -75,10 +75,6 @@ type ListUsersRequest = record {
   updated_after_timestamp : opt nat64;
   matches_max_length : opt nat64;
 };
-type ListUsersResponse = record {
-  users : vec OisyUser;
-  matches_max_length : nat64;
-};
 type MigrationError = variant {
   TargetLockFailed;
   TargetUnlockFailed;
@@ -105,11 +101,6 @@ type MigrationProgress = variant {
   CheckingTarget;
 };
 type MigrationReport = record { to : principal; progress : MigrationProgress };
-type OisyUser = record {
-  "principal" : principal;
-  pouh_verified : bool;
-  updated_timestamp : nat64;
-};
 type Result = variant { Ok; Err : AddUserCredentialError };
 type Result_1 = variant { Ok : UserProfile; Err : GetUserProfileError };
 type Result_2 = variant { Ok : MigrationReport; Err : text };

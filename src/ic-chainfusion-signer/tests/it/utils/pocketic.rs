@@ -11,7 +11,7 @@ use super::mock::{CONTROLLER, II_CANISTER_ID, II_ORIGIN, ISSUER_CANISTER_ID, ISS
 
 const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/ic_chainfusion_signer.wasm";
 
-// Oisy's backend require an ecdsa_key_name for initialization.
+// The signer requires an ecdsa_key_name for initialization.
 // PocketIC does not get mounted with "key_1" or "test_key_1" available in the management canister. If the canister request those ecdsa_public_key, it throws an error.
 // Instead, we can use the master_ecdsa_public_key suffixed with the subnet ID. PocketID adds the suffix because it can have multiple subnets.
 const SUBNET_ID: &str = "fscpm-uiaaa-aaaaa-aaaap-yai";
@@ -183,10 +183,10 @@ impl BackendBuilder {
         canister_id
     }
     /// Deploy to a new pic.
-    pub fn deploy(&mut self) -> PicBackend {
+    pub fn deploy(&mut self) -> PicSigner {
         let pic = PocketIc::new();
         let canister_id = self.deploy_to(&pic);
-        PicBackend {
+        PicSigner {
             pic: Arc::new(pic),
             canister_id,
         }
@@ -199,11 +199,11 @@ pub fn controller() -> Principal {
         .expect("Test setup error: Failed to parse controller principal")
 }
 
-pub fn setup() -> PicBackend {
+pub fn setup() -> PicSigner {
     BackendBuilder::default().deploy()
 }
 
-impl PicBackend {
+impl PicSigner {
     #[allow(dead_code)]
     pub fn upgrade_latest_wasm(&self, encoded_arg: Option<Vec<u8>>) -> Result<(), String> {
         let backend_wasm_path =
@@ -266,12 +266,12 @@ pub(crate) fn init_arg() -> Arg {
     })
 }
 
-/// A test Oisy backend canister with a shared reference to the `PocketIc` instance it is installed on.
-pub struct PicBackend {
+/// A test signing canister with a shared reference to the `PocketIc` instance it is installed on.
+pub struct PicSigner {
     pub pic: Arc<PocketIc>,
     pub canister_id: Principal,
 }
-impl PicCanisterTrait for PicBackend {
+impl PicCanisterTrait for PicSigner {
     fn pic(&self) -> Arc<PocketIc> {
         self.pic.clone()
     }
