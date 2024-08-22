@@ -24,8 +24,6 @@ pub struct InitArg {
     pub ecdsa_key_name: String,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_der: Option<Vec<u8>>,
-    /// Enables or disables APIs
-    pub api: Option<Guards>,
 }
 
 #[derive(CandidType, Deserialize, Eq, PartialEq, Debug, Copy, Clone)]
@@ -63,8 +61,6 @@ pub struct Config {
     pub ecdsa_key_name: String,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_raw: Option<Vec<u8>>,
-    /// Enables or disables APIs
-    pub api: Option<Guards>,
 }
 
 pub mod transaction {

@@ -45,18 +45,6 @@ fn test_anonymous_cannot_call_eth_address() {
 }
 
 #[test]
-fn test_non_allowed_caller_cannot_call_eth_address_of() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup.update::<String>(Principal::anonymous(), "eth_address_of", caller);
-
-    assert!(address.is_err());
-    assert_eq!(address.unwrap_err(), "Caller is not allowed.".to_string());
-}
-
-#[test]
 fn test_cannot_call_eth_address_of_for_anonymous() {
     let pic_setup = setup();
 

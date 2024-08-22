@@ -1,4 +1,3 @@
-use crate::utils::mock::CALLER;
 use candid::{decode_one, encode_one, CandidType, Principal};
 use pocket_ic::{CallError, PocketIc, WasmResult};
 use serde::Deserialize;
@@ -251,9 +250,7 @@ impl PicSigner {
 pub(crate) fn init_arg() -> Arg {
     Arg::Init(InitArg {
         ecdsa_key_name: format!("master_ecdsa_public_key_{}", SUBNET_ID).to_string(),
-        allowed_callers: vec![Principal::from_text(CALLER).unwrap()],
         ic_root_key_der: None,
-        api: None,
     })
 }
 

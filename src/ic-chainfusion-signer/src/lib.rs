@@ -1,8 +1,5 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
-use crate::guards::{
-    caller_is_allowed, caller_is_allowed_and_may_read_threshold_keys, may_read_threshold_keys,
-    may_threshold_sign,
-};
+use crate::guards::caller_is_not_anonymous;
 use candid::{Nat, Principal};
 use ethers_core::abi::ethereum_types::{Address, U256, U64};
 use ethers_core::types::transaction::eip2930::AccessList;
@@ -109,7 +106,7 @@ fn post_upgrade(arg: Option<Arg>) {
 }
 
 /// Show the canister configuration.
-#[query(guard = "caller_is_allowed")]
+#[query(guard = "caller_is_not_anonymous")]
 #[must_use]
 fn config() -> Config {
     read_config(std::clone::Clone::clone)
@@ -174,13 +171,13 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
 }
 
 /// Returns the Ethereum address of the caller.
-#[update(guard = "may_read_threshold_keys")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn caller_eth_address() -> String {
     pubkey_bytes_to_address(&ecdsa_pubkey_of(&ic_cdk::caller()).await)
 }
 
 /// Returns the Ethereum address of the specified user.
-#[update(guard = "caller_is_allowed_and_may_read_threshold_keys")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn eth_address_of(p: Principal) -> String {
     if p == Principal::anonymous() {
         ic_cdk::trap("Anonymous principal is not authorized");
@@ -189,7 +186,7 @@ async fn eth_address_of(p: Principal) -> String {
 }
 
 /// Returns the Bitcoin address of the caller.
-#[update(guard = "may_read_threshold_keys")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn caller_btc_address(network: BitcoinNetwork) -> String {
     public_key_to_p2pkh_address(network, &ecdsa_pubkey_of(&ic_cdk::caller()).await)
 }
@@ -225,7 +222,7 @@ async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> (Vec
 }
 
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
-#[update(guard = "may_threshold_sign")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
     use ethers_core::types::transaction::eip1559::Eip1559TransactionRequest;
     use ethers_core::types::Signature;
@@ -273,7 +270,7 @@ async fn sign_transaction(req: SignRequest) -> String {
 }
 
 /// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
-#[update(guard = "may_threshold_sign")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn personal_sign(plaintext: String) -> String {
     let caller = ic_cdk::caller();
 
@@ -298,7 +295,7 @@ async fn personal_sign(plaintext: String) -> String {
 }
 
 /// Computes a signature for a precomputed hash.
-#[update(guard = "may_threshold_sign")]
+#[update(guard = "caller_is_not_anonymous")]
 async fn sign_prehash(prehash: String) -> String {
     let caller = ic_cdk::caller();
 
