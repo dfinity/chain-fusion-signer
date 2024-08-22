@@ -202,6 +202,7 @@ pub fn setup() -> PicBackend {
 }
 
 impl PicBackend {
+    #[allow(dead_code)]
     pub fn upgrade_latest_wasm(&self, encoded_arg: Option<Vec<u8>>) -> Result<(), String> {
         let backend_wasm_path =
             env::var("BACKEND_WASM_PATH").unwrap_or_else(|_| BACKEND_WASM.to_string());
