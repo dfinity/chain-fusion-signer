@@ -1,13 +1,12 @@
 use crate::types::custom_token::{CustomToken, CustomTokenId, Token};
 use crate::types::token::UserToken;
 use crate::types::user_profile::{
-    AddUserCredentialError, OisyUser, StoredUserProfile, UserCredential, UserProfile,
+    AddUserCredentialError, StoredUserProfile, UserCredential,
 };
 use crate::types::{
-    ApiEnabled, Config, CredentialType, InitArg, Migration, MigrationProgress, MigrationReport,
+    ApiEnabled, Config, CredentialType, InitArg, MigrationProgress,
     Timestamp, TokenVersion, Version,
 };
-use candid::Principal;
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
 use std::collections::BTreeMap;
 use std::fmt;
@@ -152,44 +151,6 @@ impl StoredUserProfile {
     }
 }
 
-impl From<&StoredUserProfile> for UserProfile {
-    fn from(user: &StoredUserProfile) -> UserProfile {
-        let StoredUserProfile {
-            created_timestamp,
-            updated_timestamp,
-            version,
-            credentials,
-        } = user;
-        UserProfile {
-            created_timestamp: *created_timestamp,
-            updated_timestamp: *updated_timestamp,
-            version: *version,
-            credentials: credentials.clone().into_values().collect(),
-        }
-    }
-}
-
-impl OisyUser {
-    #[must_use]
-    pub fn from_profile(user: &StoredUserProfile, principal: Principal) -> OisyUser {
-        OisyUser {
-            principal,
-            pouh_verified: user
-                .credentials
-                .contains_key(&CredentialType::ProofOfUniqueness),
-            updated_timestamp: user.updated_timestamp,
-        }
-    }
-}
-
-impl From<&Migration> for MigrationReport {
-    fn from(migration: &Migration) -> Self {
-        MigrationReport {
-            to: migration.to,
-            progress: migration.progress,
-        }
-    }
-}
 
 impl Default for ApiEnabled {
     fn default() -> Self {
