@@ -1,4 +1,10 @@
-name: Reproducible Builds
+name: Reproducible Native Builds
+# Rust builds are not, at the time of writing, reproducible YET, but is getting awfully close.
+# This is an (optimistic) attempt to simplify the build by compiling directly, not via Docker.
+#
+# Rust reproducibility issues can be found here: https://github.com/rust-lang/cargo/labels/A-reproducibility
+#
+# Fairly soon, bumping the Rust version is likely to make this go green.
 on:
   push:
     branches:
