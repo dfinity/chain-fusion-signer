@@ -2,7 +2,7 @@
 	"dfx": "0.20.0",
 	"canisters": {
 		"signer": {
-			"candid": "src/ic-chainfusion-signer/ic-chainfusion-signer.did",
+			"candid": "src/signer/ic-chainfusion-signer.did",
 			"package": "ic-chainfusion-signer",
 			"type": "rust"
 		},

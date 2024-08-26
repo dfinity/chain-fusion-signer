@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "src/example-backend",
-    "src/ic-chainfusion-signer",
+    "src/signer",
     "src/shared"]
 resolver = "2"
 
