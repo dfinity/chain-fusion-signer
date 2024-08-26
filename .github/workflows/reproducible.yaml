@@ -21,6 +21,17 @@ jobs:
           - ubuntu-22.04
           - ubuntu-24.04
     steps:
+      - name: Unbork mac
+        run: |
+          if command -v brew ; then
+            brew install llvm
+
+            echo CC=$(brew --prefix llvm)/bin/clang >> $GITHUB_ENV
+            echo CXX=$(brew --prefix llvm)/bin/clang++ >> $GITHUB_ENV
+            echo AR=$(brew --prefix llvm)/bin/llvm-ar >> $GITHUB_ENV
+            echo RANLIB=$(brew --prefix llvm)/bin/llvm-ranlib >> $GITHUB_ENV
+            echo PATH=$(brew --prefix llvm)/bin:$PATH >> $GITHUB_ENV
+          fi
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install dfx
@@ -45,7 +56,7 @@ jobs:
   compare_hashes:
     runs-on: ubuntu-latest
     needs: [build]
-    if: always()
+    if: ${{ always() }}
     steps:
       - name: Merge Hashes
         uses: actions/upload-artifact/merge@v4
