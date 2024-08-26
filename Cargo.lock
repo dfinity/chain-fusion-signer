@@ -1081,8 +1081,8 @@ name = "example-backend"
 version = "0.1.0"
 dependencies = [
  "candid",
- "ic-cdk 0.13.2",
- "ic-cdk-timers 0.7.0",
+ "ic-cdk 0.15.1",
+ "ic-cdk-timers",
 ]
 
 [[package]]
@@ -1703,20 +1703,6 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk-timers"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "054727a3a1c486528b96349817d54290ff70df6addf417def456ea708a16f7fb"
-dependencies = [
- "futures",
- "ic-cdk 0.13.2",
- "ic0 0.21.1",
- "serde",
- "serde_bytes",
- "slotmap",
-]
-
-[[package]]
-name = "ic-cdk-timers"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61fdca8e1d9ffb65ae68019b342c182009de9dc206fd849db0b0e90ee19f6fa4"
@@ -1768,7 +1754,7 @@ dependencies = [
  "hex",
  "ic-cdk 0.15.1",
  "ic-cdk-macros 0.15.0",
- "ic-cdk-timers 0.9.0",
+ "ic-cdk-timers",
  "ic-stable-structures 0.6.4",
  "ic-verifiable-credentials",
  "k256",
@@ -3854,7 +3840,7 @@ dependencies = [
  "ic-canister-sig-creation",
  "ic-cdk 0.15.1",
  "ic-cdk-macros 0.15.0",
- "ic-cdk-timers 0.9.0",
+ "ic-cdk-timers",
  "ic-metrics-encoder",
  "ic-verifiable-credentials",
  "serde",
