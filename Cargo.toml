@@ -1,9 +1,8 @@
 [workspace]
 members = [
     "src/example-backend",
-    "src/shared"
-,
-    "src/ic-chainfusion-signer"]
+    "src/ic-chainfusion-signer",
+    "src/shared"]
 resolver = "2"
 
 [workspace.dependencies]
