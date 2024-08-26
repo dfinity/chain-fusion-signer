@@ -48,11 +48,11 @@ jobs:
       - name: 'Output the wasm hash'
         run: |
           mkdir -p hashes
-          sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}_${{ matrix.time }}.txt"
+          sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}.txt"
       - name: 'Upload hashes'
         uses: actions/upload-artifact@v4
         with:
-          name: hashes_${{ matrix.os }}_${{ matrix.time }}
+          name: hashes_${{ matrix.os }}
           path: hashes/*.txt
   compare_hashes:
     runs-on: ubuntu-latest
