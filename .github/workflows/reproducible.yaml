@@ -1,0 +1,78 @@
+name: Reproducible Builds
+on:
+  push:
+    branches:
+      # This is the recommended development branch for this workflow; pushing it will trigger a build.
+      - reproducible
+  schedule:
+    # Nightly test.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-13
+          - macos-14
+          - ubuntu-22.04
+          - ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dfx
+        uses: dfinity/setup-dfx@main
+      - name: Build
+        run: dfx build --ic signer
+      - name: 'Upload Wasm module'
+        uses: actions/upload-artifact@v4
+        with:
+          name: signer-wasm-${{ matrix.os }}
+          path: .dfx/ic/canisters/signer/signer.wasm.gz
+          retention-days: 3
+      - name: 'Output the wasm hash'
+        run: |
+          mkdir -p hashes
+          sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}_${{ matrix.time }}.txt"
+      - name: 'Upload hashes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hashes_${{ matrix.os }}_${{ matrix.time }}
+          path: hashes/*.txt
+  compare_hashes:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Merge Hashes
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: hashes
+          pattern: hashes_*
+      - name: Get hashes
+        uses: actions/download-artifact@v4
+        with:
+          name: hashes
+          path: hashes
+      - name: Print hashes
+        run: |
+          echo Hashes:
+          grep -r . hashes/ | awk -F: '{printf "%s: %s\n", $2, $1}' | sort
+          (( $(cat hashes/nns-dapp-wasm_*.txt | sort | uniq | wc -l) == 1 ))
+  reproducible_build_passes:
+    needs: ["build", "compare_hashes"]
+    if: ${{ always() }}
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/needs_success
+        with:
+          needs: '${{ toJson(needs) }}'
+      #- name: Notify Slack on failure
+      #  uses: dfinity/internet-identity/.github/actions/slack@release-2023-08-28
+      #  if: ${{ failure() }}
+      #  with:
+      #    WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #    MESSAGE: "Reproducible docker build test failed for ${{ github.ref_name }}"
