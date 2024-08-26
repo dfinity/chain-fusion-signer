@@ -73,7 +73,7 @@ jobs:
         run: |
           echo Hashes:
           grep -r . hashes/ | awk -F: '{printf "%s: %s\n", $2, $1}' | sort
-          (( $(cat hashes/nns-dapp-wasm_*.txt | sort | uniq | wc -l) == 1 ))
+          (( $(cat hashes/signer-wasm_*.txt | sort | uniq | wc -l) == 1 ))
   reproducible_build_passes:
     needs: ["build", "compare_hashes"]
     if: ${{ always() }}
