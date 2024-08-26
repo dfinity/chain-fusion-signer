@@ -24,12 +24,15 @@ jobs:
       - name: Unbork mac
         if: ${{ startsWith( matrix.os, 'macos' ) }}
         run: |
+          # Fix the compiler:
           brew install llvm
           echo CC=$(brew --prefix llvm)/bin/clang >> $GITHUB_ENV
           echo CXX=$(brew --prefix llvm)/bin/clang++ >> $GITHUB_ENV
           echo AR=$(brew --prefix llvm)/bin/llvm-ar >> $GITHUB_ENV
           echo RANLIB=$(brew --prefix llvm)/bin/llvm-ranlib >> $GITHUB_ENV
           echo PATH=$(brew --prefix llvm)/bin:$PATH >> $GITHUB_ENV
+          # Provide the `shasum` command
+          brew install coreutils
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install dfx
