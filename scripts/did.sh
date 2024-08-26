@@ -13,7 +13,7 @@ function generate_did() {
   candid-extractor "target/wasm32-unknown-unknown/release/${canister//-/_}.wasm" >"$canister_root/$canister.did"
 }
 
-CANISTERS=ic-chainfusion-signer
+CANISTERS=signer
 
 for canister in $(echo $CANISTERS | sed "s/,/ /g"); do
   generate_did "$canister"
