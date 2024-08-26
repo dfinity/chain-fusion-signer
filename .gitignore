@@ -13,6 +13,9 @@
 # generated files
 **/declarations/
 
+# Build artefacts
+*.wasm.gz
+
 # rust
 target/
 

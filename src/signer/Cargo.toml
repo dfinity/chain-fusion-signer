@@ -1,0 +1,30 @@
+[package]
+name = "ic_chainfusion_signer"
+version = "0.1.0"
+edition = "2021"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bitcoin = { workspace = true }
+candid = { workspace = true }
+ethers-core = { workspace = true }
+futures = { workspace = true }
+getrandom = { workspace = true }
+hex = { workspace = true }
+ic-cdk = { workspace = true }
+ic-cdk-macros = { workspace = true }
+ic-cdk-timers = { workspace = true }
+ic-stable-structures = { workspace = true }
+ic-verifiable-credentials = { workspace = true }
+k256 = { workspace = true }
+pretty_assertions = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+shared = { path = "../shared" }
+
+[dev-dependencies]
+lazy_static = { workspace = true }
+pocket-ic = { workspace = true }

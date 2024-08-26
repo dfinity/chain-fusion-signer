@@ -1,0 +1,55 @@
+type Arg = variant { Upgrade; Init : InitArg };
+type BitcoinNetwork = variant { mainnet; regtest; testnet };
+type CanisterStatusResultV2 = record {
+  controller : principal;
+  status : CanisterStatusType;
+  freezing_threshold : nat;
+  balance : vec record { blob; nat };
+  memory_size : nat;
+  cycles : nat;
+  settings : DefiniteCanisterSettingsArgs;
+  idle_cycles_burned_per_day : nat;
+  module_hash : opt blob;
+};
+type CanisterStatusType = variant { stopped; stopping; running };
+type Config = record { ecdsa_key_name : text; ic_root_key_raw : opt blob };
+type DefiniteCanisterSettingsArgs = record {
+  controller : principal;
+  freezing_threshold : nat;
+  controllers : vec principal;
+  memory_allocation : nat;
+  compute_allocation : nat;
+};
+type HttpRequest = record {
+  url : text;
+  method : text;
+  body : blob;
+  headers : vec record { text; text };
+};
+type HttpResponse = record {
+  body : blob;
+  headers : vec record { text; text };
+  status_code : nat16;
+};
+type InitArg = record { ecdsa_key_name : text; ic_root_key_der : opt blob };
+type SignRequest = record {
+  to : text;
+  gas : nat;
+  value : nat;
+  max_priority_fee_per_gas : nat;
+  data : opt text;
+  max_fee_per_gas : nat;
+  chain_id : nat;
+  nonce : nat;
+};
+service : (Arg) -> {
+  caller_btc_address : (BitcoinNetwork) -> (text);
+  caller_eth_address : () -> (text);
+  config : () -> (Config) query;
+  eth_address_of : (principal) -> (text);
+  get_canister_status : () -> (CanisterStatusResultV2);
+  http_request : (HttpRequest) -> (HttpResponse) query;
+  personal_sign : (text) -> (text);
+  sign_prehash : (text) -> (text);
+  sign_transaction : (SignRequest) -> (text);
+}
