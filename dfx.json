@@ -3,7 +3,7 @@
 	"canisters": {
 		"signer": {
 			"candid": "src/signer/ic-chainfusion-signer.did",
-			"package": "ic-chainfusion-signer",
+			"package": "ic_chainfusion_signer",
 			"type": "rust",
 			"optimize": "cycles",
 			"gzip": true

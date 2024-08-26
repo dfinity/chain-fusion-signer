@@ -1743,30 +1743,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ic-chainfusion-signer"
-version = "0.1.0"
-dependencies = [
- "bitcoin",
- "candid",
- "ethers-core",
- "futures",
- "getrandom 0.2.14",
- "hex",
- "ic-cdk 0.15.1",
- "ic-cdk-macros 0.15.0",
- "ic-cdk-timers",
- "ic-stable-structures 0.6.4",
- "ic-verifiable-credentials",
- "k256",
- "lazy_static",
- "pocket-ic",
- "pretty_assertions",
- "serde",
- "serde_bytes",
- "shared",
-]
-
-[[package]]
 name = "ic-constants"
 version = "0.9.0"
 source = "git+https://github.com/dfinity/ic?rev=e69bcc7b319cbb3ebc22ec55af35287741244db6#e69bcc7b319cbb3ebc22ec55af35287741244db6"
@@ -2291,6 +2267,30 @@ dependencies = [
  "rand_core 0.6.4",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "ic_chainfusion_signer"
+version = "0.1.0"
+dependencies = [
+ "bitcoin",
+ "candid",
+ "ethers-core",
+ "futures",
+ "getrandom 0.2.14",
+ "hex",
+ "ic-cdk 0.15.1",
+ "ic-cdk-macros 0.15.0",
+ "ic-cdk-timers",
+ "ic-stable-structures 0.6.4",
+ "ic-verifiable-credentials",
+ "k256",
+ "lazy_static",
+ "pocket-ic",
+ "pretty_assertions",
+ "serde",
+ "serde_bytes",
+ "shared",
 ]
 
 [[package]]
