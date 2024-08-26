@@ -4,7 +4,7 @@ name: Reproducible Native Builds
 #
 # Rust reproducibility issues can be found here: https://github.com/rust-lang/cargo/labels/A-reproducibility
 #
-# Fairly soon, bumping the Rust version is likely to make this go green.
+# Fairly soon, bumping the Rust version, possibly in conjunction with flags such as `--remap-path-prefix`, is likely to make this go green.
 on:
   push:
     branches:
