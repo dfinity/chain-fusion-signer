@@ -4,7 +4,9 @@
 		"signer": {
 			"candid": "src/signer/ic-chainfusion-signer.did",
 			"package": "ic-chainfusion-signer",
-			"type": "rust"
+			"type": "rust",
+			"optimize": "cycles",
+			"gzip": true
 		},
 		"example-backend": {
 			"candid": "src/example-backend/example-backend.did",
