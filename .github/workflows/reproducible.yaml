@@ -1,6 +1,6 @@
 name: Reproducible Native Builds
-# Rust builds are not, at the time of writing, reproducible YET, but is getting awfully close.
-# This is an (optimistic) attempt to simplify the build by compiling directly, not via Docker.
+# Rust builds are not, at the time of writing, reproducible accross different operating systems YET, but is getting awfully close.
+# This workflow checks whether we can simplify the build by compiling directly, not via Docker.
 #
 # Rust reproducibility issues can be found here: https://github.com/rust-lang/cargo/labels/A-reproducibility
 #
@@ -9,10 +9,7 @@ on:
   push:
     branches:
       # This is the recommended development branch for this workflow; pushing it will trigger a build.
-      - reproducible
-  schedule:
-    # Nightly test.
-    - cron: "0 0 * * *"
+      - reproducible-native
   workflow_dispatch:
     inputs:
 jobs:
