@@ -6,7 +6,8 @@
 			"package": "ic_chainfusion_signer",
 			"type": "rust",
 			"optimize": "cycles",
-			"gzip": true
+			"gzip": true,
+			"init_arg": "(variant { Init = record { ecdsa_key_name = \"key_1\"; ic_root_key_der = null;}})"
 		},
 		"example-backend": {
 			"candid": "src/example-backend/example-backend.did",
