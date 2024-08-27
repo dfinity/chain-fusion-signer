@@ -22,7 +22,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout nns-dapp
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: Build nns-dapp repo
+      - name: Build
         uses: ./.github/actions/build
