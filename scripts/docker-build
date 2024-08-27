@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+DFX_TARGET=signer
+OUTDIR=out
+PROGRESS="--progress=auto"
+image_name="chain-fusion-signer"
+
+if DOCKER_BUILDKIT=1 docker build \
+  --target "$DFX_TARGET" \
+  "$PROGRESS" \
+  -t "$image_name" \
+  -o "$OUTDIR" . \
+  "${@+${@}}"; then
+  echo "SUCCESS: Docker build has succeeded."
+else
+  set +x
+  {
+    echo "ERROR: Docker build failed."
+    print_docker_help
+    exit 1
+  } >&2
+fi
+
