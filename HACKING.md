@@ -7,6 +7,7 @@ This document lists information useful for development and deployment purpose.
 - [Demo](#demo)
 
 ## Demo
+
 This repository contains the chain fusion signer itself, and also an example application with front end and back end canisters.
 
 To deploy the demo:
