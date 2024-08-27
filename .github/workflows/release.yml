@@ -2,7 +2,8 @@ name: Release
 on:
   push:
     branches:
-      - setup-repo
+      - test-release
+    tags:
   workflow_dispatch:
     inputs:
       no_cache:
@@ -24,5 +25,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - name: Show tags
+        run: git tag --points-at HEAD
       - name: Build
         uses: ./.github/actions/build
+      - name: Release
+        run: |
+          for tag in $(git tag --points-at HEAD) ; do
+            : Creates or updates a release for the tag
+            if gh release view "$tag"
+            then echo "Updating existing release..."
+            else gh release create --title "Release for tags/$tag" --draft --notes "Build artefacts from tag: $tag" "$tag"
+            fi
+            cd out && gh release upload --repo dfinity/chain-fusion-signer --clobber "$tag" *
+            : If the tag is for a proposal or nightly, make it public
+            [[ "$tag" != proposal-* ]] && [[ "$tag" != nightly-* ]] || { echo "Making release public" ; gh release edit "$tag" --draft=false ; }
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
