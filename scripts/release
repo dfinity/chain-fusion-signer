@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+print_help() {
+  cat <<-EOF
+	Pushes a git tag.  GitHub actions will create a release for this tag.
+	EOF
+}
+
+version="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "ic_chainfusion_signer") | .version')"
+tag="v$version"
+git tag "$tag"
+git push origin "refs/tags/$tag"
