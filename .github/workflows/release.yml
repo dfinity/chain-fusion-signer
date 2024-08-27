@@ -2,7 +2,8 @@ name: Release
 on:
   push:
     branches:
-      - setup-repo
+      - test-release
+    tags:
   workflow_dispatch:
     inputs:
       no_cache:
