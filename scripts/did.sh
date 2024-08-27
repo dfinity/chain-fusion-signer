@@ -15,6 +15,6 @@ function generate_did() {
 
 CANISTERS=signer
 
-for canister in $(echo $CANISTERS | sed "s/,/ /g"); do
+for canister in ${CANISTERS//,/ }; do
   generate_did "$canister"
 done
