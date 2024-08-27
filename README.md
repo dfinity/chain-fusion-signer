@@ -41,7 +41,7 @@ Threshold signatures require cycles. As such, API users must attach cycles for t
 
 ### Update Cadence
 
-The chain fusion signer is made to be very stable. It would be black-holed but the requirement to be able to make security updates preclused that. However, after an initial teething phase, updates should be very rare and performed only with strong community support, similar to the support required to add the threshold signing APIs in the first place. Upgrade should occur ONLY when:
+The chain fusion signer is made to be very stable. It would be black-holed but the requirement to be able to make security updates precludes that. However, after an initial teething phase, updates should be very rare and performed only with strong community support, similar to the support required to add the threshold signing APIs in the first place. Upgrade should occur ONLY when:
 
 - There is a security flaw that needs to be addressed.
 - The Internet Computer threshold signing APIs change. For example, if the Internet Computer adds support for an additional elliptic curve, the Chain Fusion Signer should make that improvement available to web developers.
