@@ -17,7 +17,6 @@ else
   set +x
   {
     echo "ERROR: Docker build failed."
-    print_docker_help
     exit 1
   } >&2
 fi
