@@ -1,0 +1,28 @@
+name: Release
+on:
+  push:
+    branches:
+      - setup-repo
+  workflow_dispatch:
+    inputs:
+      no_cache:
+        description: 'no-cache'
+        default: false
+        type: boolean
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash -euxlo pipefail {0}
+jobs:
+  build:
+    runs-on: ubuntu-latest-m
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout nns-dapp
+        uses: actions/checkout@v4
+      - name: Build nns-dapp repo
+        uses: ./.github/actions/build_nns_dapp

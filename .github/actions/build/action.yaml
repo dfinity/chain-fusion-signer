@@ -1,0 +1,37 @@
+name: 'Docker Build'
+description: |
+  Builds the artefacts for a standard release, including:
+          * `signer.wasm.gz` (for all networks)
+inputs:
+  no-cache:
+    description: 'no-cache'
+    default: false
+    type: boolean
+runs:
+  using: "composite"
+  steps:
+    - name: Set up docker buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build wasms
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        cache-from: type=gha,scope=cached-stage
+        no-cache: ${{ inputs.no-cache || false }}
+        # Exports the artefacts from the final stage
+        outputs: out
+    - name: 'Record the git commit and any tags'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        git log | head -n1 > out/commit.txt
+    - name: Hash artefacts
+      shell: bash
+      # Note:
+      # * `sha256sum` prints the hash of each file;
+      # * The `wc -c` in the awk code gets the size in bytes of each file;
+      # * The AWK code also adds a header and footer;
+      # * `column -t` formats the data as a table;
+      # * `tee` saves a copy of the printout in a file; that file will be included in releases.
+      run: find out/ -type f | xargs sha256sum | awk '{"wc -c " $2 | getline size; print $1, size}BEGIN{print "===START_ARTEFACTS===\nsha256 size filename"}END{print "==END_ARTEFACTS=="}' | column -t | tee out/filelist.txt
