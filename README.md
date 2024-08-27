@@ -10,6 +10,9 @@
 
 ---
 
+# EXPERIMENTAL
+This code has not (yet) passed security review.
+
 # What is the Chain Fusion Signer
 
 The Internet Computer provides an API that allows any canister to hold decentralised public-private key pairs. These keys can be used to sign messages for any system that uses compatible elliptic curves. Popular use cases are signing Bitcoin and Ethereum transactions. However, accessing this API requires developing a backend canister, which may be an unnecessary hurdle. The Chain Fusion Signer makes the Internet Computer threshold signature APIs directly accessible to web apps and to command line users.
