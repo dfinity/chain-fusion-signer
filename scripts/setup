@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-echo "$PATH" | tr : "\n"
 
 for tool in "${@}"; do
   echo "Installing '$tool'..."

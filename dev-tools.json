@@ -16,7 +16,9 @@
 		"source": "mvdan.cc/sh/v3/cmd/shfmt"
 	},
 	"yq": {
-		"method": "snap"
+		"method": "go",
+		"version": "v4.33.3",
+		"source": "github.com/mikefarah/yq/v4"
 	},
 	"node": {
 		"method": "n",
