@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+cargo set-version --bump "${1:-patch}"
+cargo fetch
