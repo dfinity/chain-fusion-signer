@@ -40,3 +40,15 @@ Any developer who wishes to make changes to the Chain Fusion Signer SHOULD:
 - Communicate with other maintainers, to ensure that changes do not conflict.
 - Submit changes in small units, ideally of under 100 lines per change.
 - Ensure that a well known and trusted auditor checks the code.
+
+### Verifiability
+
+The code can be built reproducibly with:
+```
+./scripts/docker-build
+```
+
+# Usage
+Please refer to the canister .did file to the API.
+
+TODO: Examples and developer-friendly documentation.
