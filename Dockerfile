@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:22.04 AS base
 ENV TZ=UTC
 # Install basic tools
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
@@ -18,7 +18,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
 # Gets dfx version
 #
 # Note: This can be done in the builder but is slow because unrelated changes to dfx.json can cause a rebuild.
-FROM base as tool_versions
+FROM base AS tool_versions
 SHELL ["bash", "-c"]
 RUN mkdir -p config
 COPY dfx.json dfx.json
@@ -26,7 +26,7 @@ RUN jq -r .dfx dfx.json > config/dfx_version
 
 
 # Install tools && warm up the build cache
-FROM base as builder
+FROM base AS builder
 SHELL ["bash", "-c"]
 # Install dfx
 # Note: dfx is installed in `$HOME/.local/share/dfx/bin` but we can't reference `$HOME` here so we hardcode `/root`.
@@ -58,7 +58,7 @@ RUN mkdir -p src/signer/src \
 
 
 # Builds canister: example-backend
-FROM builder as build-example-backend
+FROM builder AS build-example-backend
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
@@ -71,7 +71,7 @@ FROM scratch AS example-backend
 COPY --from=build-example-backend /example-backend.wasm.gz /
 
 # Builds canister: signer
-FROM builder as build-signer
+FROM builder AS build-signer
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json

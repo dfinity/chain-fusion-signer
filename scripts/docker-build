@@ -49,8 +49,7 @@ if DOCKER_BUILDKIT=1 docker build \
   -o "$OUTDIR" . \
   "${@+${@}}"; then
   echo "SUCCESS: Docker build has succeeded."
-  echo "Build outputs:"
-  find out/ -type f
+  scripts/docker-hashes
 else
   set +x
   {
