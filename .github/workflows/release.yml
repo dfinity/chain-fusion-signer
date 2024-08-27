@@ -17,7 +17,7 @@ defaults:
     shell: bash -euxlo pipefail {0}
 jobs:
   build:
-    runs-on: ubuntu-latest-m
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
       GH_TOKEN: ${{ github.token }}
