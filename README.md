@@ -47,9 +47,9 @@ The chain fusion signer is made to be very stable. It would be black-holed but t
 - The Internet Computer threshold signing APIs change. For example, if the Internet Computer adds support for an additional elliptic curve, the Chain Fusion Signer should make that improvement available to web developers.
 - In very limited cases, utilities may be added to the Chain Fusion Signer to support common use cases. Restraint should be exercised here. Convenience functions that can be implemented in the browser should be implemented in the browser. Convenience functions should address only very common, well established use cases.
 
-### Maintainance
+### Maintenance
 
-The Chain Fusion Signer code should be very simple and maintaible, so that any developer with a strong record of making trustworthy, secure cryptographic applications can maintain it.
+The Chain Fusion Signer code should be very simple and maintainable, so that any developer with a strong record of making trustworthy, secure cryptographic applications can maintain it.
 
 Any developer who wishes to make changes to the Chain Fusion Signer SHOULD:
 
