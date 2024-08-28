@@ -62,6 +62,10 @@ Any developer who wishes to make changes to the Chain Fusion Signer SHOULD:
 - Submit changes in small units, ideally of under 100 lines per change.
 - Ensure that a well known and trusted auditor checks the code.
 
+### License
+
+Please see the [LICENSE](LICENSE) and [Contribution guidelines](CONTRIBUTING.md).
+
 ### Verifiability
 
 The code can be built reproducibly with:
