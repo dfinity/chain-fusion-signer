@@ -3,16 +3,16 @@
 POCKET_IC_SERVER_VERSION=3.0.1
 UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
 
-# If a ic-chainfusion-signer wasm file exists at the root, it will be used for the tests.
+# If a signer wasm file exists at the root, it will be used for the tests.
 
-if [ -f "./ic-chainfusion-signer.wasm.gz" ]; then
+if [ -f "./signer.wasm.gz" ]; then
   # Setting the environment variable will be used in the test to load that particular file. Relative to where the test is.
-  echo "Use existing ic-chainfusion-signer.wasm.gz canister."
-  export BACKEND_WASM_PATH="../../ic-chainfusion-signer.wasm.gz"
+  echo "Use existing signer.wasm.gz canister."
+  export BACKEND_WASM_PATH="../../signer.wasm.gz"
 else
-  # If none exist we build the project. The test will resolve the target/wasm32-unknown-unknown/release/ic-chainfusion-signer.wasm automatically as fallback if no exported BACKEND_WASM_PATH variable is set.
-  echo "Building ic-chainfusion-signer canister."
-  cargo build --locked --target wasm32-unknown-unknown --release -p ic-chainfusion-signer
+  # If none exist we build the project. The test will resolve the target/wasm32-unknown-unknown/release/signer.wasm automatically as fallback if no exported BACKEND_WASM_PATH variable is set.
+  echo "Building signer canister."
+  cargo build --locked --target wasm32-unknown-unknown --release -p signer
 fi
 
 # We use a previous version of the release to ensure upgradability
@@ -20,10 +20,10 @@ fi
 IFS=',' read -r -a versions <<<"$UPGRADE_VERSIONS"
 
 for version in "${versions[@]}"; do
-  UPGRADE_PATH="./ic-chainfusion-signer-${version}.wasm.gz"
+  UPGRADE_PATH="./signer-${version}.wasm.gz"
 
   if [ ! -f "$UPGRADE_PATH" ]; then
-    curl -sSL "https://github.com/dfinity/chain-fusion-signer/releases/download/${version}/ic-chainfusion-signer.wasm.gz" -o "$UPGRADE_PATH"
+    curl -sSL "https://github.com/dfinity/chain-fusion-signer/releases/download/${version}/signer.wasm.gz" -o "$UPGRADE_PATH"
   fi
 done
 
@@ -58,5 +58,5 @@ export POCKET_IC_MUTE_SERVER=""
 
 # Run tests
 
-echo "Running ic-chainfusion-signer integration tests."
-cargo test -p ic-chainfusion-signer "${@}"
+echo "Running signer integration tests."
+cargo test -p signer "${@}"
