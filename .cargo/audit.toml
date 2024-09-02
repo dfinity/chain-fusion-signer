@@ -1,0 +1,10 @@
+# Configuration for cargo audit.
+#
+# For examples, see: https://github.com/rustsec/rustsec/blob/main/cargo-audit/audit.toml.example
+
+[advisories]
+ignore=[
+  # Key recovery is not possible as this code performs no signing itself; signing is done as a threshold signature by the underlying replicas.
+  "RUSTSEC-2024-0344",
+  "RUSTSEC-2023-0071"
+]
