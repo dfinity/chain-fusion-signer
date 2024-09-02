@@ -10,11 +10,6 @@ use super::mock::CONTROLLER;
 
 const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/signer.wasm";
 
-// The signer requires an ecdsa_key_name for initialization.
-// PocketIC does not get mounted with "key_1" or "test_key_1" available in the management canister. If the canister request those ecdsa_public_key, it throws an error.
-// Instead, we can use the master_ecdsa_public_key suffixed with the subnet ID. PocketID adds the suffix because it can have multiple subnets.
-const SUBNET_ID: &str = "fscpm-uiaaa-aaaaa-aaaap-yai";
-
 /// Backend canister installer, using the builder pattern, for use in test environmens using `PocketIC`.
 ///
 /// # Example
