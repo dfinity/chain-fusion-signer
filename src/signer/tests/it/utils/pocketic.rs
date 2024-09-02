@@ -1,5 +1,5 @@
 use candid::{decode_one, encode_one, CandidType, Principal};
-use pocket_ic::{CallError, PocketIc, WasmResult};
+use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
 use serde::Deserialize;
 use shared::types::{Arg, InitArg};
 use std::fs::read;
@@ -9,11 +9,6 @@ use std::{env, time::Duration};
 use super::mock::CONTROLLER;
 
 const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/signer.wasm";
-
-// The signer requires an ecdsa_key_name for initialization.
-// PocketIC does not get mounted with "key_1" or "test_key_1" available in the management canister. If the canister request those ecdsa_public_key, it throws an error.
-// Instead, we can use the master_ecdsa_public_key suffixed with the subnet ID. PocketID adds the suffix because it can have multiple subnets.
-const SUBNET_ID: &str = "fscpm-uiaaa-aaaaa-aaaap-yai";
 
 /// Backend canister installer, using the builder pattern, for use in test environmens using `PocketIC`.
 ///
@@ -52,7 +47,7 @@ pub struct BackendBuilder {
     /// Path to the backend wasm file.
     wasm_path: String,
     /// Argument to pass to the backend canister.
-    arg: Vec<u8>,
+    arg: Option<Arg>,
     /// Controllers of the backend canister.
     controllers: Vec<Principal>,
 }
@@ -72,11 +67,12 @@ impl BackendBuilder {
     }
     /// The default argument to pass to the backend canister.
     ///
-    /// Please see `init_arg()` for details.
-    ///
     /// To override, please use `with_arg()`.
-    pub fn default_arg() -> Vec<u8> {
-        encode_one(&init_arg()).unwrap()
+    pub fn default_install_arg() -> Arg {
+        Arg::Init(InitArg {
+            ecdsa_key_name: format!("test_key_1"),
+            ic_root_key_der: None,
+        })
     }
     /// The default controllers of the backend canister.
     ///
@@ -92,7 +88,7 @@ impl Default for BackendBuilder {
             canister_id: None,
             cycles: Self::DEFAULT_CYCLES,
             wasm_path: Self::default_wasm_path(),
-            arg: Self::default_arg(),
+            arg: None,
             controllers: Self::default_controllers(),
         }
     }
@@ -101,8 +97,8 @@ impl Default for BackendBuilder {
 impl BackendBuilder {
     /// Sets a custom argument for the backend canister.
     #[allow(dead_code)]
-    pub fn with_arg(mut self, arg: Vec<u8>) -> Self {
-        self.arg = arg;
+    pub fn with_arg(mut self, arg: Arg) -> Self {
+        self.arg = Some(arg);
         self
     }
     /// Deploys to an existing canister with the given ID.
@@ -147,8 +143,11 @@ impl BackendBuilder {
         if let Some(canister_id) = self.canister_id {
             canister_id
         } else {
-            let canister_id =
-                pic.create_canister_on_subnet(None, None, Principal::from_text(SUBNET_ID).unwrap());
+            let fiduciary_subnet_id = pic
+                .topology()
+                .get_fiduciary()
+                .expect("pic should have a fiduciary subnet.");
+            let canister_id = pic.create_canister_on_subnet(None, None, fiduciary_subnet_id);
             self.canister_id = Some(canister_id);
             canister_id
         }
@@ -164,7 +163,12 @@ impl BackendBuilder {
     fn install(&mut self, pic: &PocketIc) {
         let wasm_bytes = self.wasm_bytes();
         let canister_id = self.canister_id(pic);
-        let arg = self.arg.clone();
+        let arg = self
+            .arg
+            .as_ref()
+            .map(encode_one)
+            .unwrap_or_else(|| encode_one(&Self::default_install_arg()))
+            .unwrap();
         pic.install_canister(canister_id, wasm_bytes, arg, None);
     }
     /// Set controllers of the backend canister.
@@ -183,7 +187,11 @@ impl BackendBuilder {
     }
     /// Deploy to a new pic.
     pub fn deploy(&mut self) -> PicSigner {
-        let pic = PocketIc::new();
+        let pic = PocketIcBuilder::new()
+            .with_bitcoin_subnet()
+            .with_ii_subnet()
+            .with_fiduciary_subnet()
+            .build();
         let canister_id = self.deploy_to(&pic);
         PicSigner {
             pic: Arc::new(pic),
@@ -221,7 +229,7 @@ impl PicSigner {
             backend_wasm_path
         ));
 
-        let arg = encoded_arg.unwrap_or(encode_one(&init_arg()).unwrap());
+        let arg = encoded_arg.unwrap_or(encode_one(&Arg::Upgrade).unwrap());
 
         // Upgrades burn a lot of cycles.
         // If too many cycles are burnt in a short time, the canister will be throttled, so we advance time.
@@ -245,13 +253,6 @@ impl PicSigner {
                 }
             })
     }
-}
-
-pub(crate) fn init_arg() -> Arg {
-    Arg::Init(InitArg {
-        ecdsa_key_name: format!("master_ecdsa_public_key_{}", SUBNET_ID).to_string(),
-        ic_root_key_der: None,
-    })
 }
 
 /// A test signing canister with a shared reference to the `PocketIc` instance it is installed on.

@@ -19,7 +19,7 @@ pub struct SupportedCredential {
     pub issuer_canister_id: Principal,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone, Eq, PartialEq, Debug)]
 pub struct InitArg {
     pub ecdsa_key_name: String,
     /// Root of trust for checking canister signatures.
@@ -50,7 +50,7 @@ fn guards_default() {
     );
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum Arg {
     Init(InitArg),
     Upgrade,
