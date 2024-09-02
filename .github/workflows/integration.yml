@@ -1,0 +1,17 @@
+name: 'Integration checks'
+on:
+  push:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash -euxlo pipefail {0}
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-20.04
+      - name: Checkout
+        uses: actions/checkout@v4
+      - run: ./scripts/test.backend.sh 
