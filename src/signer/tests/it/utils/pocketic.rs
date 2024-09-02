@@ -8,7 +8,7 @@ use std::{env, time::Duration};
 
 use super::mock::CONTROLLER;
 
-const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/ic_chainfusion_signer.wasm";
+const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/signer.wasm";
 
 // The signer requires an ecdsa_key_name for initialization.
 // PocketIC does not get mounted with "key_1" or "test_key_1" available in the management canister. If the canister request those ecdsa_public_key, it throws an error.
@@ -37,7 +37,7 @@ const SUBNET_ID: &str = "fscpm-uiaaa-aaaaa-aaaap-yai";
 /// To customise the deployment, use the `.with_*` modifiers.  E.g.:
 /// ```
 /// let (pic, canister_id) = BackendBuilder::default()
-///    .with_wasm("path/to/ic_chainfusion_signer.wasm")
+///    .with_wasm("path/to/signer.wasm")
 ///    .with_arg(vec![1, 2, 3])
 ///    .with_controllers(vec![Principal::from_text("controller").unwrap()])
 ///    .with_cycles(1_000_000_000_000)

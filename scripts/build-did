@@ -1,2 +1,2 @@
 : TODO: Build all did files
-candid-extractor target/wasm32-unknown-unknown/release/ic_chainfusion_signer.wasm > ./src/ic-chainfusion-signer/ic-chainfusion-signer.did
+candid-extractor target/wasm32-unknown-unknown/release/signer.wasm > ./src/signer/signer.did

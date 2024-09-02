@@ -7,7 +7,7 @@ print_help() {
 	EOF
 }
 
-version="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "ic_chainfusion_signer") | .version')"
+version="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "signer") | .version')"
 tag="v$version"
 git tag "$tag"
 git push origin "refs/tags/$tag"

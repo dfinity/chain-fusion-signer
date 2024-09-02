@@ -17,4 +17,5 @@ CANISTERS=signer
 
 for canister in ${CANISTERS//,/ }; do
   generate_did "$canister"
+  dfx generate "$canister"
 done
