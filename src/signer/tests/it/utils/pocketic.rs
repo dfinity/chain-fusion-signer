@@ -1,5 +1,5 @@
 use candid::{decode_one, encode_one, CandidType, Principal};
-use pocket_ic::{CallError, PocketIc, WasmResult};
+use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
 use serde::Deserialize;
 use shared::types::{Arg, InitArg};
 use std::fs::read;
@@ -147,8 +147,9 @@ impl BackendBuilder {
         if let Some(canister_id) = self.canister_id {
             canister_id
         } else {
+            let fiduciary_subnet_id = pic.topology().get_fiduciary().expect("pic should have a fiduciary subnet.");
             let canister_id =
-                pic.create_canister_on_subnet(None, None, Principal::from_text(SUBNET_ID).unwrap());
+                pic.create_canister_on_subnet(None, None, fiduciary_subnet_id);
             self.canister_id = Some(canister_id);
             canister_id
         }
@@ -183,7 +184,7 @@ impl BackendBuilder {
     }
     /// Deploy to a new pic.
     pub fn deploy(&mut self) -> PicSigner {
-        let pic = PocketIc::new();
+        let pic = PocketIcBuilder::new().with_bitcoin_subnet().with_ii_subnet().with_fiduciary_subnet().build();
         let canister_id = self.deploy_to(&pic);
         PicSigner {
             pic: Arc::new(pic),

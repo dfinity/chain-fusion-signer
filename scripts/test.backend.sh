@@ -1,6 +1,6 @@
 #!/bin/bash
 
-POCKET_IC_SERVER_VERSION=4.0.0
+POCKET_IC_SERVER_VERSION=5.0.0
 UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
 
 # If a signer wasm file exists at the root, it will be used for the tests.
