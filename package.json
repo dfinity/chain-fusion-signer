@@ -17,7 +17,7 @@
 		"src/example-frontend"
 	],
 	"devDependencies": {
-		"@dfinity/auth-client": "^1.4.0",
+		"@dfinity/auth-client": "^2.0.0",
 		"@dfinity/identity": "^1.4.0",
 		"prettier": "^3.3.2",
 		"prettier-plugin-organize-imports": "^4.0.0",
