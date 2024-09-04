@@ -1,10 +1,7 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::caller_is_not_anonymous;
 use candid::{Nat, Principal};
-use ethers_core::abi::ethereum_types::{Address, U256, U64};
-use ethers_core::types::transaction::eip2930::AccessList;
-use ethers_core::types::Bytes;
-use ethers_core::utils::keccak256;
+use ethers_core::abi::ethereum_types::{U256, U64};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
@@ -160,22 +157,22 @@ fn nat_to_u64(n: &Nat) -> U64 {
     U64::from_big_endian(&be_bytes)
 }
 
-/// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
+/// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
     eth::sign_transaction(req).await
 }
 
-/// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+/// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 #[update(guard = "caller_is_not_anonymous")]
 async fn personal_sign(plaintext: String) -> String {
     eth::personal_sign(plaintext).await
 }
 
-/// Computes a signature for a precomputed hash.
+/// Computes an Ethereum signature for a precomputed hash.
 #[update(guard = "caller_is_not_anonymous")]
 async fn sign_prehash(prehash: String) -> String {
-    sign::eth::sign_prehash(prehash).await
+    eth::sign_prehash(prehash).await
 }
 
 /// API method to get cycle balance and burn rate.
