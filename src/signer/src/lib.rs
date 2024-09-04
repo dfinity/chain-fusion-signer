@@ -1,33 +1,30 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::caller_is_not_anonymous;
 use candid::{Nat, Principal};
-use ethers_core::{abi::ethereum_types::{U256, U64}, types::Bytes};
+use ethers_core::{
+    abi::ethereum_types::{U256, U64},
+    types::Bytes,
+};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager},
-    DefaultMemoryImpl,
-};
 use serde_bytes::ByteBuf;
 use shared::http::HttpRequest;
 use shared::http::HttpResponse;
 use shared::metrics::get_metrics;
 use shared::std_canister_status;
 use shared::types::transaction::SignRequest;
-use shared::types::{Arg, Config, InitArg};
+use shared::types::{Arg, Config};
 use sign::eth;
 use state::{read_config, read_state, set_config};
-use std::cell::RefCell;
-use types::{Candid, ConfigCell};
 
 mod bitcoin_utils;
 mod derivation_path;
 mod guards;
 mod impls;
-mod types;
 mod sign;
 mod state;
+mod types;
 
 #[init]
 fn init(arg: Arg) {

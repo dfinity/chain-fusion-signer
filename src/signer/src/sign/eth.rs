@@ -1,20 +1,18 @@
+use crate::state::read_config;
+use crate::{decode_hex, nat_to_u256};
+use crate::{derivation_path, nat_to_u64};
 use candid::Principal;
 use ethers_core::abi::ethereum_types::{Address, U256};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::utils::keccak256;
-use k256::PublicKey;
-use pretty_assertions::assert_eq;
-use std::str::FromStr;
-use crate::{derivation_path, nat_to_u64};
-use crate::state::read_config;
 use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
-use crate::{decode_hex, nat_to_u256};
+use k256::PublicKey;
+use pretty_assertions::assert_eq;
 use shared::types::transaction::SignRequest;
-
-
+use std::str::FromStr;
 
 /// Converts the public key bytes to an Ethereum address with a checksum.
 pub fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
