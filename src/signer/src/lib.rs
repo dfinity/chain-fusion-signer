@@ -11,7 +11,7 @@ use shared::metrics::get_metrics;
 use shared::std_canister_status;
 use shared::types::transaction::SignRequest;
 use shared::types::{Arg, Config};
-use sign::eth;
+use sign::{btc, eth};
 use state::{read_config, read_state, set_config};
 
 mod bitcoin_utils;
@@ -90,7 +90,7 @@ async fn eth_address_of(p: Principal) -> String {
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn caller_btc_address(network: BitcoinNetwork) -> String {
-    public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await)
+    public_key_to_p2pkh_address(network, &btc::ecdsa_pubkey_of(&ic_cdk::caller()).await)
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
