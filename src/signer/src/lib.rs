@@ -154,7 +154,7 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
         canister_id: None,
-        derivation_path: derivation_path::from_principal(principal),
+        derivation_path: derivation_path::eth(principal),
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
             name,
@@ -203,7 +203,7 @@ async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> (Vec
         ecdsa_pubkey_of(caller),
         sign_with_ecdsa(SignWithEcdsaArgument {
             message_hash,
-            derivation_path: derivation_path::from_principal(caller),
+            derivation_path: derivation_path::eth(caller),
             key_id: EcdsaKeyId {
                 curve: EcdsaCurve::Secp256k1,
                 name: read_config(|s| s.ecdsa_key_name.clone()),
