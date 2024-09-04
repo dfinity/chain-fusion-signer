@@ -29,6 +29,7 @@ use std::str::FromStr;
 use types::{Candid, ConfigCell};
 
 mod bitcoin_utils;
+mod derivation_path;
 mod guards;
 mod impls;
 mod types;
@@ -132,12 +133,6 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
     }
 }
 
-fn principal_to_derivation_path(p: &Principal) -> Vec<Vec<u8>> {
-    const SCHEMA: u8 = 1;
-
-    vec![vec![SCHEMA], p.as_slice().to_vec()]
-}
-
 /// Converts the public key bytes to an Ethereum address with a checksum.
 fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
     use k256::elliptic_curve::sec1::ToEncodedPoint;
@@ -159,7 +154,7 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
         canister_id: None,
-        derivation_path: principal_to_derivation_path(principal),
+        derivation_path: derivation_path::eth(principal),
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
             name,
@@ -208,7 +203,7 @@ async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> (Vec
         ecdsa_pubkey_of(caller),
         sign_with_ecdsa(SignWithEcdsaArgument {
             message_hash,
-            derivation_path: principal_to_derivation_path(caller),
+            derivation_path: derivation_path::eth(caller),
             key_id: EcdsaKeyId {
                 curve: EcdsaCurve::Secp256k1,
                 name: read_config(|s| s.ecdsa_key_name.clone()),
