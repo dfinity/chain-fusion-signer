@@ -15,13 +15,13 @@ use sign::eth;
 use state::{read_config, read_state, set_config};
 
 mod bitcoin_utils;
+mod convert;
 mod derivation_path;
 mod guards;
 mod impls;
 mod sign;
 mod state;
 mod types;
-mod convert;
 
 #[init]
 fn init(arg: Arg) {

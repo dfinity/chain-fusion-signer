@@ -1,6 +1,6 @@
-use crate::state::read_config;
 use crate::convert::{decode_hex, nat_to_u256, nat_to_u64};
-use crate::{derivation_path};
+use crate::derivation_path;
+use crate::state::read_config;
 use candid::Principal;
 use ethers_core::abi::ethereum_types::{Address, U256};
 use ethers_core::types::transaction::eip2930::AccessList;
