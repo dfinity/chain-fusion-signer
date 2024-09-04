@@ -1,12 +1,12 @@
 use candid::Principal;
-use ethers_core::abi::ethereum_types::{Address, U256, U64};
+use ethers_core::abi::ethereum_types::{Address, U256};
 use ethers_core::types::transaction::eip2930::AccessList;
-use ethers_core::types::Bytes;
 use ethers_core::utils::keccak256;
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
-use crate::{derivation_path, nat_to_u64, read_config};
+use crate::{derivation_path, nat_to_u64};
+use crate::state::read_config;
 use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,

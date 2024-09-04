@@ -1,7 +1,7 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::caller_is_not_anonymous;
 use candid::{Nat, Principal};
-use ethers_core::abi::ethereum_types::{U256, U64};
+use ethers_core::{abi::ethereum_types::{U256, U64}, types::Bytes};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
@@ -17,6 +17,7 @@ use shared::std_canister_status;
 use shared::types::transaction::SignRequest;
 use shared::types::{Arg, Config, InitArg};
 use sign::eth;
+use state::{read_config, read_state, set_config};
 use std::cell::RefCell;
 use types::{Candid, ConfigCell};
 
@@ -26,56 +27,7 @@ mod guards;
 mod impls;
 mod types;
 mod sign;
-
-const CONFIG_MEMORY_ID: MemoryId = MemoryId::new(0);
-
-thread_local! {
-    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
-        MemoryManager::init(DefaultMemoryImpl::default())
-    );
-
-    static STATE: RefCell<State> = RefCell::new(
-        MEMORY_MANAGER.with(|mm| State {
-            config: ConfigCell::init(mm.borrow().get(CONFIG_MEMORY_ID), None).expect("config cell initialization should succeed"),
-        })
-    );
-}
-
-pub fn read_state<R>(f: impl FnOnce(&State) -> R) -> R {
-    STATE.with(|cell| f(&cell.borrow()))
-}
-
-pub fn mutate_state<R>(f: impl FnOnce(&mut State) -> R) -> R {
-    STATE.with(|cell| f(&mut cell.borrow_mut()))
-}
-
-/// Reads the internal canister configuration, normally set at canister install or upgrade.
-///
-/// # Panics
-/// - If the `STATE.config` is not initialized.
-pub fn read_config<R>(f: impl FnOnce(&Config) -> R) -> R {
-    read_state(|state| {
-        f(state
-            .config
-            .get()
-            .as_ref()
-            .expect("config is not initialized"))
-    })
-}
-
-pub struct State {
-    config: ConfigCell,
-}
-
-fn set_config(arg: InitArg) {
-    let config = Config::from(arg);
-    mutate_state(|state| {
-        state
-            .config
-            .set(Some(Candid(config)))
-            .expect("setting config should succeed");
-    });
-}
+mod state;
 
 #[init]
 fn init(arg: Arg) {
