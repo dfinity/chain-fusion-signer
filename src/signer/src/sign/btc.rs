@@ -1,4 +1,4 @@
-//! Code for signing BitCoin transactions.
+//! Code for signing Bitcoin transactions.
 use crate::derivation_path;
 use crate::state::read_config;
 use candid::Principal;
