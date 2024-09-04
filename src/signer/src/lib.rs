@@ -1,10 +1,6 @@
 use crate::bitcoin_utils::public_key_to_p2pkh_address;
 use crate::guards::caller_is_not_anonymous;
-use candid::{Nat, Principal};
-use ethers_core::{
-    abi::ethereum_types::{U256, U64},
-    types::Bytes,
-};
+use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
@@ -25,6 +21,7 @@ mod impls;
 mod sign;
 mod state;
 mod types;
+mod convert;
 
 #[init]
 fn init(arg: Arg) {
@@ -96,16 +93,6 @@ async fn caller_btc_address(network: BitcoinNetwork) -> String {
     public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await)
 }
 
-fn nat_to_u256(n: &Nat) -> U256 {
-    let be_bytes = n.0.to_bytes_be();
-    U256::from_big_endian(&be_bytes)
-}
-
-fn nat_to_u64(n: &Nat) -> U64 {
-    let be_bytes = n.0.to_bytes_be();
-    U64::from_big_endian(&be_bytes)
-}
-
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
@@ -128,10 +115,6 @@ async fn sign_prehash(prehash: String) -> String {
 #[update]
 async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
-}
-
-fn decode_hex(hex: &str) -> Bytes {
-    Bytes::from(hex::decode(hex.trim_start_matches("0x")).expect("failed to decode hex"))
 }
 
 export_candid!();
