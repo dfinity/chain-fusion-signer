@@ -13,7 +13,6 @@ const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/signer.w
 const BITCOIN_WASM: &str = "../../ic-btc-canister.wasm.gz";
 const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
 
-
 // This is necessary to deploy the bitcoin canister.
 // This is a struct based on the `InitConfig` from the Bitcoin canister.
 // Reference: https://github.com/dfinity/bitcoin-canister/blob/52c160168c478d5bce34b7dc5bacb78243c9d8aa/interface/src/lib.rs#L553
@@ -236,8 +235,10 @@ impl BackendBuilder {
             .expect("Test setup error: Failed to set controllers");
     }
     fn install_bitcoin(&mut self, pic: &PocketIc) {
-        let canister_id = Principal::from_text(BITCOIN_CANISTER_ID).expect("Unexpected bitcoin canister id");
-        pic.create_canister_with_id(None, None, canister_id).expect("Failed creating bitcoin canister");
+        let canister_id =
+            Principal::from_text(BITCOIN_CANISTER_ID).expect("Unexpected bitcoin canister id");
+        pic.create_canister_with_id(None, None, canister_id)
+            .expect("Failed creating bitcoin canister");
         let wasm_bytes = self.bitcoin_wasm_bytes();
         pic.install_canister(canister_id, wasm_bytes, Self::default_bitcoin_arg(), None);
     }

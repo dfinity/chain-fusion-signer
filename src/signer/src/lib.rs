@@ -97,7 +97,8 @@ async fn caller_btc_address(network: BitcoinNetwork) -> String {
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
 async fn caller_btc_balance(network: BitcoinNetwork) -> u64 {
-    let address = public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await);
+    let address =
+        public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await);
     bitcoin_api::get_balance(network, address).await
 }
 
