@@ -9,6 +9,17 @@
 			"gzip": true,
 			"init_arg": "(variant { Init = record { ecdsa_key_name = \"key_1\"; ic_root_key_der = null;}})"
 		},
+		"bitcoin": {
+			"type": "custom",
+			"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
+			"candid": "https://github.com/dfinity/bitcoin-canister/blob/master/canister/candid.did",
+			"remote": {
+				"id": {
+					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai",
+					"local": "g4xu7-jiaaa-aaaan-aaaaq-cai"
+				}
+			}
+		},
 		"example-backend": {
 			"candid": "src/example-backend/example-backend.did",
 			"package": "example-backend",
