@@ -12,7 +12,7 @@
 		"bitcoin": {
 			"type": "custom",
 			"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
-			"candid": "https://github.com/dfinity/bitcoin-canister/blob/master/canister/candid.did",
+			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/master/canister/candid.did",
 			"remote": {
 				"id": {
 					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai",
