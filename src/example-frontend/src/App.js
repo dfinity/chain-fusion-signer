@@ -4,7 +4,7 @@ import {
 	example_backend,
 	idlFactory as exampleBackendIdlFactory
 } from 'declarations/example-backend';
-import { idlFactory as icSignerIdlFactory } from 'declarations/signer';
+import { idlFactory as icSignerIdlFactory } from '../../declarations/signer';
 import { html, render } from 'lit-html';
 import logo from './logo2.svg';
 
