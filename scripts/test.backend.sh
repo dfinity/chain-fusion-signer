@@ -2,6 +2,7 @@
 
 POCKET_IC_SERVER_VERSION=5.0.0
 UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
+BITCOIN_CANISTER_RELEASE="2024-08-30"
 
 # If a signer wasm file exists at the root, it will be used for the tests.
 
@@ -13,6 +14,16 @@ else
   # If none exist we build the project. The test will resolve the target/wasm32-unknown-unknown/release/signer.wasm automatically as fallback if no exported BACKEND_WASM_PATH variable is set.
   echo "Building signer canister."
   cargo build --locked --target wasm32-unknown-unknown --release -p signer
+fi
+
+if [ -f "./ic-btc-canister.wasm.gz" ]; then
+  # Setting the environment variable will be used in the test to load that particular file. Relative to where the test is.
+  echo "Use existing ic-btc-canister.wasm.gz canister."
+  export BITCOIN_CANISTER_WASM_PATH="../../ic-btc-canister.wasm.gz"
+else
+  # If none exist we build the project. The test will resolve the target/wasm32-unknown-unknown/release/bitcoin_canister.wasm automatically as fallback if no exported BITCOIN_CANISTER_WASM_PATH variable is set.
+  echo "Downloading bitcoin_canister canister."
+  curl -sSL "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F$BITCOIN_CANISTER_RELEASE/ic-btc-canister.wasm.gz" -o "ic-btc-canister.wasm.gz"
 fi
 
 # We use a previous version of the release to ensure upgradability
