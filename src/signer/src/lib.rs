@@ -10,8 +10,8 @@ use shared::metrics::get_metrics;
 use shared::std_canister_status;
 use shared::types::transaction::SignRequest;
 use shared::types::{Arg, Config};
+use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
-use sign::bitcoin::{ bitcoin_api, bitcoin_utils};
 use state::{read_config, read_state, set_config};
 
 mod convert;
@@ -89,14 +89,19 @@ async fn eth_address_of(p: Principal) -> String {
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn caller_btc_address(network: BitcoinNetwork) -> String {
-    bitcoin_utils::public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await)
+    bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    )
 }
 
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
 async fn caller_btc_balance(network: BitcoinNetwork) -> u64 {
-    let address =
-        bitcoin_utils::public_key_to_p2pkh_address(network, &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await);
+    let address = bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    );
     bitcoin_api::get_balance(network, address).await
 }
 
