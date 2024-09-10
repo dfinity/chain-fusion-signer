@@ -6,7 +6,7 @@
 	"scripts": {
 		"setup": "npm i && dfx canister create example-backend && dfx generate example-backend && dfx deploy",
 		"start": "vite --port 3000",
-		"prebuild": "dfx generate",
+		"prebuild": "dfx generate example-backend",
 		"build": "tsc && vite build",
 		"format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
 	},
