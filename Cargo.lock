@@ -874,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "example-backend"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "candid",
  "ic-cdk 0.15.1",
@@ -3085,7 +3085,7 @@ dependencies = [
 
 [[package]]
 name = "shared"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
@@ -3127,7 +3127,7 @@ dependencies = [
 
 [[package]]
 name = "signer"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "bitcoin",
  "candid",
