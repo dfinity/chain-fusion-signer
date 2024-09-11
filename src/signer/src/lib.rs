@@ -91,7 +91,7 @@ async fn eth_address_of(p: Principal) -> String {
 async fn caller_btc_address(network: BitcoinNetwork) -> String {
     bitcoin_utils::public_key_to_p2pkh_address(
         network,
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+        &bitcoin_utils::ecdsa_pubkey_of(&ic_cdk::caller()).await,
     )
 }
 
