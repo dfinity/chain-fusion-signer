@@ -1,2 +1,2 @@
-pub mod btc;
+pub mod bitcoin;
 pub mod eth;
