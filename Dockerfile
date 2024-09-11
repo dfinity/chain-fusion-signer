@@ -42,8 +42,9 @@ COPY ./rust-toolchain.toml .
 ENV RUSTUP_HOME=/opt/rustup \
     CARGO_HOME=/cargo \
     PATH=/cargo/bin:$PATH
-COPY scripts/setup-rust scripts/setup-rust
-RUN scripts/setup-rust
+COPY dev-tools.json dev-tools.json
+COPY scripts/setup scripts/setup-cargo-binstall scripts/setup-rust scripts/
+RUN scripts/setup rust cargo-binstall candid-extractor ic-wasm
 # Optional: Pre-build dependencies
 COPY Cargo.lock .
 COPY Cargo.toml .

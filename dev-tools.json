@@ -5,6 +5,10 @@
 		"url": "https://raw.githubusercontent.com/rust-lang/rustup/1.25.2/rustup-init.sh",
 		"pipe": [["sh"]]
 	},
+	"rust": {
+		"method": "sh",
+		"version": "See rust-toolchain.toml"
+	},
 	"n": {
 		"method": "curl",
 		"version": "v9.0.1",
@@ -27,6 +31,10 @@
 	"cargo-binstall": {
 		"method": "sh",
 		"version": "1.7.4"
+	},
+	"ic-wasm": {
+		"method": "cargo-binstall",
+		"version": "0.3.6"
 	},
 	"cargo-audit": {
 		"method": "cargo-binstall",
