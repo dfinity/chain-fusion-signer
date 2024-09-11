@@ -20,10 +20,6 @@ print_help() {
 
 DFX_NETWORK="${DFX_NETWORK:-local}"
 
-SIGNER_RELEASE="v0.1.1"
-CANDID_URL="https://raw.githubusercontent.com/dfinity/chain-fusion-signer/${SIGNER_RELEASE}/src/signer/signer.did"
-WASM_URL="https://github.com/dfinity/chain-fusion-signer/releases/download/${SIGNER_RELEASE}/signer.wasm.gz"
-
 CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
 WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
 ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
