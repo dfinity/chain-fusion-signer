@@ -873,7 +873,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "example-backend"
+name = "example_backend"
 version = "0.1.2"
 dependencies = [
  "candid",
