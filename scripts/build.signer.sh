@@ -95,7 +95,7 @@ EOF
 # Success
 cat <<EOF
 SUCCESS: The signer installation files have been created:
-signer candid:       $CANDID_FILE
-signer Wasm:         $WASM_FILE
-signer install args: $ARG_FILE
+signer candid:       $(sha256sum "$CANDID_FILE")
+signer Wasm:         $(sha256sum "$WASM_FILE")
+signer install args: $(sha256sum "$ARG_FILE")
 EOF
