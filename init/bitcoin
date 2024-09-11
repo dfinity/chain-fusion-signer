@@ -1,0 +1,14 @@
+(
+  record {
+    api_access = null;
+    lazily_evaluate_fee_percentiles = null;
+    blocks_source = null;
+    fees = null;
+    watchdog_canister = null;
+    network = null;
+    stability_threshold = null;
+    syncing = null;
+    burn_cycles = null;
+    disable_api_if_not_fully_synced = null;
+  },
+)
