@@ -3,7 +3,7 @@ import { AuthClient } from '@dfinity/auth-client';
 import {
 	example_backend,
 	idlFactory as exampleBackendIdlFactory
-} from 'declarations/example-backend';
+} from 'declarations/example_backend';
 import { idlFactory as icSignerIdlFactory } from 'declarations/signer';
 import { html, render } from 'lit-html';
 import logo from './logo2.svg';
