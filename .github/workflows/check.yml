@@ -88,6 +88,8 @@ jobs:
         uses: dfinity/setup-dfx@main
       - name: Start dfx
         run: dfx start --clean --background
+      - name: Build all canisters
+        run: dfx build
       - name: Deploy all canisters
         run: dfx deploy
       - name: Stop dfx
