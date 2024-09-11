@@ -15,4 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install tools
+        run: scripts/setup cargo-binstall candid-extractor ic-wasm
       - run: ./scripts/test.backend.sh
