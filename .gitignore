@@ -19,6 +19,9 @@
 # rust
 target/
 
+# docker buildx
+out
+
 # frontend code
 node_modules/
 dist/
