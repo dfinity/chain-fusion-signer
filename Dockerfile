@@ -58,7 +58,7 @@ RUN mkdir -p src/signer/src \
     && touch src/shared/src/lib.rs \
     && mkdir -p src/example-backend/src \
     && touch src/example-backend/src/lib.rs \
-    && cargo build --target wasm32-unknown-unknown \
+    && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
 
