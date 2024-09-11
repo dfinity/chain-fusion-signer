@@ -20,17 +20,17 @@
 				}
 			}
 		},
-		"example-backend": {
-			"candid": "src/example-backend/example-backend.did",
-			"package": "example-backend",
+		"example_backend": {
+			"candid": "src/example_backend/example_backend.did",
+			"package": "example_backend",
 			"type": "rust"
 		},
-		"example-frontend": {
+		"example_frontend": {
 			"build": "npm ci && npm run build",
-			"dependencies": ["example-backend"],
-			"source": ["src/example-frontend/dist"],
+			"dependencies": ["example_backend"],
+			"source": ["src/example_frontend/dist"],
 			"type": "assets",
-			"workspace": "example-frontend"
+			"workspace": "example_frontend"
 		},
 		"internet_identity": {
 			"type": "custom",

@@ -1,12 +1,12 @@
 {
-	"name": "example-frontend",
+	"name": "example_frontend",
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"setup": "npm i && dfx canister create example-backend && dfx generate example-backend && dfx deploy",
+		"setup": "npm i && dfx canister create example_backend && dfx generate example_backend && dfx deploy",
 		"start": "vite --port 3000",
-		"prebuild": "dfx generate example-backend && dfx generate signer",
+		"prebuild": "dfx generate example_backend && dfx generate signer",
 		"build": "tsc && vite build",
 		"format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
 	},

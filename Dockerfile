@@ -49,31 +49,31 @@ RUN scripts/setup rust cargo-binstall candid-extractor ic-wasm
 COPY Cargo.lock .
 COPY Cargo.toml .
 COPY src/signer/Cargo.toml src/signer/Cargo.toml
-COPY src/example-backend/Cargo.toml src/example-backend/Cargo.toml
+COPY src/example_backend/Cargo.toml src/example_backend/Cargo.toml
 COPY src/shared/Cargo.toml src/shared/Cargo.toml
 ENV CARGO_TARGET_DIR=/cargo_target
 RUN mkdir -p src/signer/src \
     && touch src/signer/src/lib.rs \
     && mkdir -p src/shared/src \
     && touch src/shared/src/lib.rs \
-    && mkdir -p src/example-backend/src \
-    && touch src/example-backend/src/lib.rs \
-    && cargo build --target wasm32-unknown-unknown \
+    && mkdir -p src/example_backend/src \
+    && touch src/example_backend/src/lib.rs \
+    && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
 
-# Builds canister: example-backend
-FROM builder AS build-example-backend
+# Builds canister: example_backend
+FROM builder AS build-example_backend
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
 RUN touch src/*/src/*.rs
-RUN dfx build --ic example-backend
-RUN cp .dfx/ic/canisters/example-backend/example-backend.wasm /example-backend.wasm.gz
-RUN sha256sum /example-backend.wasm.gz
+RUN dfx build --ic example_backend
+RUN cp .dfx/ic/canisters/example_backend/example_backend.wasm /example_backend.wasm.gz
+RUN sha256sum /example_backend.wasm.gz
 
-FROM scratch AS example-backend
-COPY --from=build-example-backend /example-backend.wasm.gz /
+FROM scratch AS example_backend
+COPY --from=build-example_backend /example_backend.wasm.gz /
 
 # Builds canister: signer
 FROM builder AS build-signer
