@@ -32,8 +32,6 @@ ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 # Builds the Wasm without metadata
 cargo build --locked --target wasm32-unknown-unknown --release -p signer
 
-find target
-
 ####
 # Builds the candid file
 mkdir -p "$(dirname "$WASM_FILE")"
