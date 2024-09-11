@@ -42,22 +42,23 @@ COPY ./rust-toolchain.toml .
 ENV RUSTUP_HOME=/opt/rustup \
     CARGO_HOME=/cargo \
     PATH=/cargo/bin:$PATH
-COPY scripts/setup-rust scripts/setup-rust
+COPY dev-tools.json dev-tools.json
+COPY scripts/setup scripts/setup-cargo-binstall scripts/setup-rust scripts/
 RUN scripts/setup-rust
+RUN scripts/setup cargo-binstall candid-extractor ic-wasm
 # Optional: Pre-build dependencies
 COPY Cargo.lock .
 COPY Cargo.toml .
 COPY src/signer/Cargo.toml src/signer/Cargo.toml
 COPY src/example-backend/Cargo.toml src/example-backend/Cargo.toml
 COPY src/shared/Cargo.toml src/shared/Cargo.toml
-ENV CARGO_TARGET_DIR=/cargo_target
 RUN mkdir -p src/signer/src \
     && touch src/signer/src/lib.rs \
     && mkdir -p src/shared/src \
     && touch src/shared/src/lib.rs \
     && mkdir -p src/example-backend/src \
     && touch src/example-backend/src/lib.rs \
-    && cargo build --target wasm32-unknown-unknown \
+    && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
 
@@ -79,6 +80,7 @@ FROM builder AS build-signer
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
+COPY scripts/build.signer.sh scripts/build.signer.sh
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
 RUN cp .dfx/ic/canisters/signer/signer.wasm.gz /signer.wasm.gz

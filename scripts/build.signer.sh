@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -euxo pipefail
 
 print_help() {
   cat <<-EOF
@@ -31,6 +31,8 @@ ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 ####
 # Builds the Wasm without metadata
 cargo build --locked --target wasm32-unknown-unknown --release -p signer
+
+find target
 
 ####
 # Builds the candid file
