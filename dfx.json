@@ -2,12 +2,12 @@
 	"dfx": "0.20.0",
 	"canisters": {
 		"signer": {
+			"type": "custom",
+			"build": "scripts/build.signer.sh",
 			"candid": "src/signer/signer.did",
-			"package": "signer",
-			"type": "rust",
-			"optimize": "cycles",
-			"gzip": true,
-			"init_arg": "(variant { Init = record { ecdsa_key_name = \"key_1\"; ic_root_key_der = null;}})"
+			"wasm": "out/signer.wasm.gz",
+			"init_arg_file": "out/signer.arg.did",
+			"shrink": false
 		},
 		"bitcoin": {
 			"type": "custom",
