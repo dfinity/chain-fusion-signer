@@ -39,18 +39,17 @@ candid-extractor "target/wasm32-unknown-unknown/release/signer.wasm" >"$CANDID_F
 
 ####
 # Optimize WASM and set metadata
-    ic-wasm \
-      "target/wasm32-unknown-unknown/release/signer.wasm" \
-      -o "target/wasm32-unknown-unknown/release/signer.optimized.wasm" \
-      shrink
+ic-wasm \
+  "target/wasm32-unknown-unknown/release/signer.wasm" \
+  -o "target/wasm32-unknown-unknown/release/signer.optimized.wasm" \
+  shrink
 
-    # adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
-    ic-wasm "target/wasm32-unknown-unknown/release/signer.optimized.wasm" -o "target/wasm32-unknown-unknown/release/signer.metadata.wasm" metadata candid:service -f "$CANDID_FILE" -v public
+# adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
+ic-wasm "target/wasm32-unknown-unknown/release/signer.optimized.wasm" -o "target/wasm32-unknown-unknown/release/signer.metadata.wasm" metadata candid:service -f "$CANDID_FILE" -v public
 
-    gzip -fn "target/wasm32-unknown-unknown/release/signer.metadata.wasm"
+gzip -fn "target/wasm32-unknown-unknown/release/signer.metadata.wasm"
 
-    mv "target/wasm32-unknown-unknown/release/signer.metadata.wasm.gz" "$WASM_FILE"
-
+mv "target/wasm32-unknown-unknown/release/signer.metadata.wasm.gz" "$WASM_FILE"
 
 ####
 # Computes the install args, overwriting any existing args file.
