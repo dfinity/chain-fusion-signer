@@ -46,6 +46,7 @@ ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.metadata.wasm" 
 
 gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 
+mkdir -p "$(dirname "$WASM_FILE")"
 mv "$BUILD_DIR/signer.metadata.wasm.gz" "$WASM_FILE"
 
 ####
