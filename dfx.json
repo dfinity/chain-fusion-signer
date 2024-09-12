@@ -1,68 +1,61 @@
 {
-  "dfx": "0.23.0",
-  "canisters": {
-    "signer": {
-      "type": "custom",
-      "build": "scripts/build.signer.sh",
-      "candid": "src/signer/signer.did",
-      "wasm": "target/signer.wasm.gz",
-      "init_arg_file": "target/signer.arg.did"
-    },
-    "bitcoin": {
-      "type": "custom",
-      "wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
-      "candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/release/2024-08-30/canister/candid.did",
-      "specified_id": "g4xu7-jiaaa-aaaan-aaaaq-cai",
-      "init_arg_file": "init/bitcoin",
-      "remote": {
-        "id": {
-          "ic": "g4xu7-jiaaa-aaaan-aaaaq-cai"
-        }
-      }
-    },
-    "example_backend": {
-      "candid": "src/example_backend/example_backend.did",
-      "package": "example_backend",
-      "type": "rust"
-    },
-    "example_frontend": {
-      "build": "npm ci && npm run build",
-      "dependencies": [
-        "example_backend",
-        "signer"
-      ],
-      "source": [
-        "src/example_frontend/dist"
-      ],
-      "type": "assets",
-      "workspace": "example_frontend"
-    },
-    "internet_identity": {
-      "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
-      "remote": {
-        "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-        }
-      },
-      "frontend": {}
-    }
-  },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
-    }
-  },
-  "output_env_file": ".env",
-  "version": 1,
-  "networks": {
-    "staging": {
-      "providers": [
-        "https://icp0.io"
-      ],
-      "type": "persistent"
-    }
-  }
+	"dfx": "0.23.0",
+	"canisters": {
+		"signer": {
+			"type": "custom",
+			"build": "scripts/build.signer.sh",
+			"candid": "src/signer/signer.did",
+			"wasm": "target/signer.wasm.gz",
+			"init_arg_file": "target/signer.arg.did"
+		},
+		"bitcoin": {
+			"type": "custom",
+			"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
+			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/release/2024-08-30/canister/candid.did",
+			"specified_id": "g4xu7-jiaaa-aaaan-aaaaq-cai",
+			"init_arg_file": "init/bitcoin",
+			"remote": {
+				"id": {
+					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai"
+				}
+			}
+		},
+		"example_backend": {
+			"candid": "src/example_backend/example_backend.did",
+			"package": "example_backend",
+			"type": "rust"
+		},
+		"example_frontend": {
+			"build": "npm ci && npm run build",
+			"dependencies": ["example_backend", "signer"],
+			"source": ["src/example_frontend/dist"],
+			"type": "assets",
+			"workspace": "example_frontend"
+		},
+		"internet_identity": {
+			"type": "custom",
+			"candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+			"wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+			"remote": {
+				"id": {
+					"ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+				}
+			},
+			"frontend": {}
+		}
+	},
+	"defaults": {
+		"build": {
+			"args": "",
+			"packtool": ""
+		}
+	},
+	"output_env_file": ".env",
+	"version": 1,
+	"networks": {
+		"staging": {
+			"providers": ["https://icp0.io"],
+			"type": "persistent"
+		}
+	}
 }
