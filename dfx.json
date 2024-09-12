@@ -1,22 +1,22 @@
 {
-	"dfx": "0.20.0",
+	"dfx": "0.23.0",
 	"canisters": {
 		"signer": {
+			"type": "custom",
+			"build": "scripts/build.signer.sh",
 			"candid": "src/signer/signer.did",
-			"package": "signer",
-			"type": "rust",
-			"optimize": "cycles",
-			"gzip": true,
+			"wasm": "target/signer.wasm.gz",
 			"init_arg": "(variant { Init = record { ecdsa_key_name = \"key_1\"; ic_root_key_der = null;}})"
 		},
 		"bitcoin": {
 			"type": "custom",
 			"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
-			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/master/canister/candid.did",
+			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/release/2024-08-30/canister/candid.did",
+			"specified_id": "g4xu7-jiaaa-aaaan-aaaaq-cai",
+			"init_arg_file": "init/bitcoin",
 			"remote": {
 				"id": {
-					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai",
-					"local": "g4xu7-jiaaa-aaaan-aaaaq-cai"
+					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai"
 				}
 			}
 		},
@@ -25,12 +25,12 @@
 			"package": "example_backend",
 			"type": "rust"
 		},
-		"example-frontend": {
+		"example_frontend": {
 			"build": "npm ci && npm run build",
-			"dependencies": ["example_backend"],
-			"source": ["src/example-frontend/dist"],
+			"dependencies": ["example_backend", "signer"],
+			"source": ["src/example_frontend/dist"],
 			"type": "assets",
-			"workspace": "example-frontend"
+			"workspace": "example_frontend"
 		},
 		"internet_identity": {
 			"type": "custom",

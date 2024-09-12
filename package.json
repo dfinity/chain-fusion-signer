@@ -14,7 +14,7 @@
 	},
 	"type": "module",
 	"workspaces": [
-		"src/example-frontend"
+		"src/example_frontend"
 	],
 	"devDependencies": {
 		"@dfinity/auth-client": "^2.0.0",
