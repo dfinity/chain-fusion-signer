@@ -51,7 +51,6 @@ COPY Cargo.toml .
 COPY src/signer/Cargo.toml src/signer/Cargo.toml
 COPY src/example_backend/Cargo.toml src/example_backend/Cargo.toml
 COPY src/shared/Cargo.toml src/shared/Cargo.toml
-ENV CARGO_TARGET_DIR=/cargo_target
 RUN mkdir -p src/signer/src \
     && touch src/signer/src/lib.rs \
     && mkdir -p src/shared/src \
@@ -80,6 +79,7 @@ FROM builder AS build-signer
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
+COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
 RUN cp .dfx/ic/canisters/signer/signer.wasm.gz /signer.wasm.gz
