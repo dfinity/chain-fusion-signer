@@ -102,10 +102,10 @@ impl BackendBuilder {
     /// To override, please use `with_wasm()`.
     pub fn default_wasm_path() -> String {
         let workspace_dir_str = workspace_dir()
-        .to_str()
-        .expect("Wrong workspace directory")
-        .to_owned();
-    
+            .to_str()
+            .expect("Wrong workspace directory")
+            .to_owned();
+
         let wasm_name = env::var("SIGNER_CANISTER_WASM_FILE")
             .unwrap_or_else(|_| DEFAULT_SIGNER_WASM.to_string());
 
@@ -121,10 +121,10 @@ impl BackendBuilder {
             .to_str()
             .expect("Wrong workspace directory")
             .to_owned();
-        
+
         let wasm_name = env::var("BITCOIN_CANISTER_WASM_FILE")
             .unwrap_or_else(|_| DEFAULT_BITCOIN_WASM.to_string());
-    
+
         workspace_dir_str + &wasm_name
     }
     /// The default arguments to deploy the bitcoin canister.
