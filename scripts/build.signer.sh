@@ -6,6 +6,8 @@ print_help() {
 	Creates the Chain Fusion Signer installation files:
 
 	- The Wasm and Candid files are built.
+	- The installation args are computed based on the target network,
+	      determined by the DFX_NETWORK environment variable.
 
 	The files are installed at the locations defined for 'signer' in 'dfx.json'.
 	EOF
@@ -20,6 +22,7 @@ DFX_NETWORK="${DFX_NETWORK:-local}"
 
 CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
 WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
+ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 BUILD_DIR="target/wasm32-unknown-unknown/release"
 
 ####
@@ -46,9 +49,14 @@ gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 mv "$BUILD_DIR/signer.metadata.wasm.gz" "$WASM_FILE"
 
 ####
+# Computes the install args, overwriting any existing args file.
+./scripts/build.signer.args.sh
+
+####
 # Success
 cat <<EOF
 SUCCESS: The signer installation files have been created:
 signer candid:       $(sha256sum "$CANDID_FILE")
 signer Wasm:         $(sha256sum "$WASM_FILE")
+signer install args: $(sha256sum "$ARG_FILE")
 EOF
