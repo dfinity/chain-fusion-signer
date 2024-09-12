@@ -2,11 +2,10 @@
 	"dfx": "0.23.0",
 	"canisters": {
 		"signer": {
+			"type": "custom",
+			"build": "scripts/build.signer.sh",
 			"candid": "src/signer/signer.did",
-			"package": "signer",
-			"type": "rust",
-			"optimize": "cycles",
-			"gzip": true,
+			"wasm": "target/signer.wasm.gz",
 			"init_arg": "(variant { Init = record { ecdsa_key_name = \"key_1\"; ic_root_key_der = null;}})"
 		},
 		"bitcoin": {
@@ -28,7 +27,7 @@
 		},
 		"example_frontend": {
 			"build": "npm ci && npm run build",
-			"dependencies": ["example_backend"],
+			"dependencies": ["example_backend", "signer"],
 			"source": ["src/example_frontend/dist"],
 			"type": "assets",
 			"workspace": "example_frontend"
