@@ -86,6 +86,8 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-1
       - name: Install dfx
         uses: dfinity/setup-dfx@main
+      - name: Install build tools
+        run: scripts/setup cargo-binstall candid-extractor ic-wasm
       - name: Start dfx
         run: dfx start --clean --background
       - name: Deploy all canisters
