@@ -4,13 +4,27 @@ use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
 use serde::Deserialize;
 use shared::types::{Arg, InitArg};
 use std::fs::read;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::{env, time::Duration};
 
 use super::mock::CONTROLLER;
 
-const BACKEND_WASM: &str = "../../target/wasm32-unknown-unknown/release/signer.wasm";
-const BITCOIN_WASM: &str = "../../ic-btc-canister.wasm.gz";
+fn workspace_dir() -> PathBuf {
+    let output = std::process::Command::new(env!("CARGO"))
+        .arg("locate-project")
+        .arg("--workspace")
+        .arg("--message-format=plain")
+        .output()
+        .unwrap()
+        .stdout;
+    let cargo_path = Path::new(std::str::from_utf8(&output).unwrap().trim());
+    cargo_path.parent().unwrap().to_path_buf()
+}
+
+// Default file paths relative to the cargo workspace.
+const DEFAULT_SIGNER_WASM: &str = "/target/wasm32-unknown-unknown/release/signer.wasm";
+const DEFAULT_BITCOIN_WASM: &str = "/ic-btc-canister.wasm.gz";
 const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
 
 // This is necessary to deploy the bitcoin canister.
@@ -82,20 +96,36 @@ impl BackendBuilder {
     /// To override, please use `with_cycles()`.
     pub const DEFAULT_CYCLES: u128 = 2_000_000_000_000;
     /// The default Wasm file to deploy:
-    /// - If the environment variable `BACKEND_WASM_PATH` is set, it will use that path.
-    /// - Otherwise, it will use the `BACKEND_WASM` constant.
+    /// - If the environment variable `SIGNER_CANISTER_WASM_FILE` is set, it will use that path.
+    /// - Otherwise, it will use the `DEFAULT_SIGNER_WASM` constant.
     ///
     /// To override, please use `with_wasm()`.
     pub fn default_wasm_path() -> String {
-        env::var("BACKEND_WASM_PATH").unwrap_or_else(|_| BACKEND_WASM.to_string())
+        let workspace_dir_str = workspace_dir()
+            .to_str()
+            .expect("Wrong workspace directory")
+            .to_owned();
+
+        let wasm_name = env::var("SIGNER_CANISTER_WASM_FILE")
+            .unwrap_or_else(|_| DEFAULT_SIGNER_WASM.to_string());
+
+        workspace_dir_str + &wasm_name
     }
     /// The default Wasm file to deploy the bitcoin canister:
-    /// - If the environment variable `BITCOIN_WASM_PATH` is set, it will use that path.
-    /// - Otherwise, it will use the `BITCOIN_WASM` constant.
+    /// - If the environment variable `BITCOIN_CANISTER_WASM_FILE` is set, it will use that path.
+    /// - Otherwise, it will use the `DEFAULT_BITCOIN_WASM` constant.
     ///
     /// To override, please use `with_wasm()`.
     pub fn default_bitcoin_wasm_path() -> String {
-        env::var("BITCOIN_WASM_PATH").unwrap_or_else(|_| BITCOIN_WASM.to_string())
+        let workspace_dir_str = workspace_dir()
+            .to_str()
+            .expect("Wrong workspace directory")
+            .to_owned();
+
+        let wasm_name = env::var("BITCOIN_CANISTER_WASM_FILE")
+            .unwrap_or_else(|_| DEFAULT_BITCOIN_WASM.to_string());
+
+        workspace_dir_str + &wasm_name
     }
     /// The default arguments to deploy the bitcoin canister.
     pub fn default_bitcoin_arg() -> Vec<u8> {
@@ -280,7 +310,7 @@ impl PicSigner {
     #[allow(dead_code)]
     pub fn upgrade_latest_wasm(&self, encoded_arg: Option<Vec<u8>>) -> Result<(), String> {
         let backend_wasm_path =
-            env::var("BACKEND_WASM_PATH").unwrap_or_else(|_| BACKEND_WASM.to_string());
+            env::var("BACKEND_WASM_PATH").unwrap_or_else(|_| DEFAULT_SIGNER_WASM.to_string());
 
         self.upgrade_with_wasm(&backend_wasm_path, encoded_arg)
     }
