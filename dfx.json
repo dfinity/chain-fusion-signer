@@ -1,5 +1,5 @@
 {
-	"dfx": "0.20.0",
+	"dfx": "0.23.0",
 	"canisters": {
 		"signer": {
 			"candid": "src/signer/signer.did",
@@ -12,11 +12,12 @@
 		"bitcoin": {
 			"type": "custom",
 			"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
-			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/master/canister/candid.did",
+			"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/release/2024-08-30/canister/candid.did",
+			"specified_id": "g4xu7-jiaaa-aaaan-aaaaq-cai",
+			"init_arg_file": "init/bitcoin",
 			"remote": {
 				"id": {
-					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai",
-					"local": "g4xu7-jiaaa-aaaan-aaaaq-cai"
+					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai"
 				}
 			}
 		},
