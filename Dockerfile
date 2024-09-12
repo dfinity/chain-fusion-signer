@@ -82,8 +82,9 @@ COPY canister_ids.json canister_ids.json
 COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
-RUN cp .dfx/ic/canisters/signer/signer.wasm.gz /signer.wasm.gz
-RUN sha256sum /signer.wasm.gz
+RUN cp out/signer.wasm.gz out/signer.args.did /
+RUN sha256sum /signer.wasm.gz /signer.args.did
 
 FROM scratch AS signer
 COPY --from=build-signer /signer.wasm.gz /
+COPY --from=build-signer /signer.args.did /
