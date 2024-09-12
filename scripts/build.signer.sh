@@ -20,6 +20,7 @@ DFX_NETWORK="${DFX_NETWORK:-local}"
 
 CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
 WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
+BUILD_DIR="target/wasm32-unknown-unknown/release"
 
 ####
 # Builds the Wasm without metadata
@@ -27,22 +28,22 @@ cargo build --locked --target wasm32-unknown-unknown --release -p signer
 
 ####
 # Builds the candid file
-mkdir -p "$(dirname "$WASM_FILE")"
-candid-extractor "target/wasm32-unknown-unknown/release/signer.wasm" >"$CANDID_FILE"
+mkdir -p "$(dirname "$CANDID_FILE")"
+candid-extractor "$BUILD_DIR/signer.wasm" >"$CANDID_FILE"
 
 ####
 # Optimize Wasm and set metadata
 ic-wasm \
-  "target/wasm32-unknown-unknown/release/signer.wasm" \
-  -o "target/wasm32-unknown-unknown/release/signer.optimized.wasm" \
+  "$BUILD_DIR/signer.wasm" \
+  -o "$BUILD_DIR/signer.optimized.wasm" \
   shrink
 
 # adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
-ic-wasm "target/wasm32-unknown-unknown/release/signer.optimized.wasm" -o "target/wasm32-unknown-unknown/release/signer.metadata.wasm" metadata candid:service -f "$CANDID_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata candid:service -f "$CANDID_FILE" -v public
 
-gzip -fn "target/wasm32-unknown-unknown/release/signer.metadata.wasm"
+gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 
-mv "target/wasm32-unknown-unknown/release/signer.metadata.wasm.gz" "$WASM_FILE"
+mv "$BUILD_DIR/signer.metadata.wasm.gz" "$WASM_FILE"
 
 ####
 # Success
