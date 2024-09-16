@@ -46,10 +46,10 @@
 		"cycles_depositor": {
 			"dependencies": ["cycles_ledger"],
 			"type": "custom",
-			"build": "scripts/build.cycles_depositor.args.sh",
+			"build": "scripts/build.cycles_depositor.sh",
 			"init_arg_file": "out/cycles_depositor.args.did",
-			"candid": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/depositor.did",
-			"wasm": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/depositor.wasm.gz"
+			"wasm": "out/cycles_depositor.wasm",
+			"candid": "out/cycles_depositor.did"
 		},
 		"internet_identity": {
 			"type": "custom",
