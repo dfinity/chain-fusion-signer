@@ -21,7 +21,7 @@ print_help() {
 DFX_NETWORK="${DFX_NETWORK:-local}"
 
 LEDGER_RELEASE="v1.0.1"
-CANDID_URL="https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-${LEDGER_RELEASE}/depositor.did",
+CANDID_URL="https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-${LEDGER_RELEASE}/depositor.did"
 WASM_URL="https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-${LEDGER_RELEASE}/depositor.wasm.gz"
 
 CANDID_FILE="$(jq -r .canisters.cycles_depositor.candid dfx.json)"
