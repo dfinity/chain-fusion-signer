@@ -2,24 +2,23 @@
 set -euo pipefail
 
 print_help() {
-  cat <<-EOF
-        Creates the cycles_depositor installation files:
+	cat <<-EOF
+		Creates the cycles_depositor installation files:
 
-        - The Wasm and Candid files are downloaded.
-        - The installation args are computed based on the target network,
-              determined by the DFX_NETWORK environment variable.
+		- The Wasm and Candid files are downloaded.
+		- The installation args are computed based on the target network,
+		      determined by the DFX_NETWORK environment variable.
 
-        The files are installed at at the locations defined for 'cycles_depositor' in 'dfx.json'.
-        EOF
+		The files are installed at at the locations defined for 'cycles_depositor' in 'dfx.json'.
+	EOF
 }
 
 [[ "${1:-}" != "--help" ]] || {
-  print_help
-  exit 0
+	print_help
+	exit 0
 }
 
 DFX_NETWORK="${DFX_NETWORK:-local}"
-
 
 LEDGER_RELEASE="v1.0.1"
 CANDID_URL="https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-${LEDGER_RELEASE}/depositor.did",
@@ -32,19 +31,19 @@ ARG_FILE="$(jq -r .canisters.cycles_depositor.init_arg_file dfx.json)"
 ####
 # Downloads the candid file, if it does not exist already.
 if test -e "$CANDID_FILE"; then
-  echo "Using existing cycles_depositor candid file"
+	echo "Using existing cycles_depositor candid file"
 else
-  mkdir -p "$(dirname "$CANDID_FILE")"
-  curl -sSL "$CANDID_URL" >"$CANDID_FILE"
+	mkdir -p "$(dirname "$CANDID_FILE")"
+	curl -sSL "$CANDID_URL" >"$CANDID_FILE"
 fi
 
 ####
 # Downloads the Wasm file, if it does not exist already.
 if test -e "$WASM_FILE"; then
-  echo "Using existing cycles_depositor Wasm file"
+	echo "Using existing cycles_depositor Wasm file"
 else
-  mkdir -p "$(dirname "$WASM_FILE")"
-  curl -sSL "$WASM_URL" >"$WASM_FILE"
+	mkdir -p "$(dirname "$WASM_FILE")"
+	curl -sSL "$WASM_URL" >"$WASM_FILE"
 fi
 
 ####
