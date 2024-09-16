@@ -38,6 +38,7 @@ jobs:
             else gh release create --title "Release for tags/$tag" --draft --notes "Build artefacts from tag: $tag" "$tag"
             fi
             cd out && gh release upload --repo dfinity/chain-fusion-signer --clobber "$tag" *
+            gh release edit "$tag" --notes "Build artefacts from tag: $tag\n\n$(./scripts/docker-hashes)"
             : If the tag is for a proposal or nightly, make it public
             [[ "$tag" != proposal-* ]] && [[ "$tag" != nightly-* ]] || { echo "Making release public" ; gh release edit "$tag" --draft=false ; }
           done
