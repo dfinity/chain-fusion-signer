@@ -1,5 +1,5 @@
 use crate::convert::{decode_hex, nat_to_u256, nat_to_u64};
-use crate::derivation_path;
+use crate::derivation_path::Schema;
 use crate::state::read_config;
 use candid::Principal;
 use ethers_core::abi::ethereum_types::{Address, U256};
@@ -37,7 +37,7 @@ pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> 
         ecdsa_pubkey_of(caller),
         sign_with_ecdsa(SignWithEcdsaArgument {
             message_hash,
-            derivation_path: derivation_path::eth(caller),
+            derivation_path: Schema::Eth.derivation_path(caller),
             key_id: EcdsaKeyId {
                 curve: EcdsaCurve::Secp256k1,
                 name: read_config(|s| s.ecdsa_key_name.clone()),
@@ -55,7 +55,7 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
         canister_id: None,
-        derivation_path: derivation_path::eth(principal),
+        derivation_path: Schema::Eth.derivation_path(principal),
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
             name,

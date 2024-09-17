@@ -1,5 +1,5 @@
 //! Code for signing Bitcoin transactions.
-use crate::derivation_path;
+use crate::derivation_path::Schema;
 use crate::state::read_config;
 use bitcoin::{Address, Network, PublicKey};
 use candid::Principal;
@@ -13,7 +13,7 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
         canister_id: None,
-        derivation_path: derivation_path::btc(principal),
+        derivation_path: Schema::Btc.derivation_path(principal),
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
             name,
