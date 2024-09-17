@@ -22,6 +22,10 @@ mod sign;
 mod state;
 mod types;
 
+// /////////////////////////
+// // CANISTER MANAGEMENT //
+// /////////////////////////
+
 #[init]
 fn init(arg: Arg) {
     match arg {
@@ -71,6 +75,20 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
     }
 }
 
+/// API method to get cycle balance and burn rate.
+#[update]
+async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
+    std_canister_status::get_canister_status_v2().await
+}
+
+// ////////////////////////
+// // GENERIC SIGNATURES //
+// ////////////////////////
+
+// ////////////////////
+// // ETHEREUM UTILS //
+// ////////////////////
+
 /// Returns the Ethereum address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn caller_eth_address() -> String {
@@ -84,25 +102,6 @@ async fn eth_address_of(p: Principal) -> String {
         ic_cdk::trap("Anonymous principal is not authorized");
     }
     eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&p).await)
-}
-
-/// Returns the Bitcoin address of the caller.
-#[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_address(network: BitcoinNetwork) -> String {
-    bitcoin_utils::public_key_to_p2pkh_address(
-        network,
-        &bitcoin_utils::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    )
-}
-
-/// Returns the Bitcoin balance of the caller's address.
-#[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_balance(network: BitcoinNetwork) -> u64 {
-    let address = bitcoin_utils::public_key_to_p2pkh_address(
-        network,
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    );
-    bitcoin_api::get_balance(network, address).await
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
@@ -123,10 +122,31 @@ async fn sign_prehash(prehash: String) -> String {
     eth::sign_prehash(prehash).await
 }
 
-/// API method to get cycle balance and burn rate.
-#[update]
-async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
-    std_canister_status::get_canister_status_v2().await
+// ///////////////////
+// // BITCOIN UTILS //
+// ///////////////////
+
+/// Returns the Bitcoin address of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn caller_btc_address(network: BitcoinNetwork) -> String {
+    bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &bitcoin_utils::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    )
 }
+
+/// Returns the Bitcoin balance of the caller's address.
+#[update(guard = "caller_is_not_anonymous")]
+async fn caller_btc_balance(network: BitcoinNetwork) -> u64 {
+    let address = bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    );
+    bitcoin_api::get_balance(network, address).await
+}
+
+// /////////////////////
+// // GENERATE CANDID //
+// /////////////////////
 
 export_candid!();
