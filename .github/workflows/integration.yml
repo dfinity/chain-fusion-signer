@@ -15,4 +15,4 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - run: ./scripts/test.backend.sh
+      - run: ./scripts/test.signer.sh
