@@ -1,6 +1,6 @@
 use candid::{CandidType, Deserialize, Principal};
-use shared::types::token::ChainId;
-use shared::types::Version;
+use ic_chain_fusion_signer_api::types::token::ChainId;
+use ic_chain_fusion_signer_api::types::Version;
 
 #[derive(CandidType, Deserialize, Clone)]
 pub struct UserTokenV0_0_13 {

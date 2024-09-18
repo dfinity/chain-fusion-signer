@@ -1,9 +1,9 @@
 use crate::types::{Candid, ConfigCell};
+use ic_chain_fusion_signer_api::types::{Config, InitArg};
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
 };
-use shared::types::{Config, InitArg};
 use std::cell::RefCell;
 
 const CONFIG_MEMORY_ID: MemoryId = MemoryId::new(0);

@@ -1,7 +1,7 @@
 use crate::utils::mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID};
 use crate::utils::pocketic::{setup, PicCanisterTrait};
 use candid::{Nat, Principal};
-use shared::types::transaction::SignRequest;
+use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 
 #[test]
 fn test_sign_transaction() {
