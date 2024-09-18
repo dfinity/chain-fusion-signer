@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use std::fmt::Debug;
 
 pub type Timestamp = u64;
