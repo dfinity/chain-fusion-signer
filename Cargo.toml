@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "src/example_backend",
-    "src/shared",
-    "src/signer"]
+    "src/signer/api",
+    "src/signer/canister"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -27,3 +27,4 @@ pretty_assertions = "1.4.1"
 bitcoin = "0.32.2"
 strum = "0.26.3"
 strum_macros = "0.26.4"
+shared = { path = "src/signer/api" }

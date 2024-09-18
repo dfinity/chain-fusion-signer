@@ -64,7 +64,7 @@ else
   echo "PocketIC server already exists, skipping download."
 fi
 
-export POCKET_IC_BIN="../../${POCKET_IC_SERVER_PATH}"
+export POCKET_IC_BIN="${PWD}/${POCKET_IC_SERVER_PATH}"
 export POCKET_IC_MUTE_SERVER=""
 
 # Run tests
