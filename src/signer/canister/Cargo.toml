@@ -12,7 +12,6 @@ bitcoin = { workspace = true }
 candid = { workspace = true }
 ethers-core = { workspace = true }
 futures = { workspace = true }
-getrandom = { workspace = true }
 hex = { workspace = true }
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
