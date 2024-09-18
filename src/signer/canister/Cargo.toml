@@ -19,7 +19,6 @@ ic-cdk-macros = { workspace = true }
 ic-cdk-timers = { workspace = true }
 ic-chain-fusion-signer-api = { workspace = true }
 ic-stable-structures = { workspace = true }
-ic-verifiable-credentials = { workspace = true }
 k256 = { workspace = true }
 pretty_assertions = { workspace = true }
 serde = { workspace = true }
