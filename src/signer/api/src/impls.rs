@@ -1,33 +1,5 @@
-use crate::types::custom_token::{CustomTokenId, Token};
-use crate::types::token::UserToken;
-use crate::types::{ApiEnabled, Config, InitArg, TokenVersion, Version};
+use crate::types::{Config, InitArg};
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
-
-impl From<&Token> for CustomTokenId {
-    fn from(token: &Token) -> Self {
-        match token {
-            Token::Icrc(token) => CustomTokenId::Icrc(token.ledger_id),
-        }
-    }
-}
-
-impl TokenVersion for UserToken {
-    fn get_version(&self) -> Option<Version> {
-        self.version
-    }
-
-    fn clone_with_incremented_version(&self) -> Self {
-        let mut cloned = self.clone();
-        cloned.version = Some(cloned.version.unwrap_or_default() + 1);
-        cloned
-    }
-
-    fn clone_with_initial_version(&self) -> Self {
-        let mut cloned = self.clone();
-        cloned.version = Some(1);
-        cloned
-    }
-}
 
 impl From<InitArg> for Config {
     /// Creates a new `Config` from the provided `InitArg`.
@@ -50,29 +22,4 @@ impl From<InitArg> for Config {
             ic_root_key_raw: Some(ic_root_key_raw),
         }
     }
-}
-
-impl Default for ApiEnabled {
-    fn default() -> Self {
-        Self::Enabled
-    }
-}
-impl ApiEnabled {
-    #[must_use]
-    pub fn readable(&self) -> bool {
-        matches!(self, Self::Enabled | Self::ReadOnly)
-    }
-    #[must_use]
-    pub fn writable(&self) -> bool {
-        matches!(self, Self::Enabled)
-    }
-}
-#[test]
-fn test_api_enabled() {
-    assert_eq!(ApiEnabled::Enabled.readable(), true);
-    assert_eq!(ApiEnabled::Enabled.writable(), true);
-    assert_eq!(ApiEnabled::ReadOnly.readable(), true);
-    assert_eq!(ApiEnabled::ReadOnly.writable(), false);
-    assert_eq!(ApiEnabled::Disabled.readable(), false);
-    assert_eq!(ApiEnabled::Disabled.writable(), false);
 }
