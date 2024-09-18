@@ -2,8 +2,6 @@ use crate::types::custom_token::{CustomTokenId, Token};
 use crate::types::token::UserToken;
 use crate::types::{ApiEnabled, Config, InitArg, TokenVersion, Version};
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
-#[cfg(test)]
-use strum::IntoEnumIterator;
 
 impl From<&Token> for CustomTokenId {
     fn from(token: &Token) -> Self {
