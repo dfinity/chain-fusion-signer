@@ -2299,6 +2299,7 @@ dependencies = [
  "candid",
  "ethers-core",
  "futures",
+ "getrandom",
  "hex",
  "ic-cdk 0.15.1",
  "ic-cdk-macros 0.15.0",
