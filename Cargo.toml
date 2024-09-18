@@ -27,4 +27,4 @@ pretty_assertions = "1.4.1"
 bitcoin = "0.32.2"
 strum = "0.26.3"
 strum_macros = "0.26.4"
-shared = { path = "src/signer/api" }
+ic-chain-fusion-signer-api = { path = "src/signer/api" }

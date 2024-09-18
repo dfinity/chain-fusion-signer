@@ -23,7 +23,7 @@ k256 = { workspace = true }
 pretty_assertions = { workspace = true }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
-shared = { workspace = true }
+ic-chain-fusion-signer-api = { workspace = true }
 
 [dev-dependencies]
 lazy_static = { workspace = true }

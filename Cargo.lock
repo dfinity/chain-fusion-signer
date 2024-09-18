@@ -1461,6 +1461,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-chain-fusion-signer-api"
+version = "0.1.3"
+dependencies = [
+ "candid",
+ "ic-canister-sig-creation",
+ "ic-cdk 0.15.1",
+ "ic-cdk-macros 0.15.0",
+ "ic-cdk-timers",
+ "ic-metrics-encoder",
+ "ic-verifiable-credentials",
+ "serde",
+ "serde_bytes",
+ "strum 0.26.3",
+ "strum_macros 0.26.4",
+]
+
+[[package]]
 name = "ic-metrics-encoder"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3084,23 +3101,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "shared"
-version = "0.1.3"
-dependencies = [
- "candid",
- "ic-canister-sig-creation",
- "ic-cdk 0.15.1",
- "ic-cdk-macros 0.15.0",
- "ic-cdk-timers",
- "ic-metrics-encoder",
- "ic-verifiable-credentials",
- "serde",
- "serde_bytes",
- "strum 0.26.3",
- "strum_macros 0.26.4",
-]
-
-[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3138,6 +3138,7 @@ dependencies = [
  "ic-cdk 0.15.1",
  "ic-cdk-macros 0.15.0",
  "ic-cdk-timers",
+ "ic-chain-fusion-signer-api",
  "ic-stable-structures",
  "ic-verifiable-credentials",
  "k256",
@@ -3146,7 +3147,6 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde_bytes",
- "shared",
 ]
 
 [[package]]

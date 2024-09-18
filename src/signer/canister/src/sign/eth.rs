@@ -9,9 +9,9 @@ use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
+use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
-use shared::types::transaction::SignRequest;
 use std::str::FromStr;
 
 /// Converts the public key bytes to an Ethereum address with a checksum.

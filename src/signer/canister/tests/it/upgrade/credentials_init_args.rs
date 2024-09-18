@@ -3,7 +3,7 @@ use crate::upgrade::types::{ArgV0_0_25, InitArgV0_0_25};
 use crate::utils::mock::CALLER;
 use crate::utils::pocketic::{BackendBuilder, PicCanisterTrait};
 use candid::{encode_one, Principal};
-use shared::types::{Arg, InitArg};
+use ic_chain_fusion_signer_api::types::{Arg, InitArg};
 
 #[test]
 fn test_upgrade_credential_init_args() {

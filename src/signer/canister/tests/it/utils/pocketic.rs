@@ -1,8 +1,8 @@
 use candid::{decode_one, encode_one, CandidType, Principal};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+use ic_chain_fusion_signer_api::types::{Arg, InitArg};
 use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
 use serde::Deserialize;
-use shared::types::{Arg, InitArg};
 use std::fs::read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -351,7 +351,7 @@ impl PicSigner {
     }
 }
 
-/// A test signing canister with a shared reference to the `PocketIc` instance it is installed on.
+/// A test signing canister with a ic_chain_fusion_signer_api reference to the `PocketIc` instance it is installed on.
 pub struct PicSigner {
     pub pic: Arc<PocketIc>,
     pub canister_id: Principal,

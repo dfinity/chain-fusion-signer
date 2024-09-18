@@ -7,8 +7,8 @@ use crate::utils::mock::{
 use crate::utils::pocketic::{BackendBuilder, PicCanisterTrait};
 use candid::Principal;
 use lazy_static::lazy_static;
-use shared::types::token::UserToken;
-use shared::types::TokenVersion;
+use ic_chain_fusion_signer_api::types::token::UserToken;
+use ic_chain_fusion_signer_api::types::TokenVersion;
 
 lazy_static! {
     static ref PRE_UPGRADE_TOKEN: UserTokenV0_0_13 = UserTokenV0_0_13 {

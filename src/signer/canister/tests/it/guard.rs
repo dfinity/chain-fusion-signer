@@ -1,7 +1,7 @@
 //! Tests that the guard APIs are working as expected.
 
 use candid::Principal;
-use shared::types::{ApiEnabled, Config, Guards};
+use ic_chain_fusion_signer_api::types::{ApiEnabled, Config, Guards};
 
 use crate::utils::{
     mock::USER_1,
