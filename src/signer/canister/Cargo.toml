@@ -18,6 +18,7 @@ ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-chain-fusion-signer-api = { workspace = true }
 ic-papi-guard = { workspace = true }
+ic-papi-api = { workspace = true }
 ic-stable-structures = { workspace = true }
 k256 = { workspace = true }
 pretty_assertions = { workspace = true }

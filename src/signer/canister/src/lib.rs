@@ -1,7 +1,11 @@
 use crate::guards::caller_is_not_anonymous;
+use crate::sign::generic::GenericSigningError;
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
-
+use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyArgument;
+use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyResponse;
+use ic_cdk::api::management_canister::ecdsa::SignWithEcdsaArgument;
+use ic_cdk::api::management_canister::ecdsa::SignWithEcdsaResponse;
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::http::HttpRequest;
 use ic_chain_fusion_signer_api::http::HttpResponse;
@@ -9,9 +13,12 @@ use ic_chain_fusion_signer_api::metrics::get_metrics;
 use ic_chain_fusion_signer_api::std_canister_status;
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 use ic_chain_fusion_signer_api::types::{Arg, Config};
+use ic_papi_api::PaymentType;
 use serde_bytes::ByteBuf;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
+use sign::generic;
+use sign::generic::generic_ecdsa_public_key;
 use state::{read_config, read_state, set_config};
 
 mod convert;
@@ -84,6 +91,26 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 // ////////////////////////
 // // GENERIC SIGNATURES //
 // ////////////////////////
+
+/// Returns the generic Ed25519 public key of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn generic_caller_ecdsa_public_key(
+    _payment: Option<PaymentType>,
+    arg: EcdsaPublicKeyArgument,
+) -> Result<(EcdsaPublicKeyResponse,), GenericSigningError> {
+    // TODO: Charge the user for the operation.
+    generic_ecdsa_public_key(arg).await
+}
+
+/// Returns the generic Ed25519 public key of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn generic_sign_with_ecdsa(
+    _payment: Option<PaymentType>,
+    arg: SignWithEcdsaArgument,
+) -> Result<(SignWithEcdsaResponse,), GenericSigningError> {
+    // TODO: Charge the user for the operation.
+    generic::generic_sign_with_ecdsa(arg).await
+}
 
 // ////////////////////
 // // ETHEREUM UTILS //
