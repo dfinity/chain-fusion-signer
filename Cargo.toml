@@ -27,4 +27,4 @@ bitcoin = "0.32.2"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
-ic-papi = { git = "https://github.com/dfinity/papi", rev = "9568f3f980b18e3ba613425b6f10dd6f8cd6672c" }
+ic-papi = { git = "https://github.com/dfinity/papi", rev = "671970e2928fec2f59ca9b1f3a0f0c3749e8a188" }
