@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "src/example_backend",
+    "src/example_backend", "src/papi/api", "src/papi/cycles_ledger_client", "src/papi/guard",
     "src/signer/api",
     "src/signer/canister"]
 resolver = "2"
@@ -27,3 +27,10 @@ bitcoin = "0.32.2"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
+ic-papi-api = { path = "src/papi/api" }
+ic-papi-guard = { path = "src/papi/guard" }
+
+# START papi dependencies
+ic-ledger-types = "0.13.0"
+cycles-ledger-client = { path = "src/papi/cycles_ledger_client" }
+# END papi dependencies
