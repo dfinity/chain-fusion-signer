@@ -74,7 +74,6 @@ pub mod bitcoin {
         pub address_type: BitcoinAddressType,
     }
 
-
     #[derive(CandidType, Deserialize, Debug)]
     pub struct GetBalanceResponse {
         pub balance: Nat,

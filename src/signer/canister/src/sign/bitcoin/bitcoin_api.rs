@@ -12,9 +12,9 @@ pub async fn get_balance(network: BitcoinNetwork, address: String) -> Result<u64
         address,
         network,
         min_confirmations,
-    }).await
+    })
+    .await
     .map_err(|err| err.1)?;
 
     Ok(balance_res.0)
-
 }

@@ -19,7 +19,8 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Result<Vec<u8>, String> {
             name,
         },
     })
-    .await {
+    .await
+    {
         Ok(key.public_key)
     } else {
         Err("Failed to get ecdsa public key".to_string())
@@ -35,15 +36,15 @@ fn transform_network(network: BitcoinNetwork) -> Network {
 }
 
 /// Converts a public key to a P2PKH address.
-pub async fn principal_to_p2wpkh_address(network: BitcoinNetwork, principal: &Principal) -> Result<String, String> {
-    let ecdsa_pubkey = ecdsa_pubkey_of(&principal).await
+pub async fn principal_to_p2wpkh_address(
+    network: BitcoinNetwork,
+    principal: &Principal,
+) -> Result<String, String> {
+    let ecdsa_pubkey = ecdsa_pubkey_of(&principal)
+        .await
         .map_err(|_| "Error getting ECDSA public key".to_string())?;
     if let Ok(compressed_public_key) = CompressedPublicKey::from_slice(&ecdsa_pubkey) {
-        Ok(Address::p2wpkh(
-            &compressed_public_key,
-            transform_network(network),
-        )
-        .to_string())
+        Ok(Address::p2wpkh(&compressed_public_key, transform_network(network)).to_string())
     } else {
         Err("Error getting P2WPKH from public key".to_string())
     }

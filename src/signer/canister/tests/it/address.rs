@@ -1,10 +1,13 @@
 use crate::utils::mock::{
-    CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET, CALLER_ETH_ADDRESS,
+    CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET,
+    CALLER_ETH_ADDRESS,
 };
 use crate::utils::pocketic::{setup, PicCanisterTrait};
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
-use ic_chain_fusion_signer_api::types::bitcoin::{BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse};
+use ic_chain_fusion_signer_api::types::bitcoin::{
+    BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse,
+};
 
 #[test]
 fn test_caller_eth_address() {
@@ -75,7 +78,10 @@ fn test_caller_btc_address_mainnet() {
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
-    assert_eq!(address_response.address, CALLER_BTC_ADDRESS_MAINNET.to_string());
+    assert_eq!(
+        address_response.address,
+        CALLER_BTC_ADDRESS_MAINNET.to_string()
+    );
 }
 
 #[test]
@@ -94,7 +100,10 @@ fn test_caller_btc_address_testnet() {
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
-    assert_eq!(address_response.address, CALLER_BTC_ADDRESS_TESTNET.to_string());
+    assert_eq!(
+        address_response.address,
+        CALLER_BTC_ADDRESS_TESTNET.to_string()
+    );
 }
 
 #[test]
@@ -113,7 +122,10 @@ fn test_caller_btc_address_regtest() {
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
-    assert_eq!(address_response.address, CALLER_BTC_ADDRESS_REGTEST.to_string());
+    assert_eq!(
+        address_response.address,
+        CALLER_BTC_ADDRESS_REGTEST.to_string()
+    );
 }
 
 #[test]
@@ -149,14 +161,25 @@ fn test_testnet_btc_address_is_not_same_as_regtest() {
     };
 
     let address_response_testnet = pic_setup
-        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "caller_btc_address", params_testnet)
+        .update::<Result<GetAddressResponse, GetAddressError>>(
+            caller,
+            "caller_btc_address",
+            params_testnet,
+        )
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
-        let address_response_regtest = pic_setup
-        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "caller_btc_address", params_regtest)
+    let address_response_regtest = pic_setup
+        .update::<Result<GetAddressResponse, GetAddressError>>(
+            caller,
+            "caller_btc_address",
+            params_regtest,
+        )
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
-    assert_ne!(address_response_testnet.address, address_response_regtest.address);
+    assert_ne!(
+        address_response_testnet.address,
+        address_response_regtest.address
+    );
 }

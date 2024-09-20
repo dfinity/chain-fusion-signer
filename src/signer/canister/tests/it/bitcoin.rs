@@ -2,7 +2,9 @@ use crate::utils::mock::CALLER;
 use crate::utils::pocketic::{setup, PicCanisterTrait};
 use candid::{Nat, Principal};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
-use ic_chain_fusion_signer_api::types::bitcoin::{BitcoinAddressType, GetBalanceError, GetBalanceResponse, GetBalanceRequest};
+use ic_chain_fusion_signer_api::types::bitcoin::{
+    BitcoinAddressType, GetBalanceError, GetBalanceRequest, GetBalanceResponse,
+};
 
 #[test]
 fn test_caller_btc_balance() {
