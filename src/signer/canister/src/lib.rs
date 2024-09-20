@@ -1,14 +1,17 @@
 use crate::guards::caller_is_not_anonymous;
 use candid::Principal;
-use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
-
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::http::HttpRequest;
 use ic_chain_fusion_signer_api::http::HttpResponse;
 use ic_chain_fusion_signer_api::metrics::get_metrics;
 use ic_chain_fusion_signer_api::std_canister_status;
+use ic_chain_fusion_signer_api::types::bitcoin::GetAddressError;
+use ic_chain_fusion_signer_api::types::bitcoin::GetAddressRequest;
+use ic_chain_fusion_signer_api::types::bitcoin::GetAddressResponse;
+use ic_chain_fusion_signer_api::types::bitcoin::GetBalanceRequest;
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 use ic_chain_fusion_signer_api::types::{Arg, Config};
+use ic_chain_fusion_signer_api::types::bitcoin::{BitcoinAddressType, GetBalanceError, GetBalanceResponse};
 use serde_bytes::ByteBuf;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
@@ -128,21 +131,44 @@ async fn sign_prehash(prehash: String) -> String {
 
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_address(network: BitcoinNetwork) -> String {
-    bitcoin_utils::public_key_to_p2pkh_address(
-        network,
-        &bitcoin_utils::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    )
+async fn caller_btc_address(params: GetAddressRequest) -> Result<GetAddressResponse, GetAddressError> {
+    match params.address_type {
+        BitcoinAddressType::P2WPKH => {
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::caller(),
+            )
+            .await
+            .map_err(|msg| GetAddressError::InternalError { 
+                msg,
+            })?;
+
+            Ok(GetAddressResponse { address })
+        }
+    }
 }
 
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_balance(network: BitcoinNetwork) -> u64 {
-    let address = bitcoin_utils::public_key_to_p2pkh_address(
-        network,
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    );
-    bitcoin_api::get_balance(network, address).await
+async fn caller_btc_balance(params: GetBalanceRequest) -> Result<GetBalanceResponse, GetBalanceError> {
+    match params.address_type {
+        BitcoinAddressType::P2WPKH => {
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::caller(),
+            )
+            .await
+            .map_err(|msg| GetBalanceError::InternalError { 
+                msg,
+            })?;
+
+            let balance = bitcoin_api::get_balance(params.network, address)
+                .await
+                .map_err(|msg| GetBalanceError::InternalError { msg })?;
+
+            Ok(GetBalanceResponse { balance: balance.into() })
+        }
+    }
 }
 
 // /////////////////////

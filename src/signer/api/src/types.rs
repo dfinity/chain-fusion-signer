@@ -42,3 +42,46 @@ pub mod transaction {
         pub data: Option<String>,
     }
 }
+
+pub mod bitcoin {
+    use candid::{CandidType, Deserialize, Nat};
+    use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub enum BitcoinAddressType {
+        P2WPKH,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct GetAddressRequest {
+        pub network: BitcoinNetwork,
+        pub address_type: BitcoinAddressType,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct GetAddressResponse {
+        pub address: String,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub enum GetAddressError {
+        InternalError { msg: String },
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct GetBalanceRequest {
+        pub network: BitcoinNetwork,
+        pub address_type: BitcoinAddressType,
+    }
+
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct GetBalanceResponse {
+        pub balance: Nat,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub enum GetBalanceError {
+        InternalError { msg: String },
+    }
+}
