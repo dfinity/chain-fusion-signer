@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$(realpath "$0")")/.."
 
 json_files() {
-  git ls-files | grep -E "[.]json$"
+  git ls-files | grep -E "[.]json$" | grep -v --file .relaxedfmt
 }
 format_json() {
   # shellcheck disable=SC2094 # The file is completely read before it is written so this is correct and safe.
