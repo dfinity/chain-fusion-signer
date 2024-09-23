@@ -23,6 +23,8 @@ jobs:
         run: npm ci --no-audit
       - name: Format
         run: ./scripts/fmt
+      - name: Ignore some changes
+        run: while read -r line ; do git checkout "$line" ; done <.relaxedfmt
       - name: Check formatted
         run: |
           test -z "$(git status --porcelain | grep -v --file .relaxedfmt)" || {
