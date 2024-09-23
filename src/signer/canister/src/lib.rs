@@ -164,9 +164,7 @@ async fn btc_caller_balance(
                 .await
                 .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
-            Ok(GetBalanceResponse {
-                balance,
-            })
+            Ok(GetBalanceResponse { balance })
         }
     }
 }
