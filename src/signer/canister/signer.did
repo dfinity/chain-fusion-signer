@@ -78,11 +78,12 @@ type RejectionCode = variant {
   CanisterReject;
 };
 type Result = variant { Ok : text; Err : GenericSigningError };
-type Result_1 = variant {
+type Result_1 = variant { Ok : nat64; Err : GenericSigningError };
+type Result_2 = variant {
   Ok : record { EcdsaPublicKeyResponse };
   Err : GenericSigningError;
 };
-type Result_2 = variant {
+type Result_3 = variant {
   Ok : record { SignWithEcdsaResponse };
   Err : GenericSigningError;
 };
@@ -120,6 +121,8 @@ type WithdrawFromError = variant {
   InsufficientFunds : record { balance : nat };
 };
 service : (Arg) -> {
+  btc_caller_address : (BitcoinNetwork, opt PaymentType) -> (Result);
+  btc_caller_balance : (BitcoinNetwork, opt PaymentType) -> (Result_1);
   caller_btc_address : (BitcoinNetwork) -> (text);
   caller_btc_balance : (BitcoinNetwork) -> (nat64);
   caller_eth_address : () -> (text);
@@ -132,9 +135,9 @@ service : (Arg) -> {
   generic_caller_ecdsa_public_key : (
       EcdsaPublicKeyArgument,
       opt PaymentType,
-    ) -> (Result_1);
+    ) -> (Result_2);
   generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgument) -> (
-      Result_2,
+      Result_3,
     );
   get_canister_status : () -> (CanisterStatusResultV2);
   http_request : (HttpRequest) -> (HttpResponse) query;
