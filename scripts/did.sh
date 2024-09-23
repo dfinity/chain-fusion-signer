@@ -2,15 +2,15 @@
 
 function generate_did() {
   local canister=$1
-  canister_root="src/$canister"
+  local candid_file="$(canister="$canister" jq -r .canisters[env.canister].candid dfx.json)"
 
   test -e "target/wasm32-unknown-unknown/release/$canister.wasm" ||
-    cargo build --manifest-path="$canister_root/Cargo.toml" \
+    cargo build \
       --target wasm32-unknown-unknown \
       --release --package "$canister"
 
   # cargo install candid-extractor
-  candid-extractor "target/wasm32-unknown-unknown/release/${canister//-/_}.wasm" >"$canister_root/$canister.did"
+  candid-extractor "target/wasm32-unknown-unknown/release/${canister//-/_}.wasm" >"$candid_file"
 }
 
 CANISTERS=signer
