@@ -1,4 +1,5 @@
 type Arg = variant { Upgrade; Init : InitArg };
+type BitcoinAddressType = variant { P2WPKH };
 type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type CanisterStatusResultV2 = record {
   controller : principal;
@@ -24,6 +25,13 @@ type DefiniteCanisterSettingsArgs = record {
   memory_allocation : nat;
   compute_allocation : nat;
 };
+type GetAddressError = variant { InternalError : record { msg : text } };
+type GetAddressRequest = record {
+  network : BitcoinNetwork;
+  address_type : BitcoinAddressType;
+};
+type GetAddressResponse = record { address : text };
+type GetBalanceResponse = record { balance : nat64 };
 type HttpRequest = record {
   url : text;
   method : text;
@@ -40,6 +48,8 @@ type InitArg = record {
   ic_root_key_der : opt blob;
   cycles_ledger : opt principal;
 };
+type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
+type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
 type SignRequest = record {
   to : text;
   gas : nat;
@@ -51,8 +61,8 @@ type SignRequest = record {
   nonce : nat;
 };
 service : (Arg) -> {
-  caller_btc_address : (BitcoinNetwork) -> (text);
-  caller_btc_balance : (BitcoinNetwork) -> (nat64);
+  btc_caller_address : (GetAddressRequest) -> (Result);
+  btc_caller_balance : (GetAddressRequest) -> (Result_1);
   caller_eth_address : () -> (text);
   config : () -> (Config) query;
   eth_address_of : (principal) -> (text);
