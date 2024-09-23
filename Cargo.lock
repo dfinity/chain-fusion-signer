@@ -407,7 +407,7 @@ name = "cycles-ledger-client"
 version = "0.1.0"
 dependencies = [
  "candid",
- "ic-cdk 0.15.1",
+ "ic-cdk 0.16.0",
  "serde",
  "serde_bytes",
 ]
@@ -607,7 +607,7 @@ name = "example_backend"
 version = "0.1.4"
 dependencies = [
  "candid",
- "ic-cdk 0.15.1",
+ "ic-cdk 0.16.0",
 ]
 
 [[package]]
@@ -1015,19 +1015,6 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk"
-version = "0.15.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "038ff230bf0fc8630943e3c52e989d248a7c89834ccb65da408fabc5817a475b"
-dependencies = [
- "candid",
- "ic-cdk-macros 0.15.0",
- "ic0 0.23.0",
- "serde",
- "serde_bytes",
-]
-
-[[package]]
-name = "ic-cdk"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8ecacd682fa05a985253592963306cb9799622d7b1cce4b1edb89c6ec85be1"
@@ -1069,20 +1056,6 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk-macros"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3af44fb4ec3a4b18831c9d3303ca8fa2ace846c4022d50cb8df4122635d3782e"
-dependencies = [
- "candid",
- "proc-macro2",
- "quote",
- "serde",
- "serde_tokenstream 0.2.2",
- "syn 2.0.77",
-]
-
-[[package]]
-name = "ic-cdk-macros"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d4d857135deef20cc7ea8f3869a30cd9cfeb1392b3a81043790b2cd82adc3e0"
@@ -1113,8 +1086,8 @@ version = "0.1.4"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
- "ic-cdk 0.15.1",
- "ic-cdk-macros 0.15.0",
+ "ic-cdk 0.16.0",
+ "ic-cdk-macros 0.16.0",
  "ic-metrics-encoder",
  "serde",
  "serde_bytes",
@@ -1291,9 +1264,9 @@ dependencies = [
 
 [[package]]
 name = "k256"
-version = "0.13.3"
+version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "956ff9b67e26e1a6a866cb758f12c6f8746208489e3e4a4b5580802f2f0a587b"
+checksum = "f6e3919bbaa2945715f0bb6d3934a173d1e9a59ac23767fbaaef277265a7411b"
 dependencies = [
  "cfg-if",
  "ecdsa",
@@ -2376,8 +2349,8 @@ dependencies = [
  "futures",
  "getrandom",
  "hex",
- "ic-cdk 0.15.1",
- "ic-cdk-macros 0.15.0",
+ "ic-cdk 0.16.0",
+ "ic-cdk-macros 0.16.0",
  "ic-chain-fusion-signer-api",
  "ic-papi-guard",
  "ic-stable-structures",
