@@ -18,7 +18,8 @@ impl From<InitArg> for Config {
             Ok(root_key) => root_key,
             Err(msg) => panic!("{}", format!("Error parsing root key: {msg}")),
         };
-        let cycles_ledger = cycles_ledger.unwrap_or_else(|| ic_papi_api::cycles::cycles_ledger_canister_id());
+        let cycles_ledger =
+            cycles_ledger.unwrap_or_else(|| ic_papi_api::cycles::cycles_ledger_canister_id());
         Config {
             ecdsa_key_name,
             ic_root_key_raw: Some(ic_root_key_raw),
