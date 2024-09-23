@@ -1116,6 +1116,7 @@ dependencies = [
  "ic-cdk 0.15.1",
  "ic-cdk-macros 0.15.0",
  "ic-metrics-encoder",
+ "ic-papi-api",
  "serde",
  "serde_bytes",
  "strum 0.26.3",

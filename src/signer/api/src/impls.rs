@@ -10,6 +10,7 @@ impl From<InitArg> for Config {
         let InitArg {
             ecdsa_key_name,
             ic_root_key_der,
+            cycles_ledger,
         } = arg;
         let ic_root_key_raw = match extract_raw_root_pk_from_der(
             &ic_root_key_der.unwrap_or_else(|| IC_ROOT_PK_DER.to_vec()),
@@ -17,9 +18,11 @@ impl From<InitArg> for Config {
             Ok(root_key) => root_key,
             Err(msg) => panic!("{}", format!("Error parsing root key: {msg}")),
         };
+        let cycles_ledger = cycles_ledger.unwrap_or_else(|| ic_papi_api::cycles::cycles_ledger_canister_id());
         Config {
             ecdsa_key_name,
             ic_root_key_raw: Some(ic_root_key_raw),
+            cycles_ledger,
         }
     }
 }
