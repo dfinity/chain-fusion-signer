@@ -57,6 +57,7 @@ cat <<EOF >"$ARG_FILE"
     Init = record {
          ecdsa_key_name = "$ECDSA_KEY_NAME";
          ic_root_key_der = $ic_root_key_der;
+         cycles_ledger = "$CANISTER_ID_CYCLES_LEDGER";
      }
   })
 EOF
