@@ -48,15 +48,24 @@ RUN scripts/setup rust cargo-binstall candid-extractor ic-wasm
 # Optional: Pre-build dependencies
 COPY Cargo.lock .
 COPY Cargo.toml .
-COPY src/signer/Cargo.toml src/signer/Cargo.toml
 COPY src/example_backend/Cargo.toml src/example_backend/Cargo.toml
-COPY src/shared/Cargo.toml src/shared/Cargo.toml
-RUN mkdir -p src/signer/src \
-    && touch src/signer/src/lib.rs \
-    && mkdir -p src/shared/src \
-    && touch src/shared/src/lib.rs \
+COPY src/signer/api/Cargo.toml src/signer/api/Cargo.toml
+COPY src/signer/canister/Cargo.toml src/signer/canister/Cargo.toml
+COPY src/papi/api/Cargo.toml src/papi/api/Cargo.toml
+COPY src/papi/cycles_ledger_client/Cargo.toml src/papi/cycles_ledger_client/Cargo.toml
+COPY src/papi/guard/Cargo.toml src/papi/guard/Cargo.toml
+RUN    mkdir -p src/signer/canister/src \
+    && touch    src/signer/canister/src/lib.rs \
+    && mkdir -p src/signer/api/src \
+    && touch    src/signer/api/src/lib.rs \
     && mkdir -p src/example_backend/src \
-    && touch src/example_backend/src/lib.rs \
+    && touch    src/example_backend/src/lib.rs \
+    && mkdir -p src/papi/api/src \
+    && touch    src/papi/api/src/lib.rs \
+    && mkdir -p src/papi/cycles_ledger_client/src \
+    && touch    src/papi/cycles_ledger_client/src/lib.rs \
+    && mkdir -p src/papi/guard/src \
+    && touch    src/papi/guard/src/lib.rs \
     && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
