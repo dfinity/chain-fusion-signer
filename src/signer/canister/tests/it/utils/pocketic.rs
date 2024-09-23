@@ -150,6 +150,7 @@ impl BackendBuilder {
         Arg::Init(InitArg {
             ecdsa_key_name: format!("test_key_1"),
             ic_root_key_der: None,
+            cycles_ledger: None,
         })
     }
     /// The default controllers of the backend canister.
