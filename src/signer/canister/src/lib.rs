@@ -113,16 +113,93 @@ async fn generic_caller_ecdsa_public_key(
 /// Returns the generic Ed25519 public key of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_sign_with_ecdsa(
-    _payment: Option<PaymentType>,
+    payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSigningError> {
-    // TODO: Charge the user for the operation.
+    let fee = 1_000_000_000;
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            fee,
+        )
+        .await?;
     generic::generic_sign_with_ecdsa(arg).await
 }
 
 // ////////////////////
 // // ETHEREUM UTILS //
 // ////////////////////
+
+/// Returns the Ethereum address of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_address_of_caller(
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::pubkey_bytes_to_address(
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    ))
+}
+
+/// Returns the Ethereum address of the specified user.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_address_of_principal(
+    p: Principal,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    if p == Principal::anonymous() {
+        ic_cdk::trap("Anonymous principal is not authorized");
+    }
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::pubkey_bytes_to_address(
+        &eth::ecdsa_pubkey_of(&p).await,
+    ))
+}
+
+/// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_sign_transaction(
+    req: SignRequest,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::sign_transaction(req).await)
+}
+
+/// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_personal_sign(
+    plaintext: String,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::personal_sign(plaintext).await)
+}
 
 /// Returns the Ethereum address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
