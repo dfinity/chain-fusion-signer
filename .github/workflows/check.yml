@@ -23,6 +23,8 @@ jobs:
         run: npm ci --no-audit
       - name: Format
         run: ./scripts/fmt
+      - name: Ignore some changes
+        run: git checkout package-lock.json
       - name: Check formatted
         run: |
           test -z "$(git status --porcelain | grep -v --file .relaxedfmt)" || {
