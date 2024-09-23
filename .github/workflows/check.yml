@@ -24,7 +24,7 @@ jobs:
       - name: Format
         run: ./scripts/fmt
       - name: Ignore some changes
-        run: git checkout package-lock.json
+        run: while read -r line ; do git checkout "$line" ; done <.relaxedfmt
       - name: Check formatted
         run: |
           test -z "$(git status --porcelain | grep -v --file .relaxedfmt)" || {
