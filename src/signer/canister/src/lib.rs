@@ -133,7 +133,7 @@ async fn sign_prehash(prehash: String) -> String {
 
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_address(
+async fn btc_caller_address(
     params: GetAddressRequest,
 ) -> Result<GetAddressResponse, GetAddressError> {
     match params.address_type {
@@ -150,7 +150,7 @@ async fn caller_btc_address(
 
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
-async fn caller_btc_balance(
+async fn btc_caller_balance(
     params: GetBalanceRequest,
 ) -> Result<GetBalanceResponse, GetBalanceError> {
     match params.address_type {
