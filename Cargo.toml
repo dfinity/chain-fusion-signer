@@ -1,6 +1,9 @@
 [workspace]
 members = [
-    "src/example_backend", "src/papi/api", "src/papi/cycles_ledger_client", "src/papi/guard",
+    "src/example_backend",
+    "src/papi/api",
+    "src/papi/cycles_ledger_client",
+    "src/papi/guard",
     "src/signer/api",
     "src/signer/canister"]
 resolver = "2"
