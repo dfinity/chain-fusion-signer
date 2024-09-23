@@ -44,7 +44,7 @@ pub mod transaction {
 }
 
 pub mod bitcoin {
-    use candid::{CandidType, Deserialize, Nat};
+    use candid::{CandidType, Deserialize};
     use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 
     #[derive(CandidType, Deserialize, Debug)]
@@ -76,7 +76,7 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub struct GetBalanceResponse {
-        pub balance: Nat,
+        pub balance: u64,
     }
 
     #[derive(CandidType, Deserialize, Debug)]

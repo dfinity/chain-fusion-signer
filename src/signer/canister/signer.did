@@ -31,7 +31,7 @@ type GetAddressRequest = record {
   address_type : BitcoinAddressType;
 };
 type GetAddressResponse = record { address : text };
-type GetBalanceResponse = record { balance : nat };
+type GetBalanceResponse = record { balance : nat64 };
 type HttpRequest = record {
   url : text;
   method : text;

@@ -74,7 +74,7 @@ fn test_caller_btc_address_mainnet() {
     };
 
     let address_response = pic_setup
-        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "caller_btc_address", params)
+        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -96,7 +96,7 @@ fn test_caller_btc_address_testnet() {
     };
 
     let address_response = pic_setup
-        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "caller_btc_address", params)
+        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -118,7 +118,7 @@ fn test_caller_btc_address_regtest() {
     };
 
     let address_response = pic_setup
-        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "caller_btc_address", params)
+        .update::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -137,7 +137,7 @@ fn test_anonymous_cannot_call_btc_address() {
         address_type: BitcoinAddressType::P2WPKH,
     };
 
-    let address = pic_setup.update::<String>(Principal::anonymous(), "caller_btc_address", params);
+    let address = pic_setup.update::<String>(Principal::anonymous(), "btc_caller_address", params);
 
     assert!(address.is_err());
     assert_eq!(
@@ -163,7 +163,7 @@ fn test_testnet_btc_address_is_not_same_as_regtest() {
     let address_response_testnet = pic_setup
         .update::<Result<GetAddressResponse, GetAddressError>>(
             caller,
-            "caller_btc_address",
+            "btc_caller_address",
             params_testnet,
         )
         .expect("Failed to call testnet btc address.")
@@ -172,7 +172,7 @@ fn test_testnet_btc_address_is_not_same_as_regtest() {
     let address_response_regtest = pic_setup
         .update::<Result<GetAddressResponse, GetAddressError>>(
             caller,
-            "caller_btc_address",
+            "btc_caller_address",
             params_regtest,
         )
         .expect("Failed to call testnet btc address.")
