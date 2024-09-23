@@ -57,6 +57,12 @@ RUN    mkdir -p src/signer/canister/src \
     && touch    src/signer/api/src/lib.rs \
     && mkdir -p src/example_backend/src \
     && touch    src/example_backend/src/lib.rs \
+    && mkdir -p src/papi/api/src \
+    && touch    src/papi/api/src/lib.rs \
+    && mkdir -p src/papi/cycles_ledger_client/src \
+    && touch    src/papi/cycles_ledger_client/src/lib.rs \
+    && mkdir -p src/papi/guard/src \
+    && touch    src/papi/guard/src/lib.rs \
     && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
