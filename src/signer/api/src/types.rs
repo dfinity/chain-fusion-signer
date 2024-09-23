@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use std::fmt::Debug;
 
 pub type Timestamp = u64;
@@ -8,6 +8,8 @@ pub struct InitArg {
     pub ecdsa_key_name: String,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_der: Option<Vec<u8>>,
+    /// Payment canister ID.
+    pub cycles_ledger: Option<Principal>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -21,6 +23,8 @@ pub struct Config {
     pub ecdsa_key_name: String,
     /// Root of trust for checking canister signatures.
     pub ic_root_key_raw: Option<Vec<u8>>,
+    /// Payment canister ID.
+    pub cycles_ledger: Principal,
 }
 
 pub mod transaction {
