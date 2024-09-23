@@ -133,9 +133,7 @@ async fn generic_sign_with_ecdsa(
 
 /// Returns the Ethereum address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_caller(
-    payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+async fn eth_address_of_caller(payment: Option<PaymentType>) -> Result<String, GenericSigningError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -143,17 +141,12 @@ async fn eth_address_of_caller(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    ))
+    Ok(eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&ic_cdk::caller()).await))
 }
 
 /// Returns the Ethereum address of the specified user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_principal(
-    p: Principal,
-    payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+async fn eth_address_of_principal(p: Principal, payment: Option<PaymentType>) -> Result<String, GenericSigningError> {
     if p == Principal::anonymous() {
         ic_cdk::trap("Anonymous principal is not authorized");
     }
@@ -164,17 +157,12 @@ async fn eth_address_of_principal(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&p).await,
-    ))
+    Ok(eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&p).await))
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_sign_transaction(
-    req: SignRequest,
-    payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+async fn eth_sign_transaction(req: SignRequest, payment: Option<PaymentType>) -> Result<String, GenericSigningError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -187,10 +175,7 @@ async fn eth_sign_transaction(
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_personal_sign(
-    plaintext: String,
-    payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+async fn eth_personal_sign(plaintext: String, payment: Option<PaymentType>) -> Result<String, GenericSigningError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -237,6 +222,40 @@ async fn sign_prehash(prehash: String) -> String {
 // ///////////////////
 // // BITCOIN UTILS //
 // ///////////////////
+
+/// Returns the Bitcoin address of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn btc_caller_address(network: BitcoinNetwork, payment: Option<PaymentType>) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &bitcoin_utils::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    ))
+}
+
+pub type BtcCallerBalanceResult = Result<u64, GenericSigningError>;
+/// Returns the Bitcoin balance of the caller's address.
+#[update(guard = "caller_is_not_anonymous")]
+async fn btc_caller_balance(network: BitcoinNetwork, payment: Option<PaymentType>) -> BtcCallerBalanceResult {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    let address = bitcoin_utils::public_key_to_p2pkh_address(
+        network,
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    );
+    bitcoin_api::get_balance(network, address).await
+}
 
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
