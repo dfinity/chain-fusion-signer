@@ -254,7 +254,7 @@ async fn btc_caller_balance(network: BitcoinNetwork, payment: Option<PaymentType
         network,
         &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
     );
-    bitcoin_api::get_balance(network, address).await
+    Ok(bitcoin_api::get_balance(network, address).await)
 }
 
 /// Returns the Bitcoin address of the caller.
