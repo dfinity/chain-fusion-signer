@@ -14,7 +14,11 @@ type CanisterStatusResultV2 = record {
   module_hash : opt blob;
 };
 type CanisterStatusType = variant { stopped; stopping; running };
-type Config = record { ecdsa_key_name : text; ic_root_key_raw : opt blob };
+type Config = record {
+  ecdsa_key_name : text;
+  ic_root_key_raw : opt blob;
+  cycles_ledger : principal;
+};
 type DefiniteCanisterSettingsArgs = record {
   controller : principal;
   freezing_threshold : nat;
@@ -45,7 +49,11 @@ type HttpResponse = record {
   headers : vec record { text; text };
   status_code : nat16;
 };
-type InitArg = record { ecdsa_key_name : text; ic_root_key_der : opt blob };
+type InitArg = record {
+  ecdsa_key_name : text;
+  ic_root_key_der : opt blob;
+  cycles_ledger : opt principal;
+};
 type PatronPaysIcrc2Tokens = record { ledger : principal; patron : Account };
 type PaymentError = variant {
   LedgerUnreachable : CallerPaysIcrc2Tokens;
@@ -69,11 +77,12 @@ type RejectionCode = variant {
   SysFatal;
   CanisterReject;
 };
-type Result = variant {
+type Result = variant { Ok : text; Err : GenericSigningError };
+type Result_1 = variant {
   Ok : record { EcdsaPublicKeyResponse };
   Err : GenericSigningError;
 };
-type Result_1 = variant {
+type Result_2 = variant {
   Ok : record { SignWithEcdsaResponse };
   Err : GenericSigningError;
 };
@@ -116,12 +125,16 @@ service : (Arg) -> {
   caller_eth_address : () -> (text);
   config : () -> (Config) query;
   eth_address_of : (principal) -> (text);
+  eth_address_of_caller : (opt PaymentType) -> (Result);
+  eth_address_of_principal : (principal, opt PaymentType) -> (Result);
+  eth_personal_sign : (text, opt PaymentType) -> (Result);
+  eth_sign_transaction : (SignRequest, opt PaymentType) -> (Result);
   generic_caller_ecdsa_public_key : (
-      opt PaymentType,
       EcdsaPublicKeyArgument,
-    ) -> (Result);
+      opt PaymentType,
+    ) -> (Result_1);
   generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgument) -> (
-      Result_1,
+      Result_2,
     );
   get_canister_status : () -> (CanisterStatusResultV2);
   http_request : (HttpRequest) -> (HttpResponse) query;
