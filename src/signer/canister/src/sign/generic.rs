@@ -41,3 +41,9 @@ pub enum GenericSigningError {
     /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
     SigningError(RejectionCode, String),
 }
+
+impl From<ic_papi_api::PaymentError> for GenericSigningError {
+    fn from(e: ic_papi_api::PaymentError) -> Self {
+        Self::PaymentError(e)
+    }
+}

@@ -14,12 +14,13 @@ use ic_chain_fusion_signer_api::std_canister_status;
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 use ic_chain_fusion_signer_api::types::{Arg, Config};
 use ic_papi_api::PaymentType;
+use ic_papi_guard::guards::{PaymentContext, PaymentGuard2};
 use serde_bytes::ByteBuf;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::generic;
 use sign::generic::generic_ecdsa_public_key;
-use state::{read_config, read_state, set_config};
+use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
 mod convert;
 mod derivation_path;
@@ -95,10 +96,17 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 /// Returns the generic Ed25519 public key of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_caller_ecdsa_public_key(
-    _payment: Option<PaymentType>,
     arg: EcdsaPublicKeyArgument,
+    payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericSigningError> {
-    // TODO: Charge the user for the operation.
+    let fee = 1_000_000_000;
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            fee,
+        )
+        .await?;
     generic_ecdsa_public_key(arg).await
 }
 
