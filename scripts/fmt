@@ -6,7 +6,6 @@ set -x
 time xargs -P8 -I{} bash -c "{}" <<EOF
 ./scripts/fmt-cargo
 ./scripts/fmt-frontend
-./scripts/fmt-json
 ./scripts/fmt-rs
 ./scripts/fmt-sh
 ./scripts/fmt-yaml
