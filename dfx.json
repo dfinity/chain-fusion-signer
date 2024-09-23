@@ -4,7 +4,7 @@
 		"signer": {
 			"type": "custom",
 			"build": "scripts/build.signer.sh",
-			"candid": "src/signer/signer.did",
+			"candid": "src/signer/canister/signer.did",
 			"wasm": "out/signer.wasm.gz",
 			"init_arg_file": "out/signer.args.did"
 		},
