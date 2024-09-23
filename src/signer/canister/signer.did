@@ -12,7 +12,11 @@ type CanisterStatusResultV2 = record {
   module_hash : opt blob;
 };
 type CanisterStatusType = variant { stopped; stopping; running };
-type Config = record { ecdsa_key_name : text; ic_root_key_raw : opt blob };
+type Config = record {
+  ecdsa_key_name : text;
+  ic_root_key_raw : opt blob;
+  cycles_ledger : principal;
+};
 type DefiniteCanisterSettingsArgs = record {
   controller : principal;
   freezing_threshold : nat;
@@ -31,7 +35,11 @@ type HttpResponse = record {
   headers : vec record { text; text };
   status_code : nat16;
 };
-type InitArg = record { ecdsa_key_name : text; ic_root_key_der : opt blob };
+type InitArg = record {
+  ecdsa_key_name : text;
+  ic_root_key_der : opt blob;
+  cycles_ledger : opt principal;
+};
 type SignRequest = record {
   to : text;
   gas : nat;
