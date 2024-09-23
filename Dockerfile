@@ -51,6 +51,9 @@ COPY Cargo.toml .
 COPY src/example_backend/Cargo.toml src/example_backend/Cargo.toml
 COPY src/signer/api/Cargo.toml src/signer/api/Cargo.toml
 COPY src/signer/canister/Cargo.toml src/signer/canister/Cargo.toml
+COPY src/papi/api/Cargo.toml src/papi/api/Cargo.toml
+COPY src/papi/cycles_ledger_client/Cargo.toml src/papi/cycles_ledger_client/Cargo.toml
+COPY src/papi/guard/Cargo.toml src/papi/guard/Cargo.toml
 RUN    mkdir -p src/signer/canister/src \
     && touch    src/signer/canister/src/lib.rs \
     && mkdir -p src/signer/api/src \
