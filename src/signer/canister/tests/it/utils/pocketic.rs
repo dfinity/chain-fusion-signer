@@ -143,7 +143,7 @@ impl BackendBuilder {
         };
         encode_one(init_config).unwrap()
     }
-    /// The default argument to pass to the backend canister.   
+    /// The default argument to pass to the backend canister.
     ///
     /// To override, please use `with_arg()`.
     pub fn default_install_arg() -> Arg {
