@@ -1,5 +1,7 @@
 use ic_cdk::api::management_canister::bitcoin::{
-    bitcoin_get_balance, bitcoin_get_current_fee_percentiles, bitcoin_send_transaction, BitcoinNetwork, GetBalanceRequest, GetCurrentFeePercentilesRequest, MillisatoshiPerByte, SendTransactionRequest,
+    bitcoin_get_balance, bitcoin_get_current_fee_percentiles, bitcoin_send_transaction,
+    BitcoinNetwork, GetBalanceRequest, GetCurrentFeePercentilesRequest, MillisatoshiPerByte,
+    SendTransactionRequest,
 };
 
 /// Returns the balance of the given bitcoin address.
@@ -24,9 +26,12 @@ pub async fn get_balance(network: BitcoinNetwork, address: String) -> Result<u64
 ///
 /// Relies on the `bitcoin_get_current_fee_percentiles` endpoint.
 /// See https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_current_fee_percentiles
-async fn get_current_fee_percentiles(network: BitcoinNetwork) -> Result<Vec<MillisatoshiPerByte>, String> {
-    let res =
-        bitcoin_get_current_fee_percentiles(GetCurrentFeePercentilesRequest { network }).await.map_err(|err| err.1)?;
+async fn get_current_fee_percentiles(
+    network: BitcoinNetwork,
+) -> Result<Vec<MillisatoshiPerByte>, String> {
+    let res = bitcoin_get_current_fee_percentiles(GetCurrentFeePercentilesRequest { network })
+        .await
+        .map_err(|err| err.1)?;
 
     Ok(res.0)
 }
