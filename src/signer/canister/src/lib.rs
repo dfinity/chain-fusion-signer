@@ -139,6 +139,76 @@ async fn generic_sign_with_ecdsa(
 
 /// Returns the Ethereum address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
+async fn eth_address_of_caller(
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::pubkey_bytes_to_address(
+        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    ))
+}
+
+/// Returns the Ethereum address of the specified user.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_address_of_principal(
+    p: Principal,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    if p == Principal::anonymous() {
+        ic_cdk::trap("Anonymous principal is not authorized");
+    }
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::pubkey_bytes_to_address(
+        &eth::ecdsa_pubkey_of(&p).await,
+    ))
+}
+
+/// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_sign_transaction(
+    req: SignRequest,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::sign_transaction(req).await)
+}
+
+/// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_personal_sign(
+    plaintext: String,
+    payment: Option<PaymentType>,
+) -> Result<String, GenericSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    Ok(eth::personal_sign(plaintext).await)
+}
+
+/// Returns the Ethereum address of the caller.
+#[update(guard = "caller_is_not_anonymous")]
 async fn caller_eth_address() -> String {
     eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&ic_cdk::caller()).await)
 }
@@ -176,9 +246,20 @@ async fn sign_prehash(prehash: String) -> String {
 
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
+#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 async fn btc_caller_address(
     params: GetAddressRequest,
+    payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetAddressResponse, GetAddressError> {
+    /* TODO: uncomment when the payment guard is ready
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
@@ -193,9 +274,20 @@ async fn btc_caller_address(
 
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
+#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 async fn btc_caller_balance(
     params: GetBalanceRequest,
+    payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetBalanceResponse, GetBalanceError> {
+    /* TODO: Uncomment the payment guard once the payment is implemented.
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
