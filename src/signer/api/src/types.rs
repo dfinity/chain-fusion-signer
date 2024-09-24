@@ -46,6 +46,7 @@ pub mod transaction {
 pub mod bitcoin {
     use candid::{CandidType, Deserialize};
     use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+    use ic_papi_api::PaymentError;
 
     #[derive(CandidType, Deserialize, Debug)]
     pub enum BitcoinAddressType {
@@ -66,6 +67,7 @@ pub mod bitcoin {
     #[derive(CandidType, Deserialize, Debug)]
     pub enum GetAddressError {
         InternalError { msg: String },
+        PaymentError(PaymentError),
     }
 
     #[derive(CandidType, Deserialize, Debug)]
@@ -82,5 +84,6 @@ pub mod bitcoin {
     #[derive(CandidType, Deserialize, Debug)]
     pub enum GetBalanceError {
         InternalError { msg: String },
+        PaymentError(PaymentError),
     }
 }
