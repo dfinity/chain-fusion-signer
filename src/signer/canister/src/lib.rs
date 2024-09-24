@@ -248,8 +248,9 @@ async fn sign_prehash(prehash: String) -> String {
 #[update(guard = "caller_is_not_anonymous")]
 async fn btc_caller_address(
     params: GetAddressRequest,
-    payment: Option<PaymentType>,
+    _payment: Option<PaymentType>,
 ) -> Result<GetAddressResponse, GetAddressError> {
+    /* TODO: uncomment when the payment guard is ready
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -257,6 +258,7 @@ async fn btc_caller_address(
             1_000_000_000,
         )
         .await?;
+    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
@@ -273,8 +275,9 @@ async fn btc_caller_address(
 #[update(guard = "caller_is_not_anonymous")]
 async fn btc_caller_balance(
     params: GetBalanceRequest,
-    payment: Option<PaymentType>,
+    _payment: Option<PaymentType>,
 ) -> Result<GetBalanceResponse, GetBalanceError> {
+    /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -282,6 +285,7 @@ async fn btc_caller_balance(
             1_000_000_000,
         )
         .await?;
+    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
