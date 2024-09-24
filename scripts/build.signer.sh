@@ -54,6 +54,10 @@ mv "$BUILD_DIR/signer.metadata.wasm.gz" "$WASM_FILE"
 ./scripts/build.signer.args.sh
 
 ####
+# Adds the candid file to the output directory
+cp src/signer/canister/signer.did out/
+
+####
 # Success
 cat <<EOF
 SUCCESS: The signer installation files have been created:

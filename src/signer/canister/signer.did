@@ -1,7 +1,6 @@
-type Account = record { owner : principal; subaccount : opt blob };
 type Arg = variant { Upgrade; Init : InitArg };
+type BitcoinAddressType = variant { P2WPKH };
 type BitcoinNetwork = variant { mainnet; regtest; testnet };
-type CallerPaysIcrc2Tokens = record { ledger : principal };
 type CanisterStatusResultV2 = record {
   controller : principal;
   status : CanisterStatusType;
@@ -26,18 +25,13 @@ type DefiniteCanisterSettingsArgs = record {
   memory_allocation : nat;
   compute_allocation : nat;
 };
-type EcdsaCurve = variant { secp256k1 };
-type EcdsaKeyId = record { name : text; curve : EcdsaCurve };
-type EcdsaPublicKeyArgument = record {
-  key_id : EcdsaKeyId;
-  canister_id : opt principal;
-  derivation_path : vec blob;
+type GetAddressError = variant { InternalError : record { msg : text } };
+type GetAddressRequest = record {
+  network : BitcoinNetwork;
+  address_type : BitcoinAddressType;
 };
-type EcdsaPublicKeyResponse = record { public_key : blob; chain_code : blob };
-type GenericSigningError = variant {
-  SigningError : record { RejectionCode; text };
-  PaymentError : PaymentError;
-};
+type GetAddressResponse = record { address : text };
+type GetBalanceResponse = record { balance : nat64 };
 type HttpRequest = record {
   url : text;
   method : text;
@@ -54,39 +48,8 @@ type InitArg = record {
   ic_root_key_der : opt blob;
   cycles_ledger : opt principal;
 };
-type PatronPaysIcrc2Tokens = record { ledger : principal; patron : Account };
-type PaymentError = variant {
-  LedgerUnreachable : CallerPaysIcrc2Tokens;
-  UnsupportedPaymentType;
-  LedgerError : record { error : WithdrawFromError; ledger : principal };
-  InsufficientFunds : record { needed : nat64; available : nat64 };
-};
-type PaymentType = variant {
-  PatronPaysIcrc2Tokens : PatronPaysIcrc2Tokens;
-  AttachedCycles;
-  CallerPaysIcrc2Cycles;
-  CallerPaysIcrc2Tokens : CallerPaysIcrc2Tokens;
-  PatronPaysIcrc2Cycles : Account;
-};
-type RejectionCode = variant {
-  NoError;
-  CanisterError;
-  SysTransient;
-  DestinationInvalid;
-  Unknown;
-  SysFatal;
-  CanisterReject;
-};
-type Result = variant { Ok : text; Err : GenericSigningError };
-type Result_1 = variant { Ok : nat64; Err : GenericSigningError };
-type Result_2 = variant {
-  Ok : record { EcdsaPublicKeyResponse };
-  Err : GenericSigningError;
-};
-type Result_3 = variant {
-  Ok : record { SignWithEcdsaResponse };
-  Err : GenericSigningError;
-};
+type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
+type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
 type SignRequest = record {
   to : text;
   gas : nat;
@@ -97,48 +60,12 @@ type SignRequest = record {
   chain_id : nat;
   nonce : nat;
 };
-type SignWithEcdsaArgument = record {
-  key_id : EcdsaKeyId;
-  derivation_path : vec blob;
-  message_hash : blob;
-};
-type SignWithEcdsaResponse = record { signature : blob };
-type WithdrawFromError = variant {
-  GenericError : record { message : text; error_code : nat };
-  TemporarilyUnavailable;
-  InsufficientAllowance : record { allowance : nat };
-  Duplicate : record { duplicate_of : nat };
-  InvalidReceiver : record { receiver : principal };
-  CreatedInFuture : record { ledger_time : nat64 };
-  TooOld;
-  FailedToWithdrawFrom : record {
-    withdraw_from_block : opt nat;
-    rejection_code : RejectionCode;
-    refund_block : opt nat;
-    approval_refund_block : opt nat;
-    rejection_reason : text;
-  };
-  InsufficientFunds : record { balance : nat };
-};
 service : (Arg) -> {
-  btc_caller_address : (BitcoinNetwork, opt PaymentType) -> (Result);
-  btc_caller_balance : (BitcoinNetwork, opt PaymentType) -> (Result_1);
-  caller_btc_address : (BitcoinNetwork) -> (text);
-  caller_btc_balance : (BitcoinNetwork) -> (nat64);
+  btc_caller_address : (GetAddressRequest) -> (Result);
+  btc_caller_balance : (GetAddressRequest) -> (Result_1);
   caller_eth_address : () -> (text);
   config : () -> (Config) query;
   eth_address_of : (principal) -> (text);
-  eth_address_of_caller : (opt PaymentType) -> (Result);
-  eth_address_of_principal : (principal, opt PaymentType) -> (Result);
-  eth_personal_sign : (text, opt PaymentType) -> (Result);
-  eth_sign_transaction : (SignRequest, opt PaymentType) -> (Result);
-  generic_caller_ecdsa_public_key : (
-      EcdsaPublicKeyArgument,
-      opt PaymentType,
-    ) -> (Result_2);
-  generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgument) -> (
-      Result_3,
-    );
   get_canister_status : () -> (CanisterStatusResultV2);
   http_request : (HttpRequest) -> (HttpResponse) query;
   personal_sign : (text) -> (text);
