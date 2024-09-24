@@ -26,6 +26,9 @@ pub async fn build_p2wpkh_transaction(
     fee: u64,
     request_outputs: Vec<BtcTxOutput>,
 ) -> Result<Transaction, String> {
+    // Assume that any amount below this threshold is dust.
+    const DUST_THRESHOLD: u64 = 1_000;
+
     let own_address = Address::from_str(&source_address)
         .unwrap()
         .require_network(transform_network(network))
@@ -44,14 +47,11 @@ pub async fn build_p2wpkh_transaction(
                 txid: Txid::from_raw_hash(Hash::from_slice(&utxo.outpoint.txid).unwrap()),
                 vout: utxo.outpoint.vout,
             },
-            sequence: Sequence(0xFFFFFFFF),
+            sequence: Sequence(0xFFFF_FFFF),
             witness: Witness::new(),
             script_sig: ScriptBuf::new(),
         })
         .collect();
-
-    // Assume that any amount below this threshold is dust.
-    const DUST_THRESHOLD: u64 = 1_000;
 
     let total_spent: u64 = utxos_to_spend.iter().map(|u| u.value).sum();
 
@@ -117,7 +117,7 @@ pub async fn btc_sign_transaction(
         .require_network(transform_network(network))
         .expect("Network check failed");
     for (index, input) in transaction.input.iter_mut().enumerate() {
-        let value = get_input_value(&input, utxos).expect("input value not found in passed utxos");
+        let value = get_input_value(input, utxos).expect("input value not found in passed utxos");
         let sighash = SighashCache::new(&txclone)
             .p2wpkh_signature_hash(
                 index,
@@ -135,16 +135,16 @@ pub async fn btc_sign_transaction(
         .await?;
 
         // Convert signature to DER.
-        let der_signature = sec1_to_der(signature);
+        let der_signature = sec1_to_der(&signature);
 
         let mut sig_with_hashtype: Vec<u8> = der_signature;
-        sig_with_hashtype.push(ECDSA_SIG_HASH_TYPE.to_u32() as u8);
+        sig_with_hashtype.push(u8::try_from(ECDSA_SIG_HASH_TYPE.to_u32()).expect("Error converting ECDSA_SIG_HASH_TYPE"));
 
         let sig_with_hashtype_push_bytes = PushBytesBuf::try_from(sig_with_hashtype).unwrap();
-        let own_public_key_push_bytes = PushBytesBuf::try_from(user_public_key.to_vec()).unwrap();
+        let own_public_key_push_bytes = PushBytesBuf::try_from(user_public_key.clone()).unwrap();
         let mut witness = Witness::new();
-        witness.push(&sig_with_hashtype_push_bytes.as_bytes());
-        witness.push(&own_public_key_push_bytes.as_bytes());
+        witness.push(sig_with_hashtype_push_bytes.as_bytes());
+        witness.push(own_public_key_push_bytes.as_bytes());
         input.witness = witness;
     }
 
