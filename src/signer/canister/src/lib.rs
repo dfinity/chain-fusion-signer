@@ -246,9 +246,10 @@ async fn sign_prehash(prehash: String) -> String {
 
 /// Returns the Bitcoin address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
+#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 async fn btc_caller_address(
     params: GetAddressRequest,
-    _payment: Option<PaymentType>,
+    payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetAddressResponse, GetAddressError> {
     /* TODO: uncomment when the payment guard is ready
     PAYMENT_GUARD
@@ -273,9 +274,10 @@ async fn btc_caller_address(
 
 /// Returns the Bitcoin balance of the caller's address.
 #[update(guard = "caller_is_not_anonymous")]
+#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 async fn btc_caller_balance(
     params: GetBalanceRequest,
-    _payment: Option<PaymentType>,
+    payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetBalanceResponse, GetBalanceError> {
     /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
