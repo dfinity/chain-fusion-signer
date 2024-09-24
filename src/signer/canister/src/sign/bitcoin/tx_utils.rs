@@ -138,7 +138,10 @@ pub async fn btc_sign_transaction(
         let der_signature = sec1_to_der(&signature);
 
         let mut sig_with_hashtype: Vec<u8> = der_signature;
-        sig_with_hashtype.push(u8::try_from(ECDSA_SIG_HASH_TYPE.to_u32()).expect("Error converting ECDSA_SIG_HASH_TYPE"));
+        sig_with_hashtype.push(
+            u8::try_from(ECDSA_SIG_HASH_TYPE.to_u32())
+                .expect("Error converting ECDSA_SIG_HASH_TYPE"),
+        );
 
         let sig_with_hashtype_push_bytes = PushBytesBuf::try_from(sig_with_hashtype).unwrap();
         let own_public_key_push_bytes = PushBytesBuf::try_from(user_public_key.clone()).unwrap();
