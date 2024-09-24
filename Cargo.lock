@@ -2353,6 +2353,7 @@ dependencies = [
  "ic-cdk 0.16.0",
  "ic-cdk-macros 0.16.0",
  "ic-chain-fusion-signer-api",
+ "ic-papi-api",
  "ic-papi-guard",
  "ic-stable-structures",
  "k256",

@@ -1,9 +1,12 @@
 use crate::types::{Candid, ConfigCell};
+use candid::Principal;
 use ic_chain_fusion_signer_api::types::{Config, InitArg};
+use ic_papi_guard::guards::any::{AnyPaymentGuard, VendorPaymentConfig};
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
 };
+use lazy_static::lazy_static;
 use std::cell::RefCell;
 
 const CONFIG_MEMORY_ID: MemoryId = MemoryId::new(0);
@@ -54,4 +57,25 @@ pub fn set_config(arg: InitArg) {
             .set(Some(Candid(config)))
             .expect("setting config should succeed");
     });
+}
+
+lazy_static! {
+    pub static ref PAYMENT_GUARD: AnyPaymentGuard<5> = AnyPaymentGuard {
+        supported: [
+            VendorPaymentConfig::AttachedCycles,
+            VendorPaymentConfig::CallerPaysIcrc2Cycles,
+            VendorPaymentConfig::PatronPaysIcrc2Cycles,
+            VendorPaymentConfig::CallerPaysIcrc2Tokens {
+                ledger: payment_ledger(),
+            },
+            VendorPaymentConfig::PatronPaysIcrc2Tokens {
+                ledger: payment_ledger(),
+            },
+        ],
+    };
+}
+
+/// Provides the canister id of the ledger used for payments.
+pub fn payment_ledger() -> Principal {
+    read_config(|config| config.cycles_ledger)
 }
