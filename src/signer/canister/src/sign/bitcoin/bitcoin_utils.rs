@@ -27,7 +27,7 @@ async fn ecdsa_pubkey_of(principal: &Principal) -> Result<Vec<u8>, String> {
     }
 }
 
-fn transform_network(network: BitcoinNetwork) -> Network {
+pub fn transform_network(network: BitcoinNetwork) -> Network {
     match network {
         BitcoinNetwork::Mainnet => Network::Bitcoin,
         BitcoinNetwork::Testnet => Network::Testnet,

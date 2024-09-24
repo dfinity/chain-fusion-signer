@@ -45,7 +45,7 @@ pub mod transaction {
 
 pub mod bitcoin {
     use candid::{CandidType, Deserialize};
-    use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+    use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
     use ic_papi_api::PaymentError;
 
     #[derive(CandidType, Deserialize, Debug)]
@@ -83,6 +83,32 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub enum GetBalanceError {
+        InternalError { msg: String },
+        PaymentError(PaymentError),
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct BtcTxOutput {
+        pub destination_address: String,
+        pub sent_satoshis: u64,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct SendBtcRequest {
+        pub network: BitcoinNetwork,
+        pub address_type: BitcoinAddressType,
+        pub utxos_to_spend: Vec<Utxo>,
+        pub fee_satoshis: Option<u64>,
+        pub outputs: Vec<BtcTxOutput>,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct SendBtcResponse {
+        pub txid: String,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub enum SendBtcError {
         InternalError { msg: String },
         PaymentError(PaymentError),
     }
