@@ -47,7 +47,8 @@ pub async fn get_fee_per_byte(network: BitcoinNetwork) -> Result<u64, String> {
         // we use a default of 2000 millisatoshis/byte (i.e. 2 satoshi/byte)
         Ok(2000)
     } else {
-        Ok(fee_percentiles[50])
+        let middle = fee_percentiles.len() / 2;
+        Ok(fee_percentiles[middle])
     }
 }
 

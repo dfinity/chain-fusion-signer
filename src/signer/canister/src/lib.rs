@@ -334,7 +334,7 @@ async fn btc_caller_send(
                 bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
                     .await
                     .map_err(|msg| SendBtcError::InternalError { msg })?;
-            let fee = calculate_fee(params.fee_satoshis, &params.utxos_to_spend, params.network)
+            let fee = calculate_fee(params.fee_satoshis, &params.utxos_to_spend, params.network, params.outputs.len() as u64)
                 .await
                 .map_err(|msg| SendBtcError::InternalError { msg })?;
 

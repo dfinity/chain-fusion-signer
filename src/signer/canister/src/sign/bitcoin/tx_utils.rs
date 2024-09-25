@@ -18,7 +18,9 @@ use std::str::FromStr;
 
 const ECDSA_SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
 
-// Converts a SEC1 ECDSA signature to the DER format.
+// TODO: Add testing - https://dfinity.atlassian.net/browse/GIX-3013
+/// Converts a SEC1 ECDSA signature to the DER format.
+/// [Reference Bitcoin Example](https://github.com/dfinity/examples/blob/aac0602139a2b3b9c509a126ee707ac9316912b0/rust/basic_bitcoin/src/basic_bitcoin/src/bitcoin_wallet/p2pkh.rs#L229)
 fn sec1_to_der(sec1_signature: &[u8]) -> Vec<u8> {
     let r: Vec<u8> = if sec1_signature[0] & 0x80 != 0 {
         // r is negative. Prepend a zero byte.
