@@ -29,11 +29,16 @@ For a test release, just push any tag and a release will be created for that tag
 
 For a production release:
 
+- Ensure that you have the development tools listed in `dev-tools.json` installed on your machine. In particular, you may need:
+  - `./scripts/setup cargo-edit`
 - Create a release branch.
 - Update the version numbers in the git repository, with: `./scripts/version-bump [patch|minor|major|alpha|beta|rc]` (default: patch)
 - Merge the release branch.
 - Tag the merged code with: `scripts/release`.
   - Note: This will create a tag and push it to GitHub. A GitHub action will then create a release.
+- Sanity check the release artifacts.
+- Write some release notes for the GitHub release, if you wish.
+- Make the release public.
 
 ## Deploy to `staging`
 
@@ -48,7 +53,7 @@ If you are a controller and wish to deploy a reproducible docker build:
 ```
 # Reproducible build
 ./scripts/docker-build
-# Note: The docker build artefacts are placed in the same location
+# Note: The docker build artifacts are placed in the same location
 #       as when running `dfx build signer --ic`
 
 # Inspect the Wasm and install arguments in `./out/`.
