@@ -19,7 +19,7 @@ dfx start --clean --background
 dfx deploy
 ```
 
-You can now visit the frontend in your browser and sign messages!
+You can now visit the front end in your browser and sign messages!
 
 ## GitHub Release
 
@@ -30,7 +30,7 @@ For a test release, just push any tag and a release will be created for that tag
 For a production release:
 
 - Create a release branch.
-- Update the version numbers in the repo, with: `./scripts/version-bump`
+- Update the version numbers in the git repository, with: `./scripts/version-bump`
 - Merge the release branch.
 - Tag the merged code with: `scripts/release`.
   - Note: This will create a tag and push it to GitHub. A GitHub action will then create a release.
@@ -43,7 +43,7 @@ If you are a controller of the staging canister, a quick release can be made wit
 dfx deploy signer --network staging
 ```
 
-If you are acontroller and wish to deploy a reproducible docker build:
+If you are a controller and wish to deploy a reproducible docker build:
 
 ```
 # Reproducible build
