@@ -6,6 +6,7 @@ This document lists information useful for development and deployment purpose.
 
 - [Demo](#demo)
 - [GitHub Release](#github-release)
+- [Deploy to `staging`](#deploy-to-staging)
 
 ## Demo
 
@@ -34,7 +35,7 @@ For a production release:
 - Tag the merged code with: `scripts/release`.
   - Note: This will create a tag and push it to GitHub. A GitHub action will then create a release.
 
-## Deploy to staging
+## Deploy to `staging`
 
 If you are a controller of the staging canister, a quick release can be made with:
 
