@@ -30,7 +30,7 @@ For a test release, just push any tag and a release will be created for that tag
 For a production release:
 
 - Create a release branch.
-- Update the version numbers in the git repository, with: `./scripts/version-bump`
+- Update the version numbers in the git repository, with: `./scripts/version-bump [patch|minor|major|alpha|beta|rc]` (default: patch)
 - Merge the release branch.
 - Tag the merged code with: `scripts/release`.
   - Note: This will create a tag and push it to GitHub. A GitHub action will then create a release.
