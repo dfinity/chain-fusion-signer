@@ -46,7 +46,14 @@ dfx deploy signer --network staging
 If you are acontroller and wish to deploy a reproducible docker build:
 
 ```
+# Reproducible build
 ./scripts/docker-build
+# Note: The docker build artefacts are placed in the same location
+#       as when running `dfx build signer --ic`
+
+# Inspect the Wasm and install arguments in `./out/`.
+
+# Deploy:
 dfx canister install signer --mode upgrade --upgrade-unchanged --network staging
 ```
 
