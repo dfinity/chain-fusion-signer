@@ -3,11 +3,13 @@ use ic_cdk::api::management_canister::ecdsa::{
     SignWithEcdsaArgument,
 };
 
+use crate::state::read_config;
+
 pub async fn get_ecdsa_signature(
-    key_name: String,
     derivation_path: Vec<Vec<u8>>,
     message_hash: Vec<u8>,
 ) -> Result<Vec<u8>, String> {
+    let key_name = read_config(|s| s.ecdsa_key_name.clone());
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
         name: key_name,
@@ -25,10 +27,8 @@ pub async fn get_ecdsa_signature(
 }
 
 /// Computes the public key of the specified principal.
-pub async fn ecdsa_pubkey_of(
-    key_name: String,
-    derivation_path: Vec<Vec<u8>>,
-) -> Result<Vec<u8>, String> {
+pub async fn ecdsa_pubkey_of(derivation_path: Vec<Vec<u8>>) -> Result<Vec<u8>, String> {
+    let key_name = read_config(|s| s.ecdsa_key_name.clone());
     let response = ecdsa_public_key(EcdsaPublicKeyArgument {
         canister_id: None,
         derivation_path,

@@ -329,14 +329,18 @@ async fn btc_caller_send(
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let principal = ic_cdk::caller();
-            let key_name = read_config(|s| s.ecdsa_key_name.clone());
             let source_address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
+                bitcoin_utils::principal_to_p2wpkh_address(params.network, &principal)
                     .await
                     .map_err(|msg| SendBtcError::InternalError { msg })?;
-            let fee = calculate_fee(params.fee_satoshis, &params.utxos_to_spend, params.network, params.outputs.len() as u64)
-                .await
-                .map_err(|msg| SendBtcError::InternalError { msg })?;
+            let fee = calculate_fee(
+                params.fee_satoshis,
+                &params.utxos_to_spend,
+                params.network,
+                params.outputs.len() as u64,
+            )
+            .await
+            .map_err(|msg| SendBtcError::InternalError { msg })?;
 
             let transaction = build_p2wpkh_transaction(
                 source_address.clone(),
@@ -353,7 +357,6 @@ async fn btc_caller_send(
                 transaction,
                 &params.utxos_to_spend,
                 source_address.clone(),
-                key_name,
                 params.network,
             )
             .await

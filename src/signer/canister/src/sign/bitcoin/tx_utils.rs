@@ -144,12 +144,11 @@ pub async fn btc_sign_transaction(
     mut transaction: Transaction,
     utxos: &[Utxo],
     source_address: String,
-    key_name: String,
     network: BitcoinNetwork,
 ) -> Result<SignedTransaction, String> {
     let derivation_path = Schema::Btc.derivation_path(principal);
     let txclone = transaction.clone();
-    let user_public_key = ecdsa_pubkey_of(key_name.clone(), derivation_path.clone()).await?;
+    let user_public_key = ecdsa_pubkey_of(derivation_path.clone()).await?;
     let own_address = Address::from_str(&source_address)
         .unwrap()
         .require_network(transform_network(network))
@@ -165,12 +164,8 @@ pub async fn btc_sign_transaction(
             )
             .unwrap();
 
-        let signature = get_ecdsa_signature(
-            key_name.clone(),
-            derivation_path.clone(),
-            sighash.as_byte_array().to_vec(),
-        )
-        .await?;
+        let signature =
+            get_ecdsa_signature(derivation_path.clone(), sighash.as_byte_array().to_vec()).await?;
 
         // Convert signature to DER.
         let der_signature = sec1_to_der(&signature);

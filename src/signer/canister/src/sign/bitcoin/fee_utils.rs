@@ -24,14 +24,22 @@ fn tx_vsize_estimate(input_count: u64, output_count: u64) -> u64 {
 ///   * `median_fee_millisatoshi_per_vbyte` - the median network fee, in millisatoshi per vbyte.
 ///
 /// Functions stolen from ckBTC Minter: [Reference](https://github.com/dfinity/ic/blob/285a5db07da50a4e350ec43bf3b488cc6fe36102/rs/bitcoin/ckbtc/minter/src/lib.rs#L1258)
-fn estimate_fee(selected_utxos: &[Utxo], median_fee_millisatoshi_per_vbyte: u64, output_count: u64) -> u64 {
+fn estimate_fee(
+    selected_utxos: &[Utxo],
+    median_fee_millisatoshi_per_vbyte: u64,
+    output_count: u64,
+) -> u64 {
     let input_count = selected_utxos.len() as u64;
 
     let vsize = tx_vsize_estimate(input_count, output_count);
     vsize * median_fee_millisatoshi_per_vbyte / 1000
 }
 
-async fn get_default_fee(utxos: &[Utxo], network: BitcoinNetwork, output_count: u64) -> Result<u64, String> {
+async fn get_default_fee(
+    utxos: &[Utxo],
+    network: BitcoinNetwork,
+    output_count: u64,
+) -> Result<u64, String> {
     let fee_per_byte = bitcoin_api::get_fee_per_byte(network).await?;
     Ok(estimate_fee(utxos, fee_per_byte, output_count))
 }
