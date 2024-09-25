@@ -14,6 +14,9 @@ use ic_chain_fusion_signer_api::types::bitcoin::GetAddressError;
 use ic_chain_fusion_signer_api::types::bitcoin::GetAddressRequest;
 use ic_chain_fusion_signer_api::types::bitcoin::GetAddressResponse;
 use ic_chain_fusion_signer_api::types::bitcoin::GetBalanceRequest;
+use ic_chain_fusion_signer_api::types::bitcoin::SendBtcError;
+use ic_chain_fusion_signer_api::types::bitcoin::SendBtcRequest;
+use ic_chain_fusion_signer_api::types::bitcoin::SendBtcResponse;
 use ic_chain_fusion_signer_api::types::bitcoin::{
     BitcoinAddressType, GetBalanceError, GetBalanceResponse,
 };
@@ -22,6 +25,9 @@ use ic_chain_fusion_signer_api::types::{Arg, Config};
 use ic_papi_api::PaymentType;
 use ic_papi_guard::guards::{PaymentContext, PaymentGuard2};
 use serde_bytes::ByteBuf;
+use sign::bitcoin::fee_utils::calculate_fee;
+use sign::bitcoin::tx_utils::btc_sign_transaction;
+use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::generic;
@@ -300,6 +306,72 @@ async fn btc_caller_balance(
                 .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             Ok(GetBalanceResponse { balance })
+        }
+    }
+}
+
+/// Creates, signs and sends a BTC transaction from the caller's address.
+#[update(guard = "caller_is_not_anonymous")]
+#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
+async fn btc_caller_send(
+    params: SendBtcRequest,
+    payment: Option<PaymentType>,
+) -> Result<SendBtcResponse, SendBtcError> {
+    /* TODO: Uncomment the payment guard once the payment is implemented.
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    */
+    match params.address_type {
+        BitcoinAddressType::P2WPKH => {
+            let principal = ic_cdk::caller();
+            let source_address =
+                bitcoin_utils::principal_to_p2wpkh_address(params.network, &principal)
+                    .await
+                    .map_err(|msg| SendBtcError::InternalError { msg })?;
+            let fee = calculate_fee(
+                params.fee_satoshis,
+                &params.utxos_to_spend,
+                params.network,
+                params.outputs.len() as u64,
+            )
+            .await
+            .map_err(|msg| SendBtcError::InternalError { msg })?;
+
+            let transaction = build_p2wpkh_transaction(
+                source_address.clone(),
+                params.network,
+                &params.utxos_to_spend,
+                fee,
+                params.outputs,
+            )
+            .await
+            .map_err(|msg| SendBtcError::InternalError { msg })?;
+
+            let signed_transaction = btc_sign_transaction(
+                &principal,
+                transaction,
+                &params.utxos_to_spend,
+                source_address.clone(),
+                params.network,
+            )
+            .await
+            .map_err(|msg| SendBtcError::InternalError { msg })?;
+
+            bitcoin_api::send_transaction(
+                params.network,
+                signed_transaction.signed_transaction_bytes,
+            )
+            .await
+            .map_err(|msg| SendBtcError::InternalError { msg })?;
+
+            Ok(SendBtcResponse {
+                txid: signed_transaction.txid,
+            })
         }
     }
 }
