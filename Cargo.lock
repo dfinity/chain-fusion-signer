@@ -404,7 +404,7 @@ dependencies = [
 
 [[package]]
 name = "cycles-ledger-client"
-version = "0.1.1-alpha.1"
+version = "0.2.1"
 dependencies = [
  "candid",
  "ic-cdk 0.16.0",
@@ -604,7 +604,7 @@ dependencies = [
 
 [[package]]
 name = "example_backend"
-version = "0.1.5-alpha.1"
+version = "0.2.1"
 dependencies = [
  "candid",
  "ic-cdk 0.16.0",
@@ -1082,7 +1082,7 @@ dependencies = [
 
 [[package]]
 name = "ic-chain-fusion-signer-api"
-version = "0.1.5-alpha.1"
+version = "0.2.1"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
@@ -1119,7 +1119,7 @@ checksum = "8b5c7628eac357aecda461130f8074468be5aa4d258a002032d82d817f79f1f8"
 
 [[package]]
 name = "ic-papi-api"
-version = "0.1.1-alpha.1"
+version = "0.2.1"
 dependencies = [
  "candid",
  "cycles-ledger-client",
@@ -1131,7 +1131,7 @@ dependencies = [
 
 [[package]]
 name = "ic-papi-guard"
-version = "0.1.1-alpha.1"
+version = "0.2.1"
 dependencies = [
  "candid",
  "cycles-ledger-client",
@@ -2342,7 +2342,7 @@ dependencies = [
 
 [[package]]
 name = "signer"
-version = "0.1.5-alpha.1"
+version = "0.2.1"
 dependencies = [
  "bitcoin",
  "candid",
