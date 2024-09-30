@@ -1,7 +1,7 @@
 //! Payment API error types.
 use candid::{CandidType, Deserialize, Principal};
 pub use cycles_ledger_client::Account;
-use cycles_ledger_client::WithdrawFromError;
+use cycles_ledger_client::{TransferFromError, WithdrawFromError};
 
 use crate::caller::TokenAmount;
 
@@ -12,9 +12,13 @@ pub enum PaymentError {
     LedgerUnreachable {
         ledger: Principal,
     },
-    LedgerError {
+    LedgerWithdrawFromError {
         ledger: Principal,
         error: WithdrawFromError,
+    },
+    LedgerTransferFromError {
+        ledger: Principal,
+        error: TransferFromError,
     },
     InsufficientFunds {
         needed: TokenAmount,

@@ -1,17 +1,16 @@
+//! Code to receive cycles as payment, credited to the canister, using ICRC-2 and a cycles-ledger specific withdrawal method.
 use super::{PaymentError, PaymentGuard};
 use candid::{Nat, Principal};
 use cycles_ledger_client::WithdrawFromArgs;
-use ic_papi_api::{caller::TokenAmount, Account};
+use ic_papi_api::{caller::TokenAmount, cycles::cycles_ledger_canister_id, Account};
 
+/// Accepts cycles using an ICRC-2 approve followed by withdrawing the cycles to the current canister.  Withdrawing
+/// cycles to the current canister is specific to the cycles ledger canister; it is not part of the ICRC-2 standard.
 pub struct Icrc2CyclesPaymentGuard {
     /// The payer
     pub payer_account: Account,
     /// The spender, if different from the payer.
     pub spender_subaccount: Option<serde_bytes::ByteBuf>,
-    /// The ICRC-2 time, if applicable.
-    pub created_at_time: Option<u64>,
-    /// The ledger to withdraw the cycles from.
-    pub ledger_canister_id: Principal,
     /// Own canister ID
     pub own_canister_id: Principal,
 }
@@ -45,9 +44,7 @@ impl Default for Icrc2CyclesPaymentGuard {
     fn default() -> Self {
         Self {
             payer_account: Self::default_account(),
-            ledger_canister_id: Self::default_cycles_ledger(),
             own_canister_id: ic_cdk::api::id(),
-            created_at_time: None,
             spender_subaccount: None,
         }
     }
@@ -55,32 +52,32 @@ impl Default for Icrc2CyclesPaymentGuard {
 
 impl PaymentGuard for Icrc2CyclesPaymentGuard {
     async fn deduct(&self, fee: TokenAmount) -> Result<(), PaymentError> {
-        cycles_ledger_client::Service(self.ledger_canister_id)
+        cycles_ledger_client::Service(cycles_ledger_canister_id())
             .withdraw_from(&WithdrawFromArgs {
                 to: self.own_canister_id,
                 amount: Nat::from(fee),
                 from: self.payer_account.clone(),
                 spender_subaccount: self.spender_subaccount.clone(),
-                created_at_time: self.created_at_time,
+                created_at_time: None,
             })
             .await
             .map_err(|(rejection_code, string)| {
                 eprintln!(
                     "Failed to reach ledger canister at {}: {rejection_code:?}: {string}",
-                    self.ledger_canister_id
+                    cycles_ledger_canister_id()
                 );
                 PaymentError::LedgerUnreachable {
-                    ledger: self.ledger_canister_id,
+                    ledger: cycles_ledger_canister_id(),
                 }
             })?
             .0
             .map_err(|error| {
                 eprintln!(
                     "Failed to withdraw from ledger canister at {}: {error:?}",
-                    self.ledger_canister_id
+                    cycles_ledger_canister_id()
                 );
-                PaymentError::LedgerError {
-                    ledger: self.ledger_canister_id,
+                PaymentError::LedgerWithdrawFromError {
+                    ledger: cycles_ledger_canister_id(),
                     error,
                 }
             })

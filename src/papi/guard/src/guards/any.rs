@@ -1,15 +1,17 @@
 //! Accepts any payment that the vendor accepts.
 
-use candid::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use ic_papi_api::{
     caller::{CallerPaysIcrc2Tokens, PatronPaysIcrc2Cycles, PatronPaysIcrc2Tokens, TokenAmount},
-    cycles::cycles_ledger_canister_id,
     principal2account, Account, PaymentError, PaymentType,
 };
 
 use super::{
-    attached_cycles::AttachedCyclesPayment, icrc2_cycles::Icrc2CyclesPaymentGuard, PaymentContext,
-    PaymentGuard, PaymentGuard2,
+    attached_cycles::AttachedCyclesPayment,
+    caller_pays_icrc2_tokens::CallerPaysIcrc2TokensPaymentGuard,
+    icrc2_cycles::Icrc2CyclesPaymentGuard,
+    patron_pays_icrc2_tokens::PatronPaysIcrc2TokensPaymentGuard, PaymentContext, PaymentGuard,
+    PaymentGuard2,
 };
 
 /// A guard that accepts a user-specified payment type, providing the vendor supports it.
@@ -26,14 +28,15 @@ pub enum VendorPaymentConfig {
     CallerPaysIcrc2Cycles,
     /// Cycles are received by the vendor canister.
     PatronPaysIcrc2Cycles,
-    /// Cycles are received by the vendor canister.
+    /// The caller pays tokens to the vendor's main account on the chosen ledger.
     CallerPaysIcrc2Tokens { ledger: Principal },
-    /// Cycles are received by the vendor canister.
+    /// A patron pays tokens to a subaccount belonging to the vendor on the chosen ledger.
+    /// - The vendor needs to move the tokens to their main account.
     PatronPaysIcrc2Tokens { ledger: Principal },
 }
 
 /// A user's requested payment type paired with a vendor's configuration.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, CandidType, Deserialize)]
 pub enum PaymentWithConfig {
     AttachedCycles,
     CallerPaysIcrc2Cycles,
@@ -60,13 +63,11 @@ impl<const CAP: usize> PaymentGuard2 for AnyPaymentGuard<CAP> {
             PaymentWithConfig::AttachedCycles => AttachedCyclesPayment {}.deduct(fee).await,
             PaymentWithConfig::CallerPaysIcrc2Cycles => {
                 Icrc2CyclesPaymentGuard {
-                    ledger_canister_id: cycles_ledger_canister_id(),
                     payer_account: Account {
                         owner: caller,
                         subaccount: None,
                     },
                     spender_subaccount: None,
-                    created_at_time: None,
                     own_canister_id,
                 }
                 .deduct(fee)
@@ -74,7 +75,6 @@ impl<const CAP: usize> PaymentGuard2 for AnyPaymentGuard<CAP> {
             }
             PaymentWithConfig::PatronPaysIcrc2Cycles(patron) => {
                 Icrc2CyclesPaymentGuard {
-                    ledger_canister_id: cycles_ledger_canister_id(),
                     payer_account: patron,
                     spender_subaccount: Some(principal2account(&caller)),
                     ..Icrc2CyclesPaymentGuard::default()
@@ -82,26 +82,17 @@ impl<const CAP: usize> PaymentGuard2 for AnyPaymentGuard<CAP> {
                 .deduct(fee)
                 .await
             }
-            PaymentWithConfig::CallerPaysIcrc2Tokens(args) => {
-                Icrc2CyclesPaymentGuard {
-                    ledger_canister_id: args.ledger,
-                    payer_account: Account {
-                        owner: caller,
-                        subaccount: None,
-                    },
-                    spender_subaccount: None,
-                    created_at_time: None,
-                    own_canister_id,
-                }
-                .deduct(fee)
-                .await
+            PaymentWithConfig::CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens { ledger }) => {
+                CallerPaysIcrc2TokensPaymentGuard { ledger }
+                    .deduct(fee)
+                    .await
             }
-            PaymentWithConfig::PatronPaysIcrc2Tokens(args) => {
-                Icrc2CyclesPaymentGuard {
-                    ledger_canister_id: args.ledger,
-                    payer_account: args.patron,
+            PaymentWithConfig::PatronPaysIcrc2Tokens(payment_type) => {
+                PatronPaysIcrc2TokensPaymentGuard {
+                    ledger: payment_type.ledger,
+                    payer_account: payment_type.patron,
                     spender_subaccount: Some(principal2account(&caller)),
-                    ..Icrc2CyclesPaymentGuard::default()
+                    own_canister_id,
                 }
                 .deduct(fee)
                 .await
@@ -111,7 +102,8 @@ impl<const CAP: usize> PaymentGuard2 for AnyPaymentGuard<CAP> {
 }
 impl<const CAP: usize> AnyPaymentGuard<CAP> {
     /// Find the vendor configuration for the offered payment type.
-    fn config(&self, payment: PaymentType) -> Option<PaymentWithConfig> {
+    #[must_use]
+    pub fn config(&self, payment: PaymentType) -> Option<PaymentWithConfig> {
         match payment {
             PaymentType::AttachedCycles => self
                 .supported
@@ -128,28 +120,24 @@ impl<const CAP: usize> AnyPaymentGuard<CAP> {
                 .iter()
                 .find(|&x| *x == VendorPaymentConfig::PatronPaysIcrc2Cycles)
                 .map(|_| PaymentWithConfig::PatronPaysIcrc2Cycles(patron)),
-            PaymentType::CallerPaysIcrc2Tokens(args) => self
+            PaymentType::CallerPaysIcrc2Tokens(payment_type) => self
                 .supported
                 .iter()
                 .find(|&x| {
-                    if let VendorPaymentConfig::CallerPaysIcrc2Tokens { ledger } = x {
-                        *ledger == args.ledger
-                    } else {
-                        false
+                    *x == VendorPaymentConfig::CallerPaysIcrc2Tokens {
+                        ledger: payment_type.ledger,
                     }
                 })
-                .map(|_| PaymentWithConfig::CallerPaysIcrc2Tokens(args)),
-            PaymentType::PatronPaysIcrc2Tokens(args) => self
+                .map(|_| PaymentWithConfig::CallerPaysIcrc2Tokens(payment_type)),
+            PaymentType::PatronPaysIcrc2Tokens(payment_type) => self
                 .supported
                 .iter()
                 .find(|&x| {
-                    if let VendorPaymentConfig::PatronPaysIcrc2Tokens { ledger } = x {
-                        *ledger == args.ledger
-                    } else {
-                        false
+                    *x == VendorPaymentConfig::PatronPaysIcrc2Tokens {
+                        ledger: payment_type.ledger,
                     }
                 })
-                .map(|_| PaymentWithConfig::PatronPaysIcrc2Tokens(args)),
+                .map(|_| PaymentWithConfig::PatronPaysIcrc2Tokens(payment_type)),
             _ => None,
         }
     }
