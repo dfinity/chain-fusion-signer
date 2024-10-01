@@ -21,7 +21,7 @@
 		"vitest": "^2.1.1"
 	},
 	"dependencies": {
-		"@dfinity/agent": "^2.1.1",
+		"@dfinity/agent": "^2.1.2",
 		"@dfinity/candid": "^2.1.1",
 		"@dfinity/principal": "^2.1.1",
 		"lit-html": "^3.2.0"
