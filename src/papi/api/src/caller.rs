@@ -18,7 +18,7 @@ pub enum PaymentType {
     PatronPaysIcrc2Cycles(PatronPaysIcrc2Cycles),
     /// The caller is paying with tokens from their main account on the specified ledger.
     CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens),
-    /// A patron is paying, on behalf of the caller, from their main account on the specified ledger.
+    /// A patron is paying, on behalf of the caller, from an account on the specified ledger.
     PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens),
 }
 

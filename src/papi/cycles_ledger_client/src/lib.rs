@@ -261,7 +261,7 @@ pub struct TransferFromArgs {
     pub created_at_time: Option<u64>,
     pub amount: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug, Clone)]
+#[derive(CandidType, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum TransferFromError {
     GenericError {
         message: String,
