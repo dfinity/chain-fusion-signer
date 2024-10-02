@@ -108,8 +108,17 @@ pub mod bitcoin {
     }
 
     #[derive(CandidType, Deserialize, Debug)]
+    pub enum BuildP2wpkhTxError {
+        NotP2WPKHSourceAddress,
+        InvalidDestinationAddress { address: String },
+        InvalidSourceAddress { address: String },
+        WrongBitcoinNetwork,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
     pub enum SendBtcError {
         InternalError { msg: String },
         PaymentError(PaymentError),
+        BuildP2wpkhError(BuildP2wpkhTxError),
     }
 }

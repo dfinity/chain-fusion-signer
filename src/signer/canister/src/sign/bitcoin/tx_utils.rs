@@ -13,7 +13,7 @@ use bitcoin::{
 };
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
-use ic_chain_fusion_signer_api::types::bitcoin::BtcTxOutput;
+use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 use std::str::FromStr;
 
 const ECDSA_SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
@@ -63,14 +63,16 @@ pub async fn build_p2wpkh_transaction(
     utxos_to_spend: &[Utxo],
     fee: u64,
     request_outputs: Vec<BtcTxOutput>,
-) -> Result<Transaction, String> {
+) -> Result<Transaction, BuildP2wpkhTxError> {
     // Assume that any amount below this threshold is dust.
     const DUST_THRESHOLD: u64 = 1_000;
 
     let own_address = Address::from_str(&source_address)
-        .unwrap()
+        .map_err(|_| BuildP2wpkhTxError::InvalidSourceAddress {
+            address: source_address.clone(),
+        })?
         .require_network(transform_network(network))
-        .expect("Network check failed");
+        .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?;
 
     assert_eq!(
         own_address.address_type(),
@@ -93,36 +95,49 @@ pub async fn build_p2wpkh_transaction(
 
     let total_spent: u64 = utxos_to_spend.iter().map(|u| u.value).sum();
 
-    let mut outputs: Vec<TxOut> = request_outputs
+    let outputs_result: Result<Vec<TxOut>, BuildP2wpkhTxError> = request_outputs
         .iter()
-        .map(|output| TxOut {
-            script_pubkey: Address::from_str(&output.destination_address)
-                .unwrap()
+        .map(|output| {
+            let address = Address::from_str(&output.destination_address).map_err(|_| {
+                BuildP2wpkhTxError::InvalidDestinationAddress {
+                    address: output.destination_address.clone(),
+                }
+            })?; // Convert from ParseError to BuildP2wpkhError
+
+            let address = address
                 .require_network(transform_network(network))
-                .map(|address| address.script_pubkey())
-                .expect("Failed decoding destination address"),
-            value: Amount::from_sat(output.sent_satoshis),
+                .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?; // Convert from ParseError to BuildP2wpkhError
+
+            Ok(TxOut {
+                script_pubkey: address.script_pubkey(),
+                value: Amount::from_sat(output.sent_satoshis),
+            })
         })
         .collect();
 
-    let sent_amount: u64 = outputs.iter().map(|u| u.value.to_sat()).sum();
-    // The fee is set with leaving that amount of difference between the inputs and outputs values.
-    // For example, if the inputs sum 200 and the fee is 20, then the outputs should sum 180.
-    let remaining_amount = total_spent - sent_amount - fee;
+    match outputs_result {
+        Ok(mut outputs) => {
+            let sent_amount: u64 = outputs.iter().map(|u| u.value.to_sat()).sum();
+            // The fee is set with leaving that amount of difference between the inputs and outputs values.
+            // For example, if the inputs sum 200 and the fee is 20, then the outputs should sum 180.
+            let remaining_amount = total_spent - sent_amount - fee;
 
-    if remaining_amount >= DUST_THRESHOLD {
-        outputs.push(TxOut {
-            script_pubkey: own_address.script_pubkey(),
-            value: Amount::from_sat(remaining_amount),
-        });
+            if remaining_amount >= DUST_THRESHOLD {
+                outputs.push(TxOut {
+                    script_pubkey: own_address.script_pubkey(),
+                    value: Amount::from_sat(remaining_amount),
+                });
+            }
+
+            Ok(Transaction {
+                input: inputs,
+                output: outputs,
+                lock_time: LockTime::ZERO,
+                version: Version::TWO,
+            })
+        }
+        Err(e) => Err(e),
     }
-
-    Ok(Transaction {
-        input: inputs,
-        output: outputs,
-        lock_time: LockTime::ZERO,
-        version: Version::TWO,
-    })
 }
 
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
