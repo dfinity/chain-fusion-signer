@@ -3,6 +3,12 @@ type Arg = variant { Upgrade; Init : InitArg };
 type BitcoinAddressType = variant { P2WPKH };
 type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type BtcTxOutput = record { destination_address : text; sent_satoshis : nat64 };
+type BuildP2wpkhTxError = variant {
+  WrongBitcoinNetwork;
+  NotP2WPKHSourceAddress;
+  InvalidDestinationAddress : GetAddressResponse;
+  InvalidSourceAddress : GetAddressResponse;
+};
 type CallerPaysIcrc2Tokens = record { ledger : principal };
 type CanisterStatusResultV2 = record {
   controller : principal;
@@ -69,9 +75,16 @@ type InitArg = record {
 type Outpoint = record { txid : blob; vout : nat32 };
 type PatronPaysIcrc2Tokens = record { ledger : principal; patron : Account };
 type PaymentError = variant {
+  LedgerWithdrawFromError : record {
+    error : WithdrawFromError;
+    ledger : principal;
+  };
   LedgerUnreachable : CallerPaysIcrc2Tokens;
+  LedgerTransferFromError : record {
+    error : TransferFromError;
+    ledger : principal;
+  };
   UnsupportedPaymentType;
-  LedgerError : record { error : WithdrawFromError; ledger : principal };
   InsufficientFunds : record { needed : nat64; available : nat64 };
 };
 type PaymentType = variant {
@@ -112,6 +125,7 @@ type Result_5 = variant {
   Err : GenericSigningError;
 };
 type SendBtcError = variant {
+  BuildP2wpkhError : BuildP2wpkhTxError;
   InternalError : record { msg : text };
   PaymentError : PaymentError;
 };
@@ -139,6 +153,17 @@ type SignWithEcdsaArgument = record {
   message_hash : blob;
 };
 type SignWithEcdsaResponse = record { signature : blob };
+type TransferFromError = variant {
+  GenericError : record { message : text; error_code : nat };
+  TemporarilyUnavailable;
+  InsufficientAllowance : record { allowance : nat };
+  BadBurn : record { min_burn_amount : nat };
+  Duplicate : record { duplicate_of : nat };
+  BadFee : record { expected_fee : nat };
+  CreatedInFuture : record { ledger_time : nat64 };
+  TooOld;
+  InsufficientFunds : record { balance : nat };
+};
 type Utxo = record { height : nat32; value : nat64; outpoint : Outpoint };
 type WithdrawFromError = variant {
   GenericError : record { message : text; error_code : nat };
