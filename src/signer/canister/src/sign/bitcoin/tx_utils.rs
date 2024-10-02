@@ -8,11 +8,11 @@ use crate::{
 use bitcoin::consensus::serialize;
 use bitcoin::{
     absolute::LockTime, hashes::Hash, script::PushBytesBuf, sighash::SighashCache,
-    transaction::Version, Address, AddressType, Amount, EcdsaSighashType, OutPoint, ScriptBuf,
-    Sequence, Transaction, TxIn, TxOut, Txid, Witness,
+    transaction::Version, Address, AddressType, Amount, EcdsaSighashType, ScriptBuf,
+    Sequence, Transaction, TxIn, TxOut, Txid, Witness, OutPoint as BitcoinOutPoint,
 };
 use candid::Principal;
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
 use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 use std::str::FromStr;
 
@@ -83,7 +83,7 @@ pub async fn build_p2wpkh_transaction(
     let inputs: Vec<TxIn> = utxos_to_spend
         .iter()
         .map(|utxo| TxIn {
-            previous_output: OutPoint {
+            previous_output: BitcoinOutPoint {
                 txid: Txid::from_raw_hash(Hash::from_slice(&utxo.outpoint.txid).unwrap()),
                 vout: utxo.outpoint.vout,
             },
@@ -140,12 +140,16 @@ pub async fn build_p2wpkh_transaction(
     }
 }
 
+fn is_same_outpoint(txin_outpoint: &BitcoinOutPoint, utxo_outpout: &IcCdkOutPoint) -> bool {
+    txin_outpoint.vout == utxo_outpout.vout && txin_outpoint.txid == Txid::from_raw_hash(Hash::from_slice(&utxo_outpout.txid).unwrap())
+}
+
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
     // The `previous_output` field in `TxIn` contains the `OutPoint`, which includes
     // the TXID and the output vout that this input is spending from.
     outputs
         .iter()
-        .find(|output| output.outpoint.vout == input.previous_output.vout)
+        .find(|output| is_same_outpoint(&input.previous_output, &output.outpoint))
         .map(|output| Amount::from_sat(output.value))
 }
 
