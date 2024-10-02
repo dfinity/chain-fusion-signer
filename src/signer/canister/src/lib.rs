@@ -343,11 +343,11 @@ async fn btc_caller_send(
             .map_err(|msg| SendBtcError::InternalError { msg })?;
 
             let transaction = build_p2wpkh_transaction(
-                source_address.clone(),
+                &source_address,
                 params.network,
                 &params.utxos_to_spend,
                 fee,
-                params.outputs,
+                &params.outputs,
             )
             .map_err(SendBtcError::BuildP2wpkhError)?;
 

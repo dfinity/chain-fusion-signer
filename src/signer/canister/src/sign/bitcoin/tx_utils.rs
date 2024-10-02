@@ -83,15 +83,15 @@ fn calculate_remaining_amount(
 }
 
 pub fn build_p2wpkh_transaction(
-    source_address: String,
+    source_address: &str,
     network: BitcoinNetwork,
     utxos_to_spend: &[Utxo],
     fee: u64,
-    request_outputs: Vec<BtcTxOutput>,
+    request_outputs: &[BtcTxOutput],
 ) -> Result<Transaction, BuildP2wpkhTxError> {
-    let own_address = Address::from_str(&source_address)
+    let own_address = Address::from_str(source_address)
         .map_err(|_| BuildP2wpkhTxError::InvalidSourceAddress {
-            address: source_address.clone(),
+            address: source_address.to_string(),
         })?
         .require_network(transform_network(network))
         .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?;
@@ -364,7 +364,7 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_not_enough_funds() {
-        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string(); // Valid source address
+        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Valid source address
 
         let mock_utxos = get_mock_utxos();
         let first_mock = mock_utxos.first().unwrap();
@@ -376,7 +376,7 @@ mod tests {
             BitcoinNetwork::Mainnet,
             &utxos,
             tx_fee,
-            vec![BtcTxOutput {
+            &vec![BtcTxOutput {
                 destination_address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string(),
                 sent_satoshis: first_mock.utxo.value,
             }],
@@ -396,14 +396,14 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_invalid_source_address() {
-        let invalid_address = "invalid_address".to_string();
+        let invalid_address = "invalid_address";
 
         let result = build_p2wpkh_transaction(
             invalid_address.clone(),
             BitcoinNetwork::Mainnet,
             &[],
             10,
-            vec![],
+            &vec![],
         );
 
         match result {
@@ -416,14 +416,14 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_wrong_bitcoin_network() {
-        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string(); // Valid mainnet P2wpkh address
+        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Valid mainnet P2wpkh address
 
         let result = build_p2wpkh_transaction(
             source_address,
             BitcoinNetwork::Testnet, // Incorrect network for the address
             &[],
             10,
-            vec![],
+            &vec![],
         );
 
         match result {
@@ -434,7 +434,7 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_invalid_destination_address() {
-        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string();
+        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
         let invalid_address = "invalid_destination".to_string();
 
         let result = build_p2wpkh_transaction(
@@ -442,7 +442,7 @@ mod tests {
             BitcoinNetwork::Mainnet,
             &[],
             10,
-            vec![BtcTxOutput {
+            &vec![BtcTxOutput {
                 destination_address: invalid_address.clone(),
                 sent_satoshis: 1000,
             }],
@@ -458,10 +458,10 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_not_p2wpkh_source_address() {
-        let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa".to_string(); // This is a legacy P2PKH address, not P2WPKH
+        let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH address, not P2WPKH
 
         let result =
-            build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, vec![]);
+            build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
 
         match result {
             Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {} // Success if this error is returned
@@ -471,7 +471,7 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_successful_transaction() {
-        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string();
+        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
         let wrapped_utxos = get_mock_utxos();
         let utxos: Vec<Utxo> = wrapped_utxos
@@ -494,7 +494,7 @@ mod tests {
             BitcoinNetwork::Mainnet,
             &utxos,
             tx_fee,
-            request_outputs,
+            &request_outputs,
         );
 
         // Assert success
