@@ -396,13 +396,8 @@ mod tests {
     fn test_build_p2wpkh_transaction_invalid_source_address() {
         let invalid_address = "invalid_address";
 
-        let result = build_p2wpkh_transaction(
-            invalid_address,
-            BitcoinNetwork::Mainnet,
-            &[],
-            10,
-            &vec![],
-        );
+        let result =
+            build_p2wpkh_transaction(invalid_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
 
         match result {
             Err(BuildP2wpkhTxError::InvalidSourceAddress { address }) => {
