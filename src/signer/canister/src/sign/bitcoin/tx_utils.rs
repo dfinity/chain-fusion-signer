@@ -142,7 +142,7 @@ pub async fn build_p2wpkh_transaction(
 
 fn is_same_outpoint(txin_outpoint: &BitcoinOutPoint, utxo_outpout: &IcCdkOutPoint) -> bool {
     txin_outpoint.vout == utxo_outpout.vout
-        && txin_outpoint.txid.as_byte_array().to_vec() == utxo_outpout.txid
+        && txin_outpoint.txid.as_byte_array()[..] == utxo_outpout.txid[..]
 }
 
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
