@@ -75,7 +75,10 @@ fn calculate_remaining_amount(
     {
         Ok(remaining_amount)
     } else {
-        Err(BuildP2wpkhTxError::NotEnoughFunds { required: sent_amount + fee, available: utxos_amount })
+        Err(BuildP2wpkhTxError::NotEnoughFunds {
+            required: sent_amount + fee,
+            available: utxos_amount,
+        })
     }
 }
 
@@ -236,9 +239,11 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{
-        hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness
+        hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
     };
-    use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
+    use ic_cdk::api::management_canister::bitcoin::{
+        BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo,
+    };
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
     use super::{build_p2wpkh_transaction, get_input_value, DUST_THRESHOLD};
@@ -455,13 +460,8 @@ mod tests {
     fn test_build_p2wpkh_transaction_not_p2wpkh_source_address() {
         let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa".to_string(); // This is a legacy P2PKH address, not P2WPKH
 
-        let result = build_p2wpkh_transaction(
-            source_address,
-            BitcoinNetwork::Mainnet,
-            &[],
-            10,
-            vec![],
-        );
+        let result =
+            build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, vec![]);
 
         match result {
             Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {} // Success if this error is returned
@@ -474,7 +474,10 @@ mod tests {
         let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string();
 
         let wrapped_utxos = get_mock_utxos();
-        let utxos: Vec<Utxo> = wrapped_utxos.iter().map(|wrapper| wrapper.utxo.clone()).collect();
+        let utxos: Vec<Utxo> = wrapped_utxos
+            .iter()
+            .map(|wrapper| wrapper.utxo.clone())
+            .collect();
         let utxos_amount: u64 = utxos.iter().map(|utxo| utxo.value).sum();
         let tx_fee = 400;
         let remaining = DUST_THRESHOLD * 2;
@@ -499,7 +502,7 @@ mod tests {
             Ok(tx) => {
                 assert_eq!(tx.input.len(), utxos.len());
                 assert_eq!(tx.output.len(), 2); // 2 outputs (one for the destination, one for the change)
-                
+
                 // Check that the first output matches the sent amount
                 assert_eq!(tx.output[0].value.to_sat(), amount_sent);
 
