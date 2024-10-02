@@ -113,6 +113,7 @@ pub mod bitcoin {
         InvalidDestinationAddress { address: String },
         InvalidSourceAddress { address: String },
         WrongBitcoinNetwork,
+        NotEnoughFunds { required: u64, available: u64 },
     }
 
     #[derive(CandidType, Deserialize, Debug)]

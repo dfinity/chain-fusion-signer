@@ -349,7 +349,6 @@ async fn btc_caller_send(
                 fee,
                 params.outputs,
             )
-            .await
             .map_err(SendBtcError::BuildP2wpkhError)?;
 
             let signed_transaction = btc_sign_transaction(
