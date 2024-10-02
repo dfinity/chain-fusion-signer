@@ -8,8 +8,8 @@ use crate::{
 use bitcoin::consensus::serialize;
 use bitcoin::{
     absolute::LockTime, hashes::Hash, script::PushBytesBuf, sighash::SighashCache,
-    transaction::Version, Address, AddressType, Amount, EcdsaSighashType, ScriptBuf,
-    Sequence, Transaction, TxIn, TxOut, Txid, Witness, OutPoint as BitcoinOutPoint,
+    transaction::Version, Address, AddressType, Amount, EcdsaSighashType,
+    OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
@@ -141,7 +141,8 @@ pub async fn build_p2wpkh_transaction(
 }
 
 fn is_same_outpoint(txin_outpoint: &BitcoinOutPoint, utxo_outpout: &IcCdkOutPoint) -> bool {
-    txin_outpoint.vout == utxo_outpout.vout && txin_outpoint.txid.as_byte_array().to_vec() == utxo_outpout.txid
+    txin_outpoint.vout == utxo_outpout.vout
+        && txin_outpoint.txid.as_byte_array().to_vec() == utxo_outpout.txid
 }
 
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
@@ -217,7 +218,9 @@ pub async fn btc_sign_transaction(
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{hashes::Hash, ScriptBuf, Sequence, TxIn, Txid, Witness, OutPoint as BitcoinOutPoint,};
+    use bitcoin::{
+        hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
+    };
     use ic_cdk::api::management_canister::bitcoin::{Outpoint as IcCdkOutPoint, Utxo};
 
     use super::get_input_value;
@@ -286,7 +289,7 @@ mod tests {
             UtxoWrapper {
                 utxo: utxo4,
                 txid: txid4,
-            }
+            },
         ]
     }
 
@@ -304,7 +307,10 @@ mod tests {
             script_sig: ScriptBuf::new(),
         };
 
-        let utxos: Vec<Utxo> = mock_utxos.iter().map(|wrapper| wrapper.utxo.clone()).collect();
+        let utxos: Vec<Utxo> = mock_utxos
+            .iter()
+            .map(|wrapper| wrapper.utxo.clone())
+            .collect();
         let value = get_input_value(&input, &utxos);
         assert_eq!(value.unwrap().to_sat(), first_mock.utxo.value);
     }
@@ -325,7 +331,10 @@ mod tests {
             script_sig: ScriptBuf::new(),
         };
 
-        let utxos: Vec<Utxo> = mock_utxos.iter().map(|wrapper| wrapper.utxo.clone()).collect();
+        let utxos: Vec<Utxo> = mock_utxos
+            .iter()
+            .map(|wrapper| wrapper.utxo.clone())
+            .collect();
         let value = get_input_value(&input, &utxos);
         assert!(value.is_none());
     }
