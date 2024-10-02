@@ -96,11 +96,9 @@ pub fn build_p2wpkh_transaction(
         .require_network(transform_network(network))
         .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?;
 
-    assert_eq!(
-        own_address.address_type(),
-        Some(AddressType::P2wpkh),
-        "Address must be of type p2wpkh."
-    );
+    if own_address.address_type() != Some(AddressType::P2wpkh) {
+        return Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress);
+    }
 
     let inputs: Vec<TxIn> = utxos_to_spend
         .iter()
