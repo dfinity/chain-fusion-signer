@@ -141,7 +141,7 @@ pub async fn build_p2wpkh_transaction(
 }
 
 fn is_same_outpoint(txin_outpoint: &BitcoinOutPoint, utxo_outpout: &IcCdkOutPoint) -> bool {
-    txin_outpoint.vout == utxo_outpout.vout && txin_outpoint.txid == Txid::from_raw_hash(Hash::from_slice(&utxo_outpout.txid).unwrap())
+    txin_outpoint.vout == utxo_outpout.vout && txin_outpoint.txid.as_byte_array().to_vec() == utxo_outpout.txid
 }
 
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
@@ -211,4 +211,122 @@ pub async fn btc_sign_transaction(
         signed_transaction_bytes,
         txid,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use bitcoin::{hashes::Hash, ScriptBuf, Sequence, TxIn, Txid, Witness, OutPoint as BitcoinOutPoint,};
+    use ic_cdk::api::management_canister::bitcoin::{Outpoint as IcCdkOutPoint, Utxo};
+
+    use super::get_input_value;
+
+    const TXID1: &str = "36f3a7fcb6b5ebd9fa4041928da89cd423662f9c5c12e41c80e07a6559d178ef";
+    const TXID2: &str = "d3f71b58d539fd97d2122f112d52dadb6a479ad3c47464978b3b0ce0046c1b50";
+    const TXID3: &str = "62791113aa4bf339e72afca37c99960e0e29240916b65e2b245a8a7b9effcdeb";
+    const TXID4: &str = "bc1ac3cb81e3f261c9c7eae460f7fe6c51583db5b130b4928ffb77c602e3f48e";
+
+    #[derive(Clone)]
+    struct UtxoWrapper {
+        pub utxo: Utxo,
+        pub txid: Txid,
+    }
+
+    fn get_mock_utxos() -> Vec<UtxoWrapper> {
+        let txid1 = Txid::from_str(TXID1).unwrap();
+        let txid2 = Txid::from_str(TXID2).unwrap();
+        let txid3 = Txid::from_str(TXID3).unwrap();
+        let txid4 = Txid::from_str(TXID4).unwrap();
+        let utxo1: Utxo = Utxo {
+            outpoint: IcCdkOutPoint {
+                txid: txid1.as_byte_array().to_vec(),
+                vout: 0,
+            },
+            value: 1000,
+            height: 100,
+        };
+        let utxo2: Utxo = Utxo {
+            outpoint: IcCdkOutPoint {
+                txid: txid2.as_byte_array().to_vec(),
+                vout: 1,
+            },
+            value: 2000,
+            height: 200,
+        };
+        let utxo3: Utxo = Utxo {
+            outpoint: IcCdkOutPoint {
+                txid: txid3.as_byte_array().to_vec(),
+                vout: 2,
+            },
+            value: 3000,
+            height: 300,
+        };
+        let utxo4: Utxo = Utxo {
+            outpoint: IcCdkOutPoint {
+                txid: txid4.as_byte_array().to_vec(),
+                vout: 3,
+            },
+            value: 4000,
+            height: 400,
+        };
+        vec![
+            UtxoWrapper {
+                utxo: utxo1,
+                txid: txid1,
+            },
+            UtxoWrapper {
+                utxo: utxo2,
+                txid: txid2,
+            },
+            UtxoWrapper {
+                utxo: utxo3,
+                txid: txid3,
+            },
+            UtxoWrapper {
+                utxo: utxo4,
+                txid: txid4,
+            }
+        ]
+    }
+
+    #[test]
+    fn test_get_input_value_returns_expected_value() {
+        let mock_utxos = get_mock_utxos();
+        let first_mock = mock_utxos[0].clone();
+        let input = TxIn {
+            previous_output: BitcoinOutPoint {
+                txid: first_mock.txid,
+                vout: first_mock.utxo.outpoint.vout,
+            },
+            sequence: Sequence(0xFFFF_FFFF),
+            witness: Witness::new(),
+            script_sig: ScriptBuf::new(),
+        };
+
+        let utxos: Vec<Utxo> = mock_utxos.iter().map(|wrapper| wrapper.utxo.clone()).collect();
+        let value = get_input_value(&input, &utxos);
+        assert_eq!(value.unwrap().to_sat(), first_mock.utxo.value);
+    }
+
+    #[test]
+    fn test_get_input_value_returns_none_if_no_value() {
+        let mut mock_utxos = get_mock_utxos();
+        // Pop the first one so that it's not in the list anymore.
+        let first_mock = mock_utxos.pop().unwrap();
+        // Use the popped value to create the input.
+        let input = TxIn {
+            previous_output: BitcoinOutPoint {
+                txid: first_mock.txid,
+                vout: first_mock.utxo.outpoint.vout,
+            },
+            sequence: Sequence(0xFFFF_FFFF),
+            witness: Witness::new(),
+            script_sig: ScriptBuf::new(),
+        };
+
+        let utxos: Vec<Utxo> = mock_utxos.iter().map(|wrapper| wrapper.utxo.clone()).collect();
+        let value = get_input_value(&input, &utxos);
+        assert!(value.is_none());
+    }
 }
