@@ -68,7 +68,9 @@ pub async fn build_p2wpkh_transaction(
     const DUST_THRESHOLD: u64 = 1_000;
 
     let own_address = Address::from_str(&source_address)
-        .map_err(|_| BuildP2wpkhTxError::InvalidSourceAddress { address: source_address.clone() })?
+        .map_err(|_| BuildP2wpkhTxError::InvalidSourceAddress {
+            address: source_address.clone(),
+        })?
         .require_network(transform_network(network))
         .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?;
 
@@ -96,46 +98,45 @@ pub async fn build_p2wpkh_transaction(
     let outputs_result: Result<Vec<TxOut>, BuildP2wpkhTxError> = request_outputs
         .iter()
         .map(|output| {
-            let address = Address::from_str(&output.destination_address)
-                .map_err(|_| BuildP2wpkhTxError::InvalidDestinationAddress {
+            let address = Address::from_str(&output.destination_address).map_err(|_| {
+                BuildP2wpkhTxError::InvalidDestinationAddress {
                     address: output.destination_address.clone(),
-                })?; // Convert from ParseError to BuildP2wpkhError
-    
+                }
+            })?; // Convert from ParseError to BuildP2wpkhError
+
             let address = address
                 .require_network(transform_network(network))
                 .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?; // Convert from ParseError to BuildP2wpkhError
-    
+
             Ok(TxOut {
                 script_pubkey: address.script_pubkey(),
                 value: Amount::from_sat(output.sent_satoshis),
             })
         })
         .collect();
-    
+
     match outputs_result {
         Ok(mut outputs) => {
             let sent_amount: u64 = outputs.iter().map(|u| u.value.to_sat()).sum();
             // The fee is set with leaving that amount of difference between the inputs and outputs values.
             // For example, if the inputs sum 200 and the fee is 20, then the outputs should sum 180.
             let remaining_amount = total_spent - sent_amount - fee;
-        
+
             if remaining_amount >= DUST_THRESHOLD {
                 outputs.push(TxOut {
                     script_pubkey: own_address.script_pubkey(),
                     value: Amount::from_sat(remaining_amount),
                 });
             }
-        
+
             Ok(Transaction {
                 input: inputs,
                 output: outputs,
                 lock_time: LockTime::ZERO,
                 version: Version::TWO,
             })
-        },
-        Err(e) => {
-            Err(e)
         }
+        Err(e) => Err(e),
     }
 }
 
