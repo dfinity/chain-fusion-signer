@@ -399,7 +399,7 @@ mod tests {
         let invalid_address = "invalid_address";
 
         let result = build_p2wpkh_transaction(
-            invalid_address.clone(),
+            invalid_address,
             BitcoinNetwork::Mainnet,
             &[],
             10,
