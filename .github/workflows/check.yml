@@ -94,6 +94,8 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
+      - name: Run integration tests
+        run: ./scripts/test.signer.sh
       - name: Stop dfx
         run: dfx stop
   check-pass:
