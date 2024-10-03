@@ -89,11 +89,11 @@ impl Default for TestSetup {
             PicCanisterBuilder::default()
                 .with_wasm(&PicCanister::cargo_wasm_path("signer"))
                 .with_arg(
-                    encode_one(Some(Arg::Init(InitArg {
+                    encode_one(Arg::Init(InitArg {
                         ecdsa_key_name: format!("test_key_1"),
                         ic_root_key_der: None,
                         cycles_ledger: None,
-                    })))
+                    }))
                     .unwrap(),
                 )
                 .deploy_to(pic.clone()),
