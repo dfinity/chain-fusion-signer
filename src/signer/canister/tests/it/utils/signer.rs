@@ -266,56 +266,57 @@ impl PicCanisterTrait for SignerPic {
 // Created by:
 // - Copy Service
 // - Add caller as an argument to each method
+// - Replace `ic_cdk::call(self.0,` with `self.update(caller,` and drop the await
 impl SignerPic {
   pub async fn btc_caller_address(&self, caller: Principal, arg0: &GetAddressRequest, arg1: &Option<PaymentType>) -> Result<(Result_,)> {
-    ic_cdk::call(self.0, "btc_caller_address", (arg0,arg1,)).await
+    self.update(caller, "btc_caller_address", (arg0,arg1,))
   }
   pub async fn btc_caller_balance(&self, caller: Principal, arg0: &GetAddressRequest, arg1: &Option<PaymentType>) -> Result<(Result1,)> {
-    ic_cdk::call(self.0, "btc_caller_balance", (arg0,arg1,)).await
+    self.update(caller, "btc_caller_balance", (arg0,arg1,))
   }
   pub async fn btc_caller_send(&self, caller: Principal, arg0: &SendBtcRequest, arg1: &Option<PaymentType>) -> Result<(Result2,)> {
-    ic_cdk::call(self.0, "btc_caller_send", (arg0,arg1,)).await
+    self.update(caller, "btc_caller_send", (arg0,arg1,))
   }
   pub async fn caller_eth_address(&self) -> Result<(String,)> {
-    ic_cdk::call(self.0, "caller_eth_address", ()).await
+    self.update(caller, "caller_eth_address", ())
   }
   pub async fn config(&self) -> Result<(Config,)> {
-    ic_cdk::call(self.0, "config", ()).await
+    self.update(caller, "config", ())
   }
   pub async fn eth_address_of(&self, caller: Principal, arg0: &Principal) -> Result<(String,)> {
-    ic_cdk::call(self.0, "eth_address_of", (arg0,)).await
+    self.update(caller, "eth_address_of", (arg0,))
   }
   pub async fn eth_address_of_caller(&self, caller: Principal, arg0: &Option<PaymentType>) -> Result<(Result3,)> {
-    ic_cdk::call(self.0, "eth_address_of_caller", (arg0,)).await
+    self.update(caller, "eth_address_of_caller", (arg0,))
   }
   pub async fn eth_address_of_principal(&self, caller: Principal, arg0: &Principal, arg1: &Option<PaymentType>) -> Result<(Result3,)> {
-    ic_cdk::call(self.0, "eth_address_of_principal", (arg0,arg1,)).await
+    self.update(caller, "eth_address_of_principal", (arg0,arg1,))
   }
   pub async fn eth_personal_sign(&self, caller: Principal, arg0: &String, arg1: &Option<PaymentType>) -> Result<(Result3,)> {
-    ic_cdk::call(self.0, "eth_personal_sign", (arg0,arg1,)).await
+    self.update(caller, "eth_personal_sign", (arg0,arg1,))
   }
   pub async fn eth_sign_transaction(&self, caller: Principal, arg0: &SignRequest, arg1: &Option<PaymentType>) -> Result<(Result3,)> {
-    ic_cdk::call(self.0, "eth_sign_transaction", (arg0,arg1,)).await
+    self.update(caller, "eth_sign_transaction", (arg0,arg1,))
   }
   pub async fn generic_caller_ecdsa_public_key(&self, caller: Principal, arg0: &EcdsaPublicKeyArgument, arg1: &Option<PaymentType>) -> Result<(Result4,)> {
-    ic_cdk::call(self.0, "generic_caller_ecdsa_public_key", (arg0,arg1,)).await
+    self.update(caller, "generic_caller_ecdsa_public_key", (arg0,arg1,))
   }
   pub async fn generic_sign_with_ecdsa(&self, caller: Principal, arg0: &Option<PaymentType>, arg1: &SignWithEcdsaArgument) -> Result<(Result5,)> {
-    ic_cdk::call(self.0, "generic_sign_with_ecdsa", (arg0,arg1,)).await
+    self.update(caller, "generic_sign_with_ecdsa", (arg0,arg1,))
   }
   pub async fn get_canister_status(&self) -> Result<(CanisterStatusResultV2,)> {
-    ic_cdk::call(self.0, "get_canister_status", ()).await
+    self.update(caller, "get_canister_status", ())
   }
   pub async fn http_request(&self, caller: Principal, arg0: &HttpRequest) -> Result<(HttpResponse,)> {
-    ic_cdk::call(self.0, "http_request", (arg0,)).await
+    self.update(caller, "http_request", (arg0,))
   }
   pub async fn personal_sign(&self, caller: Principal, arg0: &String) -> Result<(String,)> {
-    ic_cdk::call(self.0, "personal_sign", (arg0,)).await
+    self.update(caller, "personal_sign", (arg0,))
   }
   pub async fn sign_prehash(&self, caller: Principal, arg0: &String) -> Result<(String,)> {
-    ic_cdk::call(self.0, "sign_prehash", (arg0,)).await
+    self.update(caller, "sign_prehash", (arg0,))
   }
   pub async fn sign_transaction(&self, caller: Principal, arg0: &SignRequest) -> Result<(String,)> {
-    ic_cdk::call(self.0, "sign_transaction", (arg0,)).await
+    self.update(caller, "sign_transaction", (arg0,))
   }
 }
