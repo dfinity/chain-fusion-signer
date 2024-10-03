@@ -33,6 +33,7 @@ jobs:
                   exit 1
           }
   rust-tests:
+    name: "Rust tests"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -65,6 +66,7 @@ jobs:
         shell: bash
         run: scripts/test-rs
   installation:
+    name: "dfx deploy & integration"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -99,6 +101,7 @@ jobs:
       - name: Stop dfx
         run: dfx stop
   check-pass:
+    name: "Checks pass"
     needs: ["format", "rust-tests", "installation"]
     if: ${{ always() }}
     runs-on: ubuntu-22.04
