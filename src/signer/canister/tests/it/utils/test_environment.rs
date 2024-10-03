@@ -10,6 +10,8 @@ use ic_papi_api::PaymentError;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
+use super::signer::SignerPic;
+
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
 
 /// Methods protected by PAPI.
@@ -42,7 +44,7 @@ pub struct TestSetup {
     // The Arc is used; this makes it accessible without having to refer to a specific canister.
     pub pic: Arc<PocketIc>,
     /// The canister providing the API.
-    pub paid_service: PicCanister,
+    pub signer: SignerPic,
     /// ICRC2 ledger
     pub ledger: CyclesLedgerPic,
     /// User
@@ -129,7 +131,7 @@ impl Default for TestSetup {
 
         let ans = Self {
             pic,
-            paid_service,
+            signer: paid_service,
             ledger,
             user,
             user2,
@@ -198,7 +200,7 @@ impl TestSetup {
                 self.user,
                 &ApproveArgs {
                     spender: Account {
-                        owner: self.paid_service.canister_id(),
+                        owner: self.signer.canister_id(),
                         subaccount: None,
                     },
                     amount: amount.into(),
@@ -215,7 +217,7 @@ impl TestSetup {
         method: PaidMethods,
         arg: impl CandidType,
     ) -> Result<String, PaymentError> {
-        self.paid_service
+        self.signer
             .update(caller, method.name(), arg)
             .expect("Failed to call the paid service")
     }
