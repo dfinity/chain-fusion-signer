@@ -1,8 +1,12 @@
 // This is an experimental feature to generate Rust binding from Candid.
 // You may want to manually adjust some of the types.
 #![allow(dead_code, unused_imports)]
+use std::sync::Arc;
 use candid::{self, CandidType, Deserialize, Principal};
 use ic_cdk::api::call::CallResult as Result;
+use pocket_ic::PocketIc;
+use super::pic_canister::{PicCanister, PicCanisterTrait};
+
 
 #[derive(CandidType, Deserialize)]
 pub struct InitArg {
@@ -289,3 +293,27 @@ impl Service {
   }
 }
 
+pub struct SignerPic {
+  pub pic: Arc<PocketIc>,
+  pub canister_id: Principal,
+}
+
+impl From<PicCanister> for SignerPic {
+  fn from(pic: PicCanister) -> Self {
+      Self {
+          pic: pic.pic(),
+          canister_id: pic.canister_id(),
+      }
+  }
+}
+
+impl PicCanisterTrait for SignerPic {
+  /// The shared PocketIc instance.
+  fn pic(&self) -> Arc<PocketIc> {
+      self.pic.clone()
+  }
+  /// The ID of this canister.
+  fn canister_id(&self) -> Principal {
+      self.canister_id.clone()
+  }
+}
