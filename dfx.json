@@ -50,7 +50,8 @@
 			"build": "scripts/build.cycles_depositor.sh",
 			"init_arg_file": "out/cycles_depositor.args.did",
 			"wasm": "out/cycles_depositor.wasm",
-			"candid": "out/cycles_depositor.did"
+			"candid": "out/cycles_depositor.did",
+			"gzip": true
 		},
 		"internet_identity": {
 			"type": "custom",
