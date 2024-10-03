@@ -1,3 +1,4 @@
+//! Common methods for interacting with a canister using `PocketIc`.
 use candid::{decode_one, encode_one, CandidType, Deserialize, Principal};
 use pocket_ic::{PocketIc, WasmResult};
 use std::fs;
@@ -68,6 +69,7 @@ pub trait PicCanisterTrait {
         cargo_path.parent().unwrap().to_path_buf()
     }
     /// The path to a typical Cargo Wasm build.
+    #[allow(dead_code)]
     fn cargo_wasm_path(name: &str) -> String {
         let workspace_dir = Self::workspace_dir();
         workspace_dir
@@ -81,6 +83,7 @@ pub trait PicCanisterTrait {
     /// The path to the wasm after `dfx deploy`.  Expects the Wasm to be gzipped.
     ///
     /// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
+    #[allow(dead_code)]
     fn dfx_wasm_path(name: &str) -> String {
         Self::workspace_dir()
             .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
