@@ -3,14 +3,12 @@ use crate::utils::cycles_ledger::{
     Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
 };
 use crate::utils::pic_canister::{PicCanister, PicCanisterBuilder, PicCanisterTrait};
+use crate::utils::signer::{Arg, InitArg, SignerPic};
 use candid::{encode_one, CandidType, Nat, Principal};
-use example_paid_service_api::InitArgs;
 use ic_papi_api::cycles::cycles_ledger_canister_id;
 use ic_papi_api::PaymentError;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
-
-use super::signer::SignerPic;
 
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
 
@@ -87,15 +85,19 @@ impl Default for TestSetup {
                 )
                 .deploy_to(pic.clone()),
         );
-        let paid_service = PicCanisterBuilder::default()
-            .with_wasm(&PicCanister::cargo_wasm_path("example_paid_service"))
-            .with_arg(
-                encode_one(Some(InitArgs {
-                    ledger: ledger.canister_id(),
-                }))
-                .unwrap(),
-            )
-            .deploy_to(pic.clone());
+        let signer = SignerPic::from(
+            PicCanisterBuilder::default()
+                .with_wasm(&PicCanister::cargo_wasm_path("signer"))
+                .with_arg(
+                    encode_one(Some(Arg::Init(InitArg {
+                        ecdsa_key_name: format!("test_key_1"),
+                        ic_root_key_der: None,
+                        cycles_ledger: None,
+                    })))
+                    .unwrap(),
+                )
+                .deploy_to(pic.clone()),
+        );
         let user =
             Principal::from_text("xzg7k-thc6c-idntg-knmtz-2fbhh-utt3e-snqw6-5xph3-54pbp-7axl5-tae")
                 .unwrap();
@@ -131,7 +133,7 @@ impl Default for TestSetup {
 
         let ans = Self {
             pic,
-            signer: paid_service,
+            signer,
             ledger,
             user,
             user2,
@@ -190,7 +192,7 @@ impl TestSetup {
     {
         assert_eq!(self.user_balance(), expected_balance.into(), "{}", message);
     }
-    /// User sends an ICRC2 approval with teh paid service as spender.
+    /// User sends an ICRC2 approval with the paid service as spender.
     pub fn user_approves_payment_for_paid_service<T>(&self, amount: T)
     where
         T: Into<Nat>,
