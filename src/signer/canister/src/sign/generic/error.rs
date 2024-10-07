@@ -1,10 +1,5 @@
-use crate::derivation_path::Schema;
 use candid::{CandidType, Deserialize};
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::api::management_canister::ecdsa as canister_ecdsa;
-use ic_cdk::api::management_canister::ecdsa::{
-    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
-};
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum GenericSigningError {
