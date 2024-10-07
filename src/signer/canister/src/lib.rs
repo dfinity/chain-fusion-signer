@@ -30,6 +30,7 @@ use sign::bitcoin::tx_utils::btc_sign_transaction;
 use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
+use sign::eth::EthAddressOfCallerError;
 use sign::generic;
 use sign::generic::GenericCallerEcdsaPublicKeyError;
 use sign::generic::GenericSignWithEcdsaError;
@@ -150,7 +151,7 @@ async fn generic_sign_with_ecdsa(
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_address_of_caller(
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+) -> Result<String, EthAddressOfCallerError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -158,9 +159,7 @@ async fn eth_address_of_caller(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    ))
+    eth::eth_address_of_caller().await
 }
 
 /// Returns the Ethereum address of the specified user.

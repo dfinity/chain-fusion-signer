@@ -14,6 +14,9 @@ use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
 
+pub mod error;
+pub use error::EthAddressOfCallerError;
+
 /// Converts the public key bytes to an Ethereum address with a checksum.
 pub fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
     use k256::elliptic_curve::sec1::ToEncodedPoint;
@@ -51,6 +54,7 @@ pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> 
 }
 
 /// Computes the public key of the specified principal.
+// TODO: Return a Result instead of panicking.
 pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
@@ -64,6 +68,13 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     .await
     .expect("failed to get public key");
     key.public_key
+}
+
+/// Computes the public key of the caller.
+pub async fn eth_address_of_caller() -> Result<String, EthAddressOfCallerError> {
+    Ok(pubkey_bytes_to_address(
+        &ecdsa_pubkey_of(&ic_cdk::caller()).await,
+    ))
 }
 
 /// Computes a signature for a precomputed hash.
