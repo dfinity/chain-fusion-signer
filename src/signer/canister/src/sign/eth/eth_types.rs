@@ -76,7 +76,10 @@ impl From<EthSignTransactionRequest>
         }
     }
 }
-
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub struct EthSignTransactionResponse {
+    pub signature: String,
+}
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum EthSignTransactionError {
     /// Payment failed.

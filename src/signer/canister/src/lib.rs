@@ -32,6 +32,7 @@ use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::eth::eth_types::EthSignTransactionError;
 use sign::eth::eth_types::EthSignTransactionRequest;
+use sign::eth::eth_types::EthSignTransactionResponse;
 use sign::eth::EthAddressError;
 use sign::eth::EthAddressOfCallerError;
 use sign::eth::EthAddressRequest;
@@ -192,7 +193,7 @@ async fn eth_address(
 async fn eth_sign_transaction(
     req: EthSignTransactionRequest,
     payment: Option<PaymentType>,
-) -> Result<String, EthSignTransactionError> {
+) -> Result<EthSignTransactionResponse, EthSignTransactionError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -200,7 +201,9 @@ async fn eth_sign_transaction(
             1_000_000_000,
         )
         .await?;
-    eth::sign_transaction(req.into()).await
+    Ok(EthSignTransactionResponse {
+        signature: eth::sign_transaction(req.into()).await?,
+    })
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
