@@ -39,7 +39,6 @@ use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::eth::EthAddressError;
-use sign::eth::EthAddressOfCallerError;
 use sign::eth::EthAddressRequest;
 use sign::eth::EthAddressResponse;
 use sign::generic;
@@ -158,27 +157,17 @@ async fn generic_sign_with_ecdsa(
 // // ETHEREUM UTILS //
 // ////////////////////
 
-/// Returns the Ethereum address of the caller.
-#[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_caller(
-    payment: Option<PaymentType>,
-) -> Result<String, EthAddressOfCallerError> {
-    PAYMENT_GUARD
-        .deduct(
-            PaymentContext::default(),
-            payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
-        )
-        .await?;
-    eth::eth_address_of_caller().await
-}
-
-/// Returns a specified Ethereum address.
+/// Returns the Ethereum address of a specified user.
+///
+/// If no user is specified, the caller's address is returned.
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_address(
     payment: Option<PaymentType>,
-    request: EthAddressRequest,
+    request: Option<EthAddressRequest>,
 ) -> Result<EthAddressResponse, EthAddressError> {
+    let request = request.unwrap_or(EthAddressRequest {
+        principal: ic_cdk::caller(),
+    });
     if request.principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
