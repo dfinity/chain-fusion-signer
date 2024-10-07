@@ -30,7 +30,10 @@ use sign::bitcoin::tx_utils::btc_sign_transaction;
 use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
+use sign::eth::EthAddressError;
 use sign::eth::EthAddressOfCallerError;
+use sign::eth::EthAddressRequest;
+use sign::eth::EthAddressResponse;
 use sign::generic;
 use sign::generic::GenericCallerEcdsaPublicKeyError;
 use sign::generic::GenericSignWithEcdsaError;
@@ -162,13 +165,14 @@ async fn eth_address_of_caller(
     eth::eth_address_of_caller().await
 }
 
-/// Returns the Ethereum address of the specified user.
+/// Returns a specified Ethereum address.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_principal(
-    p: Principal,
+async fn eth_address(
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
-    if p == Principal::anonymous() {
+    request: EthAddressRequest,
+) -> Result<EthAddressResponse, EthAddressError> {
+    if request.principal == Principal::anonymous() {
+        // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
     }
     PAYMENT_GUARD
@@ -178,9 +182,7 @@ async fn eth_address_of_principal(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&p).await,
-    ))
+    eth::eth_address(request).await
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.

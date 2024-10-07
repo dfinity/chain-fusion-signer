@@ -14,8 +14,10 @@ use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
 
-pub mod error;
-pub use error::EthAddressOfCallerError;
+pub mod eth_types;
+pub use eth_types::{
+    EthAddressError, EthAddressOfCallerError, EthAddressRequest, EthAddressResponse,
+};
 
 /// Converts the public key bytes to an Ethereum address with a checksum.
 pub fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
@@ -75,6 +77,16 @@ pub async fn eth_address_of_caller() -> Result<String, EthAddressOfCallerError> 
     Ok(pubkey_bytes_to_address(
         &ecdsa_pubkey_of(&ic_cdk::caller()).await,
     ))
+}
+
+/// Computes the public key of the caller.
+pub async fn eth_address(
+    request: EthAddressRequest,
+) -> Result<EthAddressResponse, EthAddressError> {
+    let EthAddressRequest { principal } = request;
+    Ok(EthAddressResponse {
+        address: pubkey_bytes_to_address(&ecdsa_pubkey_of(&principal).await),
+    })
 }
 
 /// Computes a signature for a precomputed hash.
