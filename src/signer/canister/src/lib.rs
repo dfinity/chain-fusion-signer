@@ -162,13 +162,11 @@ async fn generic_sign_with_ecdsa(
 /// If no user is specified, the caller's address is returned.
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_address(
+    request: EthAddressRequest,
     payment: Option<PaymentType>,
-    request: Option<EthAddressRequest>,
 ) -> Result<EthAddressResponse, EthAddressError> {
-    let request = request.unwrap_or(EthAddressRequest {
-        principal: ic_cdk::caller(),
-    });
-    if request.principal == Principal::anonymous() {
+    let principal = request.principal.unwrap_or_else(ic_cdk::caller);
+    if principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
     }
@@ -179,7 +177,7 @@ async fn eth_address(
             1_000_000_000,
         )
         .await?;
-    eth::eth_address(request).await
+    eth::eth_address(principal).await
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.

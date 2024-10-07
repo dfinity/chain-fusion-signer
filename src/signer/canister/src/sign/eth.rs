@@ -73,10 +73,7 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
 }
 
 /// Computes the public key of the caller.
-pub async fn eth_address(
-    request: EthAddressRequest,
-) -> Result<EthAddressResponse, EthAddressError> {
-    let EthAddressRequest { principal } = request;
+pub async fn eth_address(principal: Principal) -> Result<EthAddressResponse, EthAddressError> {
     Ok(EthAddressResponse {
         address: pubkey_bytes_to_address(&ecdsa_pubkey_of(&principal).await),
     })

@@ -4,8 +4,8 @@ use ic_cdk::api::call::RejectionCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressRequest {
-    /// The principal owning the eth address.
-    pub principal: Principal,
+    /// The principal owning the eth address.  Default: The caller.
+    pub principal: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressResponse {
