@@ -1,37 +1,35 @@
-use crate::guards::caller_is_not_anonymous;
-use crate::sign::generic::GenericSigningError;
+use crate::{guards::caller_is_not_anonymous, sign::generic::GenericSigningError};
 use candid::Principal;
-use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyArgument;
-use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyResponse;
-use ic_cdk::api::management_canister::ecdsa::SignWithEcdsaArgument;
-use ic_cdk::api::management_canister::ecdsa::SignWithEcdsaResponse;
-use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
-use ic_chain_fusion_signer_api::http::HttpRequest;
-use ic_chain_fusion_signer_api::http::HttpResponse;
-use ic_chain_fusion_signer_api::metrics::get_metrics;
-use ic_chain_fusion_signer_api::std_canister_status;
-use ic_chain_fusion_signer_api::types::bitcoin::GetAddressError;
-use ic_chain_fusion_signer_api::types::bitcoin::GetAddressRequest;
-use ic_chain_fusion_signer_api::types::bitcoin::GetAddressResponse;
-use ic_chain_fusion_signer_api::types::bitcoin::GetBalanceRequest;
-use ic_chain_fusion_signer_api::types::bitcoin::SendBtcError;
-use ic_chain_fusion_signer_api::types::bitcoin::SendBtcRequest;
-use ic_chain_fusion_signer_api::types::bitcoin::SendBtcResponse;
-use ic_chain_fusion_signer_api::types::bitcoin::{
-    BitcoinAddressType, GetBalanceError, GetBalanceResponse,
+use ic_cdk::api::management_canister::ecdsa::{
+    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
 };
-use ic_chain_fusion_signer_api::types::transaction::SignRequest;
-use ic_chain_fusion_signer_api::types::{Arg, Config};
+use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
+use ic_chain_fusion_signer_api::{
+    http::{HttpRequest, HttpResponse},
+    metrics::get_metrics,
+    std_canister_status,
+    types::{
+        bitcoin::{
+            BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse,
+            GetBalanceError, GetBalanceRequest, GetBalanceResponse, SendBtcError, SendBtcRequest,
+            SendBtcResponse,
+        },
+        transaction::SignRequest,
+        Arg, Config,
+    },
+};
 use ic_papi_api::PaymentType;
 use ic_papi_guard::guards::{PaymentContext, PaymentGuard2};
 use serde_bytes::ByteBuf;
-use sign::bitcoin::fee_utils::calculate_fee;
-use sign::bitcoin::tx_utils::btc_sign_transaction;
-use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
-use sign::bitcoin::{bitcoin_api, bitcoin_utils};
-use sign::eth;
-use sign::generic;
-use sign::generic::generic_ecdsa_public_key;
+use sign::{
+    bitcoin::{
+        bitcoin_api, bitcoin_utils,
+        fee_utils::calculate_fee,
+        tx_utils::{btc_sign_transaction, build_p2wpkh_transaction},
+    },
+    eth, generic,
+    generic::generic_ecdsa_public_key,
+};
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
 mod convert;

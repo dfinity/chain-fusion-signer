@@ -5,10 +5,9 @@ use crate::{
         ecdsa_api::{ecdsa_pubkey_of, get_ecdsa_signature},
     },
 };
-use bitcoin::consensus::serialize;
 use bitcoin::{
-    absolute::LockTime, hashes::Hash, script::PushBytesBuf, sighash::SighashCache,
-    transaction::Version, Address, AddressType, Amount, EcdsaSighashType,
+    absolute::LockTime, consensus::serialize, hashes::Hash, script::PushBytesBuf,
+    sighash::SighashCache, transaction::Version, Address, AddressType, Amount, EcdsaSighashType,
     OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use candid::Principal;

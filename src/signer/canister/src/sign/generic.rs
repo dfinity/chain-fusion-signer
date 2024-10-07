@@ -1,10 +1,12 @@
 //! A generic signing API equivalent to that provided by the canister API.
 use crate::derivation_path::Schema;
 use candid::{CandidType, Deserialize};
-use ic_cdk::api::call::RejectionCode;
-use ic_cdk::api::management_canister::ecdsa::{
-    ecdsa_public_key, sign_with_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
-    SignWithEcdsaArgument, SignWithEcdsaResponse,
+use ic_cdk::api::{
+    call::RejectionCode,
+    management_canister::ecdsa::{
+        ecdsa_public_key, sign_with_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
+        SignWithEcdsaArgument, SignWithEcdsaResponse,
+    },
 };
 
 /// Signs a message with a generic ECDSA key for the user.
