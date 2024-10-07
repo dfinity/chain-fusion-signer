@@ -31,6 +31,7 @@ use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::eth::eth_types::EthSignTransactionError;
+use sign::eth::eth_types::EthSignTransactionRequest;
 use sign::eth::EthAddressError;
 use sign::eth::EthAddressOfCallerError;
 use sign::eth::EthAddressRequest;
@@ -189,7 +190,7 @@ async fn eth_address(
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_sign_transaction(
-    req: SignRequest,
+    req: EthSignTransactionRequest,
     payment: Option<PaymentType>,
 ) -> Result<String, EthSignTransactionError> {
     PAYMENT_GUARD
@@ -199,7 +200,7 @@ async fn eth_sign_transaction(
             1_000_000_000,
         )
         .await?;
-    eth::sign_transaction(req).await
+    eth::sign_transaction(req.into()).await
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
