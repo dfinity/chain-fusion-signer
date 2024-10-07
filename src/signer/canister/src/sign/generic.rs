@@ -10,15 +10,15 @@ use ic_cdk::api::management_canister::ecdsa::{
 /// Signs a message with a generic ECDSA key for the user.
 ///
 /// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
-pub async fn generic_ecdsa_public_key(
+pub async fn caller_ecdsa_public_key(
     mut arg: EcdsaPublicKeyArgument,
-) -> Result<(EcdsaPublicKeyResponse,), GenericSigningError> {
+) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
     arg.derivation_path =
         Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
     ecdsa_public_key(arg)
         .await
         .map_err(|(rejection_code, message)| {
-            GenericSigningError::SigningError(rejection_code, message)
+            GenericCallerEcdsaPublicKeyError::SigningError(rejection_code, message)
         })
 }
 
@@ -43,6 +43,20 @@ pub enum GenericSigningError {
 }
 
 impl From<ic_papi_api::PaymentError> for GenericSigningError {
+    fn from(e: ic_papi_api::PaymentError) -> Self {
+        Self::PaymentError(e)
+    }
+}
+
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub enum GenericCallerEcdsaPublicKeyError {
+    /// Payment failed.
+    PaymentError(ic_papi_api::PaymentError),
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    SigningError(RejectionCode, String),
+}
+
+impl From<ic_papi_api::PaymentError> for GenericCallerEcdsaPublicKeyError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }

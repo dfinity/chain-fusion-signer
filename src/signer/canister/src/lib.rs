@@ -31,7 +31,7 @@ use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::generic;
-use sign::generic::generic_ecdsa_public_key;
+use sign::generic::GenericCallerEcdsaPublicKeyError;
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
 mod convert;
@@ -106,11 +106,13 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 // ////////////////////////
 
 /// Returns the generic Ed25519 public key of the caller.
+///
+/// Note: This is an exact dual of the canister `ecdsa_public_key` method.  The argument and response types are also the same.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
-) -> Result<(EcdsaPublicKeyResponse,), GenericSigningError> {
+) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
@@ -119,7 +121,7 @@ async fn generic_caller_ecdsa_public_key(
             fee,
         )
         .await?;
-    generic_ecdsa_public_key(arg).await
+    generic::caller_ecdsa_public_key(arg).await
 }
 
 /// Returns the generic Ed25519 public key of the caller.
