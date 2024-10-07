@@ -97,3 +97,29 @@ impl From<(RejectionCode, String)> for EthSignTransactionError {
         Self::SigningError(rejection_code, message)
     }
 }
+
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub struct EthPersonalSignRequest {
+    pub message: String,
+}
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub struct EthPersonalSignResponse {
+    pub signature: String,
+}
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub enum EthPersonalSignError {
+    /// Payment failed.
+    PaymentError(ic_papi_api::PaymentError),
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    SigningError(RejectionCode, String),
+}
+impl From<ic_papi_api::PaymentError> for EthPersonalSignError {
+    fn from(e: ic_papi_api::PaymentError) -> Self {
+        Self::PaymentError(e)
+    }
+}
+impl From<(RejectionCode, String)> for EthPersonalSignError {
+    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+        Self::SigningError(rejection_code, message)
+    }
+}

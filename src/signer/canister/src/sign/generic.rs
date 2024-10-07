@@ -6,7 +6,7 @@ use ic_cdk::api::management_canister::ecdsa::{
 };
 
 pub mod error;
-pub use error::{GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError, GenericSigningError};
+pub use error::{GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError};
 
 /// Signs a message with a generic ECDSA key for the user.
 ///

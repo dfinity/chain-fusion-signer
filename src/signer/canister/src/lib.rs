@@ -1,5 +1,4 @@
 use crate::guards::caller_is_not_anonymous;
-use crate::sign::generic::GenericSigningError;
 use candid::Principal;
 use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyArgument;
 use ic_cdk::api::management_canister::ecdsa::EcdsaPublicKeyResponse;
@@ -30,6 +29,9 @@ use sign::bitcoin::tx_utils::btc_sign_transaction;
 use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
+use sign::eth::eth_types::EthPersonalSignError;
+use sign::eth::eth_types::EthPersonalSignRequest;
+use sign::eth::eth_types::EthPersonalSignResponse;
 use sign::eth::eth_types::EthSignTransactionError;
 use sign::eth::eth_types::EthSignTransactionRequest;
 use sign::eth::eth_types::EthSignTransactionResponse;
@@ -209,9 +211,9 @@ async fn eth_sign_transaction(
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_personal_sign(
-    plaintext: String,
+    request: EthPersonalSignRequest,
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+) -> Result<EthPersonalSignResponse, EthPersonalSignError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -219,7 +221,9 @@ async fn eth_personal_sign(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::personal_sign(plaintext).await)
+    Ok(EthPersonalSignResponse {
+        signature: eth::personal_sign(request.message).await,
+    })
 }
 
 /// Returns the Ethereum address of the caller.
