@@ -32,6 +32,9 @@ use sign::eth;
 use sign::eth::eth_types::EthPersonalSignError;
 use sign::eth::eth_types::EthPersonalSignRequest;
 use sign::eth::eth_types::EthPersonalSignResponse;
+use sign::eth::eth_types::EthSignPrehashError;
+use sign::eth::eth_types::EthSignPrehashRequest;
+use sign::eth::eth_types::EthSignPrehashResponse;
 use sign::eth::eth_types::EthSignTransactionError;
 use sign::eth::eth_types::EthSignTransactionRequest;
 use sign::eth::eth_types::EthSignTransactionResponse;
@@ -223,6 +226,25 @@ async fn eth_personal_sign(
         .await?;
     Ok(EthPersonalSignResponse {
         signature: eth::personal_sign(request.message).await,
+    })
+}
+
+/// Computes an Ethereum signature for a precomputed hash.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_sign_prehash(
+    req: EthSignPrehashRequest,
+    payment: Option<PaymentType>,
+) -> Result<EthSignPrehashResponse, EthSignPrehashError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+
+    Ok(EthSignPrehashResponse {
+        signature: eth::sign_prehash(req.message).await,
     })
 }
 
