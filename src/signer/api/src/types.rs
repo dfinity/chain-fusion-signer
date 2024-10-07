@@ -1,6 +1,8 @@
 use candid::{CandidType, Deserialize, Principal};
 use std::fmt::Debug;
 
+pub mod eth;
+
 pub type Timestamp = u64;
 
 #[derive(CandidType, Deserialize, Clone, Eq, PartialEq, Debug)]

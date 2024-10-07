@@ -2,7 +2,6 @@ use crate::convert::{decode_hex, nat_to_u256, nat_to_u64};
 use crate::derivation_path::Schema;
 use crate::state::read_config;
 use candid::Principal;
-use eth_types::EthSignTransactionError;
 use ethers_core::abi::ethereum_types::{Address, U256};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::utils::keccak256;
@@ -10,13 +9,13 @@ use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
+use ic_chain_fusion_signer_api::types::eth::EthSignTransactionError;
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
 
-pub mod eth_types;
-pub use eth_types::{
+pub use ic_chain_fusion_signer_api::types::eth::{
     EthAddressError, EthAddressOfCallerError, EthAddressRequest, EthAddressResponse,
 };
 
