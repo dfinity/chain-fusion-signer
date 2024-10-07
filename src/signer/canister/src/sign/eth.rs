@@ -2,6 +2,7 @@ use crate::convert::{decode_hex, nat_to_u256, nat_to_u64};
 use crate::derivation_path::Schema;
 use crate::state::read_config;
 use candid::Principal;
+use eth_types::EthSignTransactionError;
 use ethers_core::abi::ethereum_types::{Address, U256};
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::utils::keccak256;
@@ -105,7 +106,7 @@ pub async fn sign_prehash(prehash: String) -> String {
 }
 
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
-pub async fn sign_transaction(req: SignRequest) -> String {
+pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransactionError> {
     use ethers_core::types::transaction::eip1559::Eip1559TransactionRequest;
     use ethers_core::types::Signature;
 
@@ -148,7 +149,7 @@ pub async fn sign_transaction(req: SignRequest) -> String {
     let mut signed_tx_bytes = tx.rlp_signed(&signature).to_vec();
     signed_tx_bytes.insert(0, EIP1559_TX_ID);
 
-    format!("0x{}", hex::encode(&signed_tx_bytes))
+    Ok(format!("0x{}", hex::encode(&signed_tx_bytes)))
 }
 
 /// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).

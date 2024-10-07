@@ -47,7 +47,6 @@ impl From<(RejectionCode, String)> for EthAddressOfCallerError {
     }
 }
 
-
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum EthSignTransactionError {
     /// Payment failed.

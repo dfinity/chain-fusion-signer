@@ -30,6 +30,7 @@ use sign::bitcoin::tx_utils::btc_sign_transaction;
 use sign::bitcoin::tx_utils::build_p2wpkh_transaction;
 use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
+use sign::eth::eth_types::EthSignTransactionError;
 use sign::eth::EthAddressError;
 use sign::eth::EthAddressOfCallerError;
 use sign::eth::EthAddressRequest;
@@ -190,7 +191,7 @@ async fn eth_address(
 async fn eth_sign_transaction(
     req: SignRequest,
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+) -> Result<String, EthSignTransactionError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -198,7 +199,7 @@ async fn eth_sign_transaction(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::sign_transaction(req).await)
+    eth::sign_transaction(req).await
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
@@ -235,7 +236,9 @@ async fn eth_address_of(p: Principal) -> String {
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
-    eth::sign_transaction(req).await
+    eth::sign_transaction(req)
+        .await
+        .expect("Failed to sign the transaction")
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
