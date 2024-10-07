@@ -2,9 +2,9 @@
 use crate::derivation_path::Schema;
 use candid::{CandidType, Deserialize};
 use ic_cdk::api::call::RejectionCode;
+use ic_cdk::api::management_canister::ecdsa as canister_ecdsa;
 use ic_cdk::api::management_canister::ecdsa::{
-    ecdsa_public_key, sign_with_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
-    SignWithEcdsaArgument, SignWithEcdsaResponse,
+    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
 };
 
 /// Signs a message with a generic ECDSA key for the user.
@@ -15,23 +15,15 @@ pub async fn caller_ecdsa_public_key(
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
     arg.derivation_path =
         Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
-    ecdsa_public_key(arg)
-        .await
-        .map_err(|(rejection_code, message)| {
-            GenericCallerEcdsaPublicKeyError::SigningError(rejection_code, message)
-        })
+    Ok(canister_ecdsa::ecdsa_public_key(arg).await?)
 }
 
-pub async fn generic_sign_with_ecdsa(
+pub async fn sign_with_ecdsa(
     mut arg: SignWithEcdsaArgument,
-) -> Result<(SignWithEcdsaResponse,), GenericSigningError> {
+) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
     arg.derivation_path =
         Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
-    sign_with_ecdsa(arg)
-        .await
-        .map_err(|(rejection_code, message)| {
-            GenericSigningError::SigningError(rejection_code, message)
-        })
+    Ok(canister_ecdsa::sign_with_ecdsa(arg).await?)
 }
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
@@ -55,9 +47,31 @@ pub enum GenericCallerEcdsaPublicKeyError {
     /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
     SigningError(RejectionCode, String),
 }
-
 impl From<ic_papi_api::PaymentError> for GenericCallerEcdsaPublicKeyError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
+    }
+}
+impl From<(RejectionCode, String)> for GenericCallerEcdsaPublicKeyError {
+    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+        Self::SigningError(rejection_code, message)
+    }
+}
+
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub enum GenericSignWithEcdsaError {
+    /// Payment failed.
+    PaymentError(ic_papi_api::PaymentError),
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    SigningError(RejectionCode, String),
+}
+impl From<ic_papi_api::PaymentError> for GenericSignWithEcdsaError {
+    fn from(e: ic_papi_api::PaymentError) -> Self {
+        Self::PaymentError(e)
+    }
+}
+impl From<(RejectionCode, String)> for GenericSignWithEcdsaError {
+    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+        Self::SigningError(rejection_code, message)
     }
 }

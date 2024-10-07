@@ -32,6 +32,7 @@ use sign::bitcoin::{bitcoin_api, bitcoin_utils};
 use sign::eth;
 use sign::generic;
 use sign::generic::GenericCallerEcdsaPublicKeyError;
+use sign::generic::GenericSignWithEcdsaError;
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
 mod convert;
@@ -129,7 +130,7 @@ async fn generic_caller_ecdsa_public_key(
 async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
-) -> Result<(SignWithEcdsaResponse,), GenericSigningError> {
+) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
@@ -138,7 +139,7 @@ async fn generic_sign_with_ecdsa(
             fee,
         )
         .await?;
-    generic::generic_sign_with_ecdsa(arg).await
+    generic::sign_with_ecdsa(arg).await
 }
 
 // ////////////////////
