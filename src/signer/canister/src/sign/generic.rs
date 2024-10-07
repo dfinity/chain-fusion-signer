@@ -4,9 +4,9 @@ use ic_cdk::api::management_canister::ecdsa as canister_ecdsa;
 use ic_cdk::api::management_canister::ecdsa::{
     EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
 };
-
-pub mod error;
-pub use error::{GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError};
+pub use ic_chain_fusion_signer_api::types::generic::{
+    GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,
+};
 
 /// Signs a message with a generic ECDSA key for the user.
 ///

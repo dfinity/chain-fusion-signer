@@ -2,6 +2,7 @@ use candid::{CandidType, Deserialize, Principal};
 use std::fmt::Debug;
 
 pub mod eth;
+pub mod generic;
 
 pub type Timestamp = u64;
 
