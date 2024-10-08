@@ -21,6 +21,10 @@ jobs:
         run: ./scripts/setup cargo-binstall shfmt yq cargo-sort
       - name: Install node dependencies
         run: npm ci --no-audit
+      - name: Install nightly rust
+        run: |
+          rustup toolchain install nightly
+          rustup component add rustfmt --toolchain nightly
       - name: Format
         run: ./scripts/fmt
       - name: Ignore some changes
@@ -33,6 +37,7 @@ jobs:
                   exit 1
           }
   rust-tests:
+    name: "Rust tests"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -65,6 +70,7 @@ jobs:
         shell: bash
         run: scripts/test-rs
   installation:
+    name: "dfx deploy & integration"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -94,9 +100,12 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
+      - name: Run integration tests
+        run: ./scripts/test.signer.sh
       - name: Stop dfx
         run: dfx stop
   check-pass:
+    name: "Checks pass"
     needs: ["format", "rust-tests", "installation"]
     if: ${{ always() }}
     runs-on: ubuntu-22.04
