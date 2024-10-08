@@ -180,9 +180,7 @@ async fn eth_address(
     eth::eth_address(principal).await
 }
 
-/// Returns the Ethereum address of a specified user.
-///
-/// If no user is specified, the caller's address is returned.
+/// Returns the Ethereum address of the caller.
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_address_of_caller(
     payment: Option<PaymentType>,

@@ -209,6 +209,7 @@ service : (Arg) -> {
   config : () -> (Config) query;
   eth_address : (EthAddressRequest, opt PaymentType) -> (Result_3);
   eth_address_of : (principal) -> (text);
+  eth_address_of_caller : (opt PaymentType) -> (Result_3);
   eth_personal_sign : (EthPersonalSignRequest, opt PaymentType) -> (Result_4);
   eth_sign_prehash : (EthSignPrehashRequest, opt PaymentType) -> (Result_5);
   eth_sign_transaction : (EthSignTransactionRequest, opt PaymentType) -> (
