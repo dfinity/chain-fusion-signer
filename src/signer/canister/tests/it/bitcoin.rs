@@ -1,5 +1,7 @@
-use crate::utils::mock::CALLER;
-use crate::utils::pocketic::{setup, PicCanisterTrait};
+use crate::utils::{
+    mock::CALLER,
+    pocketic::{setup, PicCanisterTrait},
+};
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use ic_chain_fusion_signer_api::types::bitcoin::{

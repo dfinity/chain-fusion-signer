@@ -1,8 +1,11 @@
 //! A generic signing API equivalent to that provided by the canister API.
 use crate::derivation_path::Schema;
-use ic_cdk::api::management_canister::ecdsa as canister_ecdsa;
-use ic_cdk::api::management_canister::ecdsa::{
-    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
+use ic_cdk::api::management_canister::{
+    ecdsa as canister_ecdsa,
+    ecdsa::{
+        EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument,
+        SignWithEcdsaResponse,
+    },
 };
 pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,

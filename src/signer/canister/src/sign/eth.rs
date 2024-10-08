@@ -1,16 +1,19 @@
-use crate::convert::{decode_hex, nat_to_u256, nat_to_u64};
-use crate::derivation_path::Schema;
-use crate::state::read_config;
+use crate::{
+    convert::{decode_hex, nat_to_u256, nat_to_u64},
+    derivation_path::Schema,
+    state::read_config,
+};
 use candid::Principal;
-use ethers_core::abi::ethereum_types::{Address, U256};
-use ethers_core::types::transaction::eip2930::AccessList;
-use ethers_core::utils::keccak256;
+use ethers_core::{
+    abi::ethereum_types::{Address, U256},
+    types::transaction::eip2930::AccessList,
+    utils::keccak256,
+};
 use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
-use ic_chain_fusion_signer_api::types::eth::EthSignTransactionError;
-use ic_chain_fusion_signer_api::types::transaction::SignRequest;
+use ic_chain_fusion_signer_api::types::{eth::EthSignTransactionError, transaction::SignRequest};
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
@@ -96,8 +99,7 @@ pub async fn sign_prehash(prehash: String) -> String {
 
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransactionError> {
-    use ethers_core::types::transaction::eip1559::Eip1559TransactionRequest;
-    use ethers_core::types::Signature;
+    use ethers_core::types::{transaction::eip1559::Eip1559TransactionRequest, Signature};
 
     const EIP1559_TX_ID: u8 = 2;
 

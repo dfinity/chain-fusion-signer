@@ -3,10 +3,13 @@ use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use ic_chain_fusion_signer_api::types::{Arg, InitArg};
 use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
 use serde::Deserialize;
-use std::fs::read;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use std::{env, time::Duration};
+use std::{
+    env,
+    fs::read,
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 
 use super::mock::CONTROLLER;
 
