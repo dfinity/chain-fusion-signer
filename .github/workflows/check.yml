@@ -21,6 +21,10 @@ jobs:
         run: ./scripts/setup cargo-binstall shfmt yq cargo-sort
       - name: Install node dependencies
         run: npm ci --no-audit
+      - name: Install nightly rust
+        run: |
+          rustup toolchain install nightly
+          rustup component add rustfmt --toolchain nightly
       - name: Format
         run: ./scripts/fmt
       - name: Ignore some changes
