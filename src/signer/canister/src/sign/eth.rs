@@ -13,10 +13,14 @@ use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
-use ic_chain_fusion_signer_api::types::transaction::SignRequest;
+use ic_chain_fusion_signer_api::types::{eth::EthSignTransactionError, transaction::SignRequest};
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
 use std::str::FromStr;
+
+pub use ic_chain_fusion_signer_api::types::eth::{
+    EthAddressError, EthAddressRequest, EthAddressResponse,
+};
 
 /// Converts the public key bytes to an Ethereum address with a checksum.
 pub fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
@@ -55,6 +59,7 @@ pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> 
 }
 
 /// Computes the public key of the specified principal.
+// TODO: Return a Result instead of panicking.
 pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
     let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
@@ -68,6 +73,13 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     .await
     .expect("failed to get public key");
     key.public_key
+}
+
+/// Computes the public key of the caller.
+pub async fn eth_address(principal: Principal) -> Result<EthAddressResponse, EthAddressError> {
+    Ok(EthAddressResponse {
+        address: pubkey_bytes_to_address(&ecdsa_pubkey_of(&principal).await),
+    })
 }
 
 /// Computes a signature for a precomputed hash.
@@ -86,7 +98,7 @@ pub async fn sign_prehash(prehash: String) -> String {
 }
 
 /// Computes a signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
-pub async fn sign_transaction(req: SignRequest) -> String {
+pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransactionError> {
     use ethers_core::types::{transaction::eip1559::Eip1559TransactionRequest, Signature};
 
     const EIP1559_TX_ID: u8 = 2;
@@ -128,7 +140,7 @@ pub async fn sign_transaction(req: SignRequest) -> String {
     let mut signed_tx_bytes = tx.rlp_signed(&signature).to_vec();
     signed_tx_bytes.insert(0, EIP1559_TX_ID);
 
-    format!("0x{}", hex::encode(&signed_tx_bytes))
+    Ok(format!("0x{}", hex::encode(&signed_tx_bytes)))
 }
 
 /// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).

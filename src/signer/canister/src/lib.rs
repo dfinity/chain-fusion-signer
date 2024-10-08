@@ -1,4 +1,4 @@
-use crate::{guards::caller_is_not_anonymous, sign::generic::GenericSigningError};
+use crate::guards::caller_is_not_anonymous;
 use candid::Principal;
 use ic_cdk::api::management_canister::ecdsa::{
     EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
@@ -14,6 +14,11 @@ use ic_chain_fusion_signer_api::{
             GetBalanceError, GetBalanceRequest, GetBalanceResponse, SendBtcError, SendBtcRequest,
             SendBtcResponse,
         },
+        eth::{
+            EthPersonalSignError, EthPersonalSignRequest, EthPersonalSignResponse,
+            EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
+            EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
+        },
         transaction::SignRequest,
         Arg, Config,
     },
@@ -27,8 +32,10 @@ use sign::{
         fee_utils::calculate_fee,
         tx_utils::{btc_sign_transaction, build_p2wpkh_transaction},
     },
-    eth, generic,
-    generic::generic_ecdsa_public_key,
+    eth,
+    eth::{EthAddressError, EthAddressRequest, EthAddressResponse},
+    generic,
+    generic::{GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError},
 };
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
@@ -104,11 +111,13 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 // ////////////////////////
 
 /// Returns the generic Ed25519 public key of the caller.
+///
+/// Note: This is an exact dual of the canister `ecdsa_public_key` method.  The argument and response types are also the same.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
-) -> Result<(EcdsaPublicKeyResponse,), GenericSigningError> {
+) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
@@ -117,7 +126,7 @@ async fn generic_caller_ecdsa_public_key(
             fee,
         )
         .await?;
-    generic_ecdsa_public_key(arg).await
+    generic::caller_ecdsa_public_key(arg).await
 }
 
 /// Returns the generic Ed25519 public key of the caller.
@@ -125,7 +134,7 @@ async fn generic_caller_ecdsa_public_key(
 async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
-) -> Result<(SignWithEcdsaResponse,), GenericSigningError> {
+) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
@@ -134,37 +143,24 @@ async fn generic_sign_with_ecdsa(
             fee,
         )
         .await?;
-    generic::generic_sign_with_ecdsa(arg).await
+    generic::sign_with_ecdsa(arg).await
 }
 
 // ////////////////////
 // // ETHEREUM UTILS //
 // ////////////////////
 
-/// Returns the Ethereum address of the caller.
+/// Returns the Ethereum address of a specified user.
+///
+/// If no user is specified, the caller's address is returned.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_caller(
+async fn eth_address(
+    request: EthAddressRequest,
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
-    PAYMENT_GUARD
-        .deduct(
-            PaymentContext::default(),
-            payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
-        )
-        .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&ic_cdk::caller()).await,
-    ))
-}
-
-/// Returns the Ethereum address of the specified user.
-#[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_principal(
-    p: Principal,
-    payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
-    if p == Principal::anonymous() {
+) -> Result<EthAddressResponse, EthAddressError> {
+    let principal = request.principal.unwrap_or_else(ic_cdk::caller);
+    if principal == Principal::anonymous() {
+        // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
     }
     PAYMENT_GUARD
@@ -174,17 +170,35 @@ async fn eth_address_of_principal(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::pubkey_bytes_to_address(
-        &eth::ecdsa_pubkey_of(&p).await,
-    ))
+    eth::eth_address(principal).await
+}
+
+/// Returns the Ethereum address of the caller.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_address_of_caller(
+    payment: Option<PaymentType>,
+) -> Result<EthAddressResponse, EthAddressError> {
+    let principal = ic_cdk::caller();
+    if principal == Principal::anonymous() {
+        // TODO: Why trap rather than return an error?
+        ic_cdk::trap("Anonymous principal is not authorized");
+    }
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+    eth::eth_address(principal).await
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_sign_transaction(
-    req: SignRequest,
+    req: EthSignTransactionRequest,
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+) -> Result<EthSignTransactionResponse, EthSignTransactionError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -192,15 +206,17 @@ async fn eth_sign_transaction(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::sign_transaction(req).await)
+    Ok(EthSignTransactionResponse {
+        signature: eth::sign_transaction(req.into()).await?,
+    })
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 #[update(guard = "caller_is_not_anonymous")]
 async fn eth_personal_sign(
-    plaintext: String,
+    request: EthPersonalSignRequest,
     payment: Option<PaymentType>,
-) -> Result<String, GenericSigningError> {
+) -> Result<EthPersonalSignResponse, EthPersonalSignError> {
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -208,7 +224,28 @@ async fn eth_personal_sign(
             1_000_000_000,
         )
         .await?;
-    Ok(eth::personal_sign(plaintext).await)
+    Ok(EthPersonalSignResponse {
+        signature: eth::personal_sign(request.message).await,
+    })
+}
+
+/// Computes an Ethereum signature for a precomputed hash.
+#[update(guard = "caller_is_not_anonymous")]
+async fn eth_sign_prehash(
+    req: EthSignPrehashRequest,
+    payment: Option<PaymentType>,
+) -> Result<EthSignPrehashResponse, EthSignPrehashError> {
+    PAYMENT_GUARD
+        .deduct(
+            PaymentContext::default(),
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            1_000_000_000,
+        )
+        .await?;
+
+    Ok(EthSignPrehashResponse {
+        signature: eth::sign_prehash(req.message).await,
+    })
 }
 
 /// Returns the Ethereum address of the caller.
@@ -229,7 +266,9 @@ async fn eth_address_of(p: Principal) -> String {
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 #[update(guard = "caller_is_not_anonymous")]
 async fn sign_transaction(req: SignRequest) -> String {
-    eth::sign_transaction(req).await
+    eth::sign_transaction(req)
+        .await
+        .expect("Failed to sign the transaction")
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
