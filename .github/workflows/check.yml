@@ -23,6 +23,7 @@ jobs:
         run: npm ci --no-audit
       - name: Install nightly rust
         run: |
+          # Note: These commands should be the same as in the help message in scripts/fmt-rs
           rustup toolchain install nightly
           rustup component add rustfmt --toolchain nightly
       - name: Format
