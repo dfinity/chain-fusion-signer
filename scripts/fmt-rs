@@ -2,4 +2,16 @@
 set -euxo pipefail
 cd "$(dirname "$(realpath "$0")")/.."
 
+# Checks that the required toolchain is installed
+rustup component list --toolchain nightly | grep -q rustfmt || {
+
+	echo "ERROR: The nightly rust formatter is not installed."
+	echo "       Please install with:"
+	echo "       rustup toolchain install nightly"
+        echo "       rustup component add rustfmt --toolchain nightly"
+	echo "ABORTING..."
+	exit 1
+} >&2
+
+
 cargo +nightly fmt
