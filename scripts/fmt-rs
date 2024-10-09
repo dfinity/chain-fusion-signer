@@ -7,6 +7,7 @@ rustup component list --toolchain nightly | grep -q rustfmt || {
 
 	echo "ERROR: The nightly rust formatter is not installed."
 	echo "       Please install with:"
+	# Note: These install commands should match the equivalent commands in CI.
 	echo "       rustup toolchain install nightly"
         echo "       rustup component add rustfmt --toolchain nightly"
 	echo "ABORTING..."
