@@ -338,9 +338,10 @@ async fn btc_caller_balance(
                     .await
                     .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
-            let balance = bitcoin_api::get_balance(params.network, address, params.min_confirmations)
-                .await
-                .map_err(|msg| GetBalanceError::InternalError { msg })?;
+            let balance =
+                bitcoin_api::get_balance(params.network, address, params.min_confirmations)
+                    .await
+                    .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             Ok(GetBalanceResponse { balance })
         }
