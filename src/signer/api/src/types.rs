@@ -77,6 +77,7 @@ pub mod bitcoin {
     pub struct GetBalanceRequest {
         pub network: BitcoinNetwork,
         pub address_type: BitcoinAddressType,
+        pub min_confirmations: Option<u32>,
     }
 
     #[derive(CandidType, Deserialize, Debug)]
