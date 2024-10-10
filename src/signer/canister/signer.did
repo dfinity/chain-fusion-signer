@@ -51,7 +51,7 @@ type EthAddressRequest = record { "principal" : opt principal };
 type EthAddressResponse = record { address : text };
 type EthPersonalSignRequest = record { message : text };
 type EthPersonalSignResponse = record { signature : text };
-type EthSignPrehashRequest = record { message : text };
+type EthSignPrehashRequest = record { hash : text };
 type EthSignPrehashResponse = record { signature : text };
 type EthSignTransactionRequest = record {
   to : text;
