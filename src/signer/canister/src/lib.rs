@@ -19,7 +19,6 @@ use ic_chain_fusion_signer_api::{
             EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
             EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
         },
-        transaction::SignRequest,
         Arg, Config,
     },
 };
@@ -244,7 +243,7 @@ async fn eth_sign_prehash(
         .await?;
 
     Ok(EthSignPrehashResponse {
-        signature: eth::sign_prehash(req.message).await,
+        signature: eth::sign_prehash(req.hash).await,
     })
 }
 
