@@ -244,7 +244,7 @@ async fn eth_sign_prehash(
         .await?;
 
     Ok(EthSignPrehashResponse {
-        signature: eth::sign_prehash(req.message).await,
+        signature: eth::sign_prehash(req.hash).await,
     })
 }
 
