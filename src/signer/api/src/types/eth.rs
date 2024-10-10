@@ -107,7 +107,7 @@ impl From<(RejectionCode, String)> for EthPersonalSignError {
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthSignPrehashRequest {
-    pub message: String,
+    pub hash: String,
 }
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthSignPrehashResponse {
