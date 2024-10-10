@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+: The commit and any semantic version tags to be stored in the canister metadata.
+echo "$(git rev-parse HEAD)$(git tag -l --contains HEAD | sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;p}')"

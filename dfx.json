@@ -6,6 +6,15 @@
 			"build": "scripts/build.signer.sh",
 			"candid": "src/signer/canister/signer.did",
 			"wasm": "out/signer.wasm.gz",
+			"metadata": [
+				{
+					"name": "candid:service"
+				},
+				{
+					"name": "git_commit_id",
+					"path": "target/commit"
+				}
+			],
 			"init_arg_file": "out/signer.args.did"
 		},
 		"bitcoin": {

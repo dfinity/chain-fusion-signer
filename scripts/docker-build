@@ -42,6 +42,9 @@ if [[ "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
+mkdir -p target
+scripts/commit-metadata >target/commit
+
 if DOCKER_BUILDKIT=1 docker build \
   --target "$DFX_TARGET" \
   "$PROGRESS" \
