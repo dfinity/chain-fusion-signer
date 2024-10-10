@@ -17,6 +17,7 @@ fn test_caller_btc_balance() {
     let params = GetBalanceRequest {
         network,
         address_type: BitcoinAddressType::P2WPKH,
+        min_confirmations: None,
     };
 
     let balance_response = pic_setup
