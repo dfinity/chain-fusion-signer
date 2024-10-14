@@ -116,7 +116,7 @@ async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
-    let fee = 1_000_000_000;
+    let fee = 1_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
         .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
         .await?;
@@ -129,7 +129,7 @@ async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
-    let fee = 1_000_000_000;
+    let fee = 40_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
         .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
         .await?;
@@ -156,7 +156,7 @@ async fn eth_address(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            1_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     eth::eth_address(principal).await
@@ -175,7 +175,7 @@ async fn eth_address_of_caller(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            1_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     eth::eth_address(principal).await
@@ -190,7 +190,7 @@ async fn eth_sign_transaction(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     Ok(EthSignTransactionResponse {
@@ -207,7 +207,7 @@ async fn eth_personal_sign(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     Ok(EthPersonalSignResponse {
@@ -224,7 +224,7 @@ async fn eth_sign_prehash(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
 
@@ -249,7 +249,7 @@ async fn btc_caller_address(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            20_000_000,  // Determined with the aid of scripts/check-pricing
         )
         .await?;
     */
@@ -277,7 +277,7 @@ async fn btc_caller_balance(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     */
@@ -310,7 +310,7 @@ async fn btc_caller_send(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            130_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     */
