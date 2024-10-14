@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function generate_did() {
-  local canister candid_file;
+  local canister candid_file
   canister=$1
   candid_file="$(canister="$canister" jq -r '.canisters[env.canister].candid' dfx.json)"
 
