@@ -19,7 +19,6 @@ use ic_chain_fusion_signer_api::{
             EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
             EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
         },
-        transaction::SignRequest,
         Arg, Config,
     },
 };
@@ -244,43 +243,8 @@ async fn eth_sign_prehash(
         .await?;
 
     Ok(EthSignPrehashResponse {
-        signature: eth::sign_prehash(req.message).await,
+        signature: eth::sign_prehash(req.hash).await,
     })
-}
-
-/// Returns the Ethereum address of the caller.
-#[update(guard = "caller_is_not_anonymous")]
-async fn caller_eth_address() -> String {
-    eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&ic_cdk::caller()).await)
-}
-
-/// Returns the Ethereum address of the specified user.
-#[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of(p: Principal) -> String {
-    if p == Principal::anonymous() {
-        ic_cdk::trap("Anonymous principal is not authorized");
-    }
-    eth::pubkey_bytes_to_address(&eth::ecdsa_pubkey_of(&p).await)
-}
-
-/// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
-#[update(guard = "caller_is_not_anonymous")]
-async fn sign_transaction(req: SignRequest) -> String {
-    eth::sign_transaction(req)
-        .await
-        .expect("Failed to sign the transaction")
-}
-
-/// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
-#[update(guard = "caller_is_not_anonymous")]
-async fn personal_sign(plaintext: String) -> String {
-    eth::personal_sign(plaintext).await
-}
-
-/// Computes an Ethereum signature for a precomputed hash.
-#[update(guard = "caller_is_not_anonymous")]
-async fn sign_prehash(prehash: String) -> String {
-    eth::sign_prehash(prehash).await
 }
 
 // ///////////////////
@@ -338,9 +302,10 @@ async fn btc_caller_balance(
                     .await
                     .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
-            let balance = bitcoin_api::get_balance(params.network, address)
-                .await
-                .map_err(|msg| GetBalanceError::InternalError { msg })?;
+            let balance =
+                bitcoin_api::get_balance(params.network, address, params.min_confirmations)
+                    .await
+                    .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             Ok(GetBalanceResponse { balance })
         }
