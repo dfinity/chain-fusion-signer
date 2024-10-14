@@ -13,7 +13,16 @@ print_help() {
 
 	Note: Measurement is affected by other API calls made to the network.
 
-	Usage: "$(basename "$0")" [network]
+	Usage: "$(basename "$0")" [network] [method_name_pattern]
+	where:
+	  'network' is a dfx network name.
+	     Default: ic
+	  'method_name_pattern' is a regular expression; only API methods
+	     matching the pattern will be tested.
+	     Default: All methods.
+	Example:
+	  "$(basename "$0")" ic btc
+	     will check pricing for all bitcoin methods.
 	EOF
 }
 
@@ -23,6 +32,7 @@ print_help() {
 }
 
 DFX_NETWORK="${1:-ic}"
+METHOD_NAME_PATTERN="${2:-.}"
 SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
 
 to_number() {
@@ -34,6 +44,10 @@ signer_balance() {
 }
 check_call_pricing() {
   local before after
+  echo "$1" | grep -qE "$METHOD_NAME_PATTERN" || {
+    echo "Skipping $1..."
+    return
+  }
   before="$(signer_balance)"
   dfx canister call --network "$DFX_NETWORK" signer "${@}" >/dev/null
   after="$(signer_balance)"
@@ -76,9 +90,30 @@ check_call_pricing btc_caller_send '
   record {
     fee_satoshis = null;
     network = variant { mainnet };
-    utxos_to_spend = vec {};
+    utxos_to_spend = vec {
+      record {
+        height = 9_876_543 : nat32;
+        value = 12_345_667_890 : nat64;
+        outpoint = record { txid = blob "\36\f3\a7\fc\b6\b5\eb\d9\fa\40\41\92\8d\a8\9c\d4\23\66\2f\9c\5c\12\e4\1c\80\e0\7a\65\59\d1\78\ef"; vout = 12_345_678 : nat32 };
+      };
+      record {
+        height = 9_876_543 : nat32;
+        value = 12_345_667_890 : nat64;
+        outpoint = record { txid = blob "\d3\f7\1b\58\d5\39\fd\97\d2\12\2f\11\2d\52\da\db\6a\47\9a\d3\c4\74\64\97\8b\3b\0c\e0\04\6c\1b\50"; vout = 12_345_678 : nat32 };
+      };
+      record {
+        height = 9_876_543 : nat32;
+        value = 12_345_667_890 : nat64;
+        outpoint = record { txid = blob "\62\79\11\13\aa\4b\f3\39\e7\2a\fc\a3\7c\99\96\0e\0e\29\24\09\16\b6\5e\2b\24\5a\8a\7b\9e\ff\cd\eb"; vout = 12_345_678 : nat32 };
+      };
+    };
     address_type = variant { P2WPKH };
-    outputs = vec {};
+    outputs = vec {
+      record {
+        destination_address = "funplace";
+        sent_satoshis = 23_456_789 : nat64;
+      };
+    };
   },
   opt variant { CallerPaysIcrc2Cycles },
 )
