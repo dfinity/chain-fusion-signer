@@ -1,5 +1,11 @@
+# IMPORTANT: The last matching entry has the highest precedence.
+
+# The GIX team members who maintain this repo.
+# Note: These users will receive GitHub notifications for PRs.
+#       The list is kept short to avoid spamming the whole team.
+#       If standard maintainers are not available, please contact GIX.
+* @bitdivine
+
 # The codebase is owned by the Governance & Identity Experience team at DFINITY
 # For questions, reach out to: <gix@dfinity.org>
 .github/CODEOWNERS @dfinity/gix
-# The GIX team members who maintain this repo:
-* @bitdivine

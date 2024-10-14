@@ -1,6 +1,9 @@
 use candid::{CandidType, Deserialize, Principal};
 use std::fmt::Debug;
 
+pub mod eth;
+pub mod generic;
+
 pub type Timestamp = u64;
 
 #[derive(CandidType, Deserialize, Clone, Eq, PartialEq, Debug)]
@@ -74,6 +77,7 @@ pub mod bitcoin {
     pub struct GetBalanceRequest {
         pub network: BitcoinNetwork,
         pub address_type: BitcoinAddressType,
+        pub min_confirmations: Option<u32>,
     }
 
     #[derive(CandidType, Deserialize, Debug)]
@@ -113,6 +117,7 @@ pub mod bitcoin {
         InvalidDestinationAddress { address: String },
         InvalidSourceAddress { address: String },
         WrongBitcoinNetwork,
+        NotEnoughFunds { required: u64, available: u64 },
     }
 
     #[derive(CandidType, Deserialize, Debug)]
