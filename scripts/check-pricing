@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DFX_NETWORK="${1:-staging}"
+DFX_NETWORK="${1:-ic}"
 SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
-CYCLES_LEDGER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" cycles_ledger)"
 
 to_number() {
   : Converts symbols such as 1K to 1_000

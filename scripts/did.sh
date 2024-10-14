@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 function generate_did() {
-  local canister=$1
-  local candid_file="$(canister="$canister" jq -r .canisters[env.canister].candid dfx.json)"
+  local canister candid_file;
+  canister=$1
+  candid_file="$(canister="$canister" jq -r '.canisters[env.canister].candid' dfx.json)"
 
   test -e "target/wasm32-unknown-unknown/release/$canister.wasm" ||
     cargo build \
