@@ -1,5 +1,5 @@
 use crate::types::{
-    bitcoin::{GetAddressError, GetBalanceError},
+    bitcoin::{GetAddressError, GetBalanceError, SendBtcError},
     Config, InitArg,
 };
 use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
@@ -41,5 +41,11 @@ impl From<PaymentError> for GetAddressError {
 impl From<PaymentError> for GetBalanceError {
     fn from(e: PaymentError) -> Self {
         GetBalanceError::PaymentError(e)
+    }
+}
+
+impl From<PaymentError> for SendBtcError {
+    fn from(e: PaymentError) -> Self {
+        SendBtcError::PaymentError(e)
     }
 }
