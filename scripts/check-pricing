@@ -42,6 +42,12 @@ to_number() {
 signer_balance() {
   dfx canister status --network "$DFX_NETWORK" signer | awk '($1 == "Balance:"){print $2}'
 }
+add_underscores_to_number() {
+  rev | sed -E 's/.../&_/g;s/_(-?)$/\1/g' | rev
+}
+remove_underscores() {
+  tr -d _
+}
 check_call_pricing() {
   local before after
   echo "$1" | grep -qE "$METHOD_NAME_PATTERN" || {
@@ -51,7 +57,7 @@ check_call_pricing() {
   before="$(signer_balance)"
   dfx canister call --network "$DFX_NETWORK" signer "${@}" >/dev/null
   after="$(signer_balance)"
-  diff="$(echo "$after - $before" | tr -d _ | bc)"
+  diff="$(echo "$after - $before" | remove_underscores | bc | add_underscores_to_number)"
   if [[ $diff = -* ]]; then
     echo "WARNING: signer balance fell by $diff for: $1"
   else
@@ -110,7 +116,7 @@ check_call_pricing btc_caller_send '
     address_type = variant { P2WPKH };
     outputs = vec {
       record {
-        destination_address = "funplace";
+        destination_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
         sent_satoshis = 23_456_789 : nat64;
       };
     };

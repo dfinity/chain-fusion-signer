@@ -324,7 +324,7 @@ async fn btc_caller_send(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            40_000_000,
+            130_000_000_000,
         )
         .await?;
     */
