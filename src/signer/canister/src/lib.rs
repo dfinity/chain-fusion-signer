@@ -23,7 +23,6 @@ use ic_chain_fusion_signer_api::{
     },
 };
 use ic_papi_api::PaymentType;
-use ic_papi_guard::guards::{PaymentContext, PaymentGuard2};
 use serde_bytes::ByteBuf;
 use sign::{
     bitcoin::{
@@ -120,7 +119,6 @@ async fn generic_caller_ecdsa_public_key(
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             fee,
         )
@@ -137,7 +135,6 @@ async fn generic_sign_with_ecdsa(
     let fee = 1_000_000_000;
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             fee,
         )
@@ -164,7 +161,6 @@ async fn eth_address(
     }
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             1_000_000_000,
         )
@@ -184,7 +180,6 @@ async fn eth_address_of_caller(
     }
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             1_000_000_000,
         )
@@ -200,7 +195,6 @@ async fn eth_sign_transaction(
 ) -> Result<EthSignTransactionResponse, EthSignTransactionError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             1_000_000_000,
         )
@@ -218,7 +212,6 @@ async fn eth_personal_sign(
 ) -> Result<EthPersonalSignResponse, EthPersonalSignError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             1_000_000_000,
         )
@@ -236,7 +229,6 @@ async fn eth_sign_prehash(
 ) -> Result<EthSignPrehashResponse, EthSignPrehashError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             1_000_000_000,
         )

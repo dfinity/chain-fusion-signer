@@ -1,9 +1,6 @@
 [workspace]
 members = [
     "src/example_backend",
-    "src/papi/api",
-    "src/papi/cycles_ledger_client",
-    "src/papi/guard",
     "src/signer/api",
     "src/signer/canister"]
 resolver = "2"
@@ -30,8 +27,8 @@ bitcoin = "0.32.3"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
-ic-papi-api = { path = "src/papi/api" }
-ic-papi-guard = { path = "src/papi/guard" }
+ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
+ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 
 # START papi dependencies
 ic-ledger-types = "0.13.0"
