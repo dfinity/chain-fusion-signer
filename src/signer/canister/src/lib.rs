@@ -135,7 +135,7 @@ async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
-    let fee = 1_000_000_000;
+    let fee = 40_000_000_000;
     PAYMENT_GUARD
         .deduct(
             PaymentContext::default(),
@@ -203,7 +203,7 @@ async fn eth_sign_transaction(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000,
         )
         .await?;
     Ok(EthSignTransactionResponse {
@@ -221,7 +221,7 @@ async fn eth_personal_sign(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000,
         )
         .await?;
     Ok(EthPersonalSignResponse {
@@ -239,7 +239,7 @@ async fn eth_sign_prehash(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000,
         )
         .await?;
 
@@ -299,7 +299,7 @@ async fn btc_caller_address(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            20_000_000,
         )
         .await?;
     */
@@ -327,7 +327,7 @@ async fn btc_caller_balance(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000,
         )
         .await?;
     */
@@ -359,7 +359,7 @@ async fn btc_caller_send(
         .deduct(
             PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000,
         )
         .await?;
     */

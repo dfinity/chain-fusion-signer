@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DFX_NETWORK="${1:-staging}"
+SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
+CYCLES_LEDGER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" cycles_ledger)"
+
+to_number() {
+  : Converts symbols such as 1K to 1_000
+  numfmt --from=si | rev | sed 's/.../&_/g' | rev
+}
+signer_balance() {
+  dfx canister status --network "$DFX_NETWORK" signer | awk '($1 == "Balance:"){print $2}'
+}
+check_call_pricing() {
+  local before after
+  before="$(signer_balance)"
+  dfx canister call --network "$DFX_NETWORK" signer "${@}" >/dev/null
+  after="$(signer_balance)"
+  diff="$(echo "$after - $before" | tr -d _ | bc)"
+  if [[ $diff = -* ]]; then
+    echo "WARNING: signer balance fell by $diff for: $1"
+  else
+    echo "OK: Signer balance rose by $diff for: $1"
+  fi
+}
+
+APPROVAL="1P"
+
+: Approve funds for use in the test
+dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
+  record {
+    amount = $(echo "$APPROVAL" | to_number);
+    spender = record {
+      owner = principal \"${SIGNER_CANISTER_ID}\";
+    };
+  }" >/dev/null
+
+: Check that each method is making a profit
+
+check_call_pricing btc_caller_address '
+(
+  record { network = variant { mainnet }; address_type = variant { P2WPKH } },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing btc_caller_balance '
+
+(
+  record { network = variant { mainnet }; address_type = variant { P2WPKH } },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing btc_caller_send '
+(
+  record {
+    fee_satoshis = null;
+    network = variant { mainnet };
+    utxos_to_spend = vec {};
+    address_type = variant { P2WPKH };
+    outputs = vec {};
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing eth_address '
+(
+  record {},
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing eth_personal_sign '
+(
+  record { message = "1234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234" },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing eth_sign_prehash '(record { hash = "0123456701234567012345670123456701234567012345670123456701234567" }, opt variant { CallerPaysIcrc2Cycles })'
+check_call_pricing eth_sign_transaction '
+(
+  record {
+    to = "0x5e9F1cAF942aa8Ee887B75f5A6bCCaf4B1024248";
+    gas = 999 : nat;
+    value = 3 : nat;
+    max_priority_fee_per_gas = 23_645_624_464 : nat;
+    data = opt "0x02f86783aa36a7808203158201c87b945e9f1caf942aa8ee887b75f5a6bccaf4b10242480180c080a02fc93932ea116781baffa2f5e62079772c2d6ed91219caff433f653a6e657460a0301f525ac8a55602cc4bddb8c714c2be08aa2bf43fb0ddad974aa4f589d505b9";
+    max_fee_per_gas = 888 : nat;
+    chain_id = 4 : nat;
+    nonce = 6 : nat;
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing generic_caller_ecdsa_public_key '
+(
+  record {
+    key_id = record { name = "key_1"; curve = variant { secp256k1 } };
+    canister_id = null;
+    derivation_path = vec { blob "foo"; blob "bar"; blob "bat" };
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+check_call_pricing generic_sign_with_ecdsa '
+(
+  opt variant { CallerPaysIcrc2Cycles },
+  record {
+    key_id = record { name = "key_1"; curve = variant { secp256k1 } };
+    derivation_path = vec { blob "foo"; blob "bar"; blob "bat" };
+    message_hash = blob "\41\40\f0\a8\8b\3e\ea\41\5c\d2\77\4f\c2\70\f1\6b\51\2c\7c\63\7e\9b\54\2a\31\35\96\8b\ac\b1\47\ae";
+  },
+)
+'
