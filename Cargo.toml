@@ -32,5 +32,5 @@ ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d
 
 # START papi dependencies
 ic-ledger-types = "0.13.0"
-cycles-ledger-client = { path = "src/papi/cycles_ledger_client" }
+cycles-ledger-client = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 # END papi dependencies
