@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+print_help() {
+  cat <<-EOF
+	Checks that API pricing covers cycle costs.
+
+	For each API method, this:
+	* Gets the signer canister cycles balance
+	* Makes a sample API call
+	* Gets the cycles balance again
+	* Reports on the difference.
+
+	Note: Measurement is affected by other API calls made to the network.
+
+	Usage: "$(basename "$0")" [network]
+	EOF
+}
+
+[[ "${1:-}" != "--help" ]] || {
+  print_help
+  exit 0
+}
+
 DFX_NETWORK="${1:-ic}"
 SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
 
