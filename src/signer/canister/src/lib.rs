@@ -272,15 +272,12 @@ async fn btc_caller_balance(
     params: GetBalanceRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetBalanceResponse, GetBalanceError> {
-    /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             40_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
@@ -305,15 +302,12 @@ async fn btc_caller_send(
     params: SendBtcRequest,
     payment: Option<PaymentType>,
 ) -> Result<SendBtcResponse, SendBtcError> {
-    /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
             130_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let principal = ic_cdk::caller();
