@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 : The commit and any semantic version tags to be stored in the canister metadata.
+
+# The $ in the single quotes is intentional; it matches the end of the file.
+# shellcheck disable=SC2016
 echo "$(git rev-parse HEAD)$(git tag -l --contains HEAD | sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;p}')"
