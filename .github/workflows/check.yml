@@ -37,6 +37,16 @@ jobs:
                   git diff
                   exit 1
           }
+  sh-tests:
+    name: "Shell tests"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get install -yy shellcheck
+      - name: Lint shell
+        run: ./scripts/lint-sh
   rust-tests:
     name: "Rust tests"
     runs-on: ${{ matrix.os }}
@@ -107,7 +117,7 @@ jobs:
         run: dfx stop
   check-pass:
     name: "Checks pass"
-    needs: ["format", "rust-tests", "installation"]
+    needs: ["format", "rust-tests", "sh-tests", "installation"]
     if: ${{ always() }}
     runs-on: ubuntu-22.04
     steps:
