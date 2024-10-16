@@ -198,6 +198,8 @@ impl Default for PicCanisterBuilder {
 // Customisation
 impl PicCanisterBuilder {
     /// Create a new canister builder.
+    /// 
+    /// The canister name is used to find the .wasm.gz used in the local dfx deployment.
     #[allow(dead_code)]
     fn new(name: &str) -> Self {
         Self {
