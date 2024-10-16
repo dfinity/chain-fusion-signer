@@ -1,13 +1,9 @@
-use crate::utils::{
-    mock::CALLER,
-    pocketic::{setup},
-};
+use crate::utils::{mock::CALLER, pic_canister::PicCanisterTrait, pocketic::setup};
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use ic_chain_fusion_signer_api::types::bitcoin::{
     BitcoinAddressType, GetBalanceError, GetBalanceRequest, GetBalanceResponse,
 };
-use crate::utils::pic_canister::PicCanisterTrait;
 
 #[ignore] // TODO: Update this test
 #[test]
