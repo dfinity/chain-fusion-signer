@@ -1,7 +1,7 @@
 use crate::types::{Candid, ConfigCell};
 use candid::Principal;
 use ic_chain_fusion_signer_api::types::{Config, InitArg};
-use ic_papi_guard::guards::any::{AnyPaymentGuard, VendorPaymentConfig};
+use ic_papi_guard::guards::any::{PaymentGuard, VendorPaymentConfig};
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
@@ -60,7 +60,7 @@ pub fn set_config(arg: InitArg) {
 }
 
 lazy_static! {
-    pub static ref PAYMENT_GUARD: AnyPaymentGuard<5> = AnyPaymentGuard {
+    pub static ref PAYMENT_GUARD: PaymentGuard<5> = PaymentGuard {
         supported: [
             VendorPaymentConfig::AttachedCycles,
             VendorPaymentConfig::CallerPaysIcrc2Cycles,
