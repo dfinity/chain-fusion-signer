@@ -102,27 +102,8 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
-      - name: Install tools
-        run: ./scripts/setup cargo-binstall shfmt yq cargo-sort
-      - name: Install node dependencies
-        run: npm ci --no-audit
-      - name: Install nightly rust
-        run: |
-          # Note: These commands should be the same as in the help message in scripts/fmt-rs
-          rustup toolchain install nightly
-          rustup component add rustfmt --toolchain nightly
       - name: Verify that bindings are up to date
-        run: |
-          # Generate bindings
-          scripts/did.sh
-          scripts/bind/pic.sh
-          scripts/fmt
-          # Check for changes
-          test -z "$(git status --porcelain src)" || {
-                  echo "FIX: Please update the canister bindings."
-                  git diff
-                  exit 1
-          }
+        with: .github/actions/bindings/
       - name: Run integration tests
         run: ./scripts/test.signer.sh
       - name: Stop dfx
