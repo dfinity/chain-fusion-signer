@@ -1,0 +1,21 @@
+name: 'Formats the code'
+description: |
+  Formats all the code in the repository
+runs:
+  using: "composite"
+  steps:
+    - name: Install tools
+      shell: bash
+      run: ./scripts/setup cargo-binstall shfmt yq cargo-sort
+    - name: Install node dependencies
+      shell: bash
+      run: npm ci --no-audit
+    - name: Install nightly rust
+      shell: bash
+      run: |
+        # Note: These commands should be the same as in the help message in scripts/fmt-rs
+        rustup toolchain install nightly
+        rustup component add rustfmt --toolchain nightly
+    - name: Format
+      shell: bash
+      run: ./scripts/fmt
