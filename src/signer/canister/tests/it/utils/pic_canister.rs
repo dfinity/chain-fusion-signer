@@ -307,7 +307,7 @@ mod tests {
     use super::*;
     #[test]
     fn can_deploy_canister() {
-        let _pic = PicCanisterBuilder::new("example_backend").deploy();
+        let _simple_single_canister_test_env = PicCanisterBuilder::new("example_backend").deploy();
     }
     struct MulticanisterTestEnv {
         #[allow(dead_code)] // Created in tests.
