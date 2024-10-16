@@ -1,6 +1,6 @@
 [didc.rust]
 target = "custom"
-template = "scripts/pic/cycles_depositor.hbs"
+template = "scripts/bind/pic/cycles_depositor.hbs"
 # any tags mentioned from hbs
 candid_crate = "candid"
 canister_name = "CyclesDepositor"
