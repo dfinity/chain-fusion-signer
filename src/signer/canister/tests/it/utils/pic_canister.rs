@@ -312,15 +312,15 @@ mod tests {
         let _pic = PicCanisterBuilder::new("example_backend").deploy();
     }
     struct MulticanisterTestEnv {
-        pub cycles_ledger: PicCanister,
+        pub example_backend: PicCanister,
         pub cycles_depositor: PicCanister,
     }
     impl Default for MulticanisterTestEnv {
         fn default() -> Self {
-            let cycles_ledger = PicCanisterBuilder::new("cycles_ledger").deploy();
-            let cycles_depositor = PicCanisterBuilder::new("cycles_depositor").deploy_to(cycles_ledger.pic());
+            let example_backend = PicCanisterBuilder::new("example_backend").deploy();
+            let cycles_depositor = PicCanisterBuilder::new("cycles_depositor").deploy_to(example_backend.pic());
             Self {
-                cycles_ledger,
+                example_backend,
                 cycles_depositor,
             }
         }
