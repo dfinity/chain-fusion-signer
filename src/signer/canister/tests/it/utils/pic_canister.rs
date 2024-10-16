@@ -59,6 +59,7 @@ pub trait PicCanisterTrait {
                 WasmResult::Reject(error) => Err(error),
             })
     }
+}
     fn workspace_dir() -> PathBuf {
         let output = std::process::Command::new(env!("CARGO"))
             .arg("locate-project")
@@ -73,7 +74,7 @@ pub trait PicCanisterTrait {
     /// The path to a typical Cargo Wasm build.
     #[allow(dead_code)]
     fn cargo_wasm_path(name: &str) -> String {
-        let workspace_dir = Self::workspace_dir();
+        let workspace_dir = workspace_dir();
         workspace_dir
             .join("target/wasm32-unknown-unknown/release")
             .join(name)
@@ -87,13 +88,13 @@ pub trait PicCanisterTrait {
     /// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
     #[allow(dead_code)]
     fn dfx_wasm_path(name: &str) -> String {
-        Self::workspace_dir()
+        workspace_dir()
             .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
             .to_str()
             .unwrap()
             .to_string()
     }
-}
+
 
 /// A typical canister running on PocketIC.
 pub struct PicCanister {
@@ -124,9 +125,12 @@ impl PicCanister {
 /// Canister installer, using the builder pattern, for use in test environmens using `PocketIC`.
 ///
 /// # Example
-/// For a default test environment:
+/// For a simple test environment consisting of a canister deployed to a pocket-ic:
 /// ```
-/// let pic_canister = PicCanisterBuilder::default().deploy();
+/// // Before testing, deploy the canisters to local.  Ensure that the Wasms are compressed.
+/// // This ensures that files are present and well formed.
+/// // A simple test environment consisting of a pocket_ic with the wasm.gz deployed to it can then be created with:
+/// let pic_canister = PicCanisterBuilder::new("my_canister_name").deploy();
 /// ```
 /// To add a canister to an existing `PocketIC`:
 /// ```
@@ -136,7 +140,7 @@ impl PicCanister {
 /// To redeploy an existing canister:
 /// ```
 /// // First deployment:
-/// let (pic, canister_id) = PicCanisterBuilder::default().deploy();
+/// let pic_canister = PicCanisterBuilder::default().deploy();
 /// // Subsequent deployment:
 /// let canister_id = PicCanisterBuilder::default().with_canister(canister_id).deploy_to(&pic);
 /// ```
@@ -151,6 +155,9 @@ impl PicCanister {
 /// ```
 #[derive(Debug)]
 pub struct PicCanisterBuilder {
+    /// Canister name, as it appears in dfx.json.
+    #[allow(dead_code)] // Useful in debug printouts.
+    canister_name: Option<String>,
     /// Canister ID of the canister.  If not set, a new canister will be created.
     canister_id: Option<Principal>,
     /// Cycles to add to the canister.
@@ -180,6 +187,7 @@ impl PicCanisterBuilder {
 impl Default for PicCanisterBuilder {
     fn default() -> Self {
         Self {
+            canister_name: None,
             canister_id: None,
             cycles: Self::DEFAULT_CYCLES,
             wasm_path: "unspecified.wasm".to_string(),
@@ -190,6 +198,18 @@ impl Default for PicCanisterBuilder {
 }
 // Customisation
 impl PicCanisterBuilder {
+     /// Create a new canister builder.
+     #[allow(dead_code)]
+     fn new(name: &str) -> Self {
+        Self {
+            canister_name: Some(name.to_string()),
+            canister_id: None,
+            cycles: Self::DEFAULT_CYCLES,
+            wasm_path: dfx_wasm_path(name),
+            arg: Self::default_arg(),
+            controllers: None,
+        }
+    }
     /// Sets a custom argument for the canister.
     #[allow(dead_code)]
     pub fn with_arg(mut self, arg: Vec<u8>) -> Self {
@@ -275,5 +295,38 @@ impl PicCanisterBuilder {
             pic: pic.clone(),
             canister_id,
         }
+    }
+    /// Deploys the canister to a new PocketIC instance.
+    pub fn deploy(&mut self) -> PicCanister {
+        let pic = PocketIc::new();
+        self.deploy_to(Arc::new(pic))
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn can_deploy_canister() {
+        let _pic = PicCanisterBuilder::new("example_backend").deploy();
+    }
+    struct MulticanisterTestEnv {
+        pub cycles_ledger: PicCanister,
+        pub cycles_depositor: PicCanister,
+    }
+    impl Default for MulticanisterTestEnv {
+        fn default() -> Self {
+            let cycles_ledger = PicCanisterBuilder::new("cycles_ledger").deploy();
+            let cycles_depositor = PicCanisterBuilder::new("cycles_depositor").deploy_to(cycles_ledger.pic());
+            Self {
+                cycles_ledger,
+                cycles_depositor,
+            }
+        }
+    }
+    #[test]
+    fn can_deploy_multiple_canisters() {
+        let _env = MulticanisterTestEnv::default();
     }
 }
