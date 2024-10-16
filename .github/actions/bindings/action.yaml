@@ -7,7 +7,8 @@ runs:
     - name: Install tools
       shell: bash
       run: |
-        curl -Lf "https://github.com/dfinity/candid/releases/download/${version}/didc-linux64" | install -m 755 /dev/stdin "$USER_BIN/didc"
+        mkdir -p "$HOME/.local/bin/"
+        curl -Lf "https://github.com/dfinity/candid/releases/download/${version}/didc-linux64" | install -m 755 /dev/stdin "$HOME/.local/bin/didc"
     - name: Generate bindings
       shell: bash
       run: |
