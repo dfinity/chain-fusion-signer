@@ -1,9 +1,8 @@
-use candid::{decode_one, encode_one, CandidType, Principal};
+use candid::{encode_one, CandidType, Principal};
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use ic_chain_fusion_signer_api::types::{Arg, InitArg};
-use pocket_ic::{CallError, PocketIc, PocketIcBuilder, WasmResult};
+use pocket_ic::{CallError, PocketIc, PocketIcBuilder};
 use crate::utils::pic_canister::PicCanisterTrait;
-use serde::Deserialize;
 use std::{
     env,
     fs::read,
