@@ -605,7 +605,7 @@ dependencies = [
 
 [[package]]
 name = "example_backend"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "candid",
  "ic-cdk 0.16.0",
@@ -1083,7 +1083,7 @@ dependencies = [
 
 [[package]]
 name = "ic-chain-fusion-signer-api"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
@@ -2346,7 +2346,7 @@ dependencies = [
 
 [[package]]
 name = "signer"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "bitcoin",
  "candid",
