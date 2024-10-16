@@ -134,14 +134,15 @@ impl PicCanister {
 /// To add a canister to an existing `PocketIC`:
 /// ```
 /// let pic = PocketIc::new();
-/// let canister_id = PicCanisterBuilder::default().deploy_to(&pic);
+/// let canister_id = PicCanisterBuilder::new("my_canister_name").deploy_to(&pic);
 /// ```
 /// To redeploy an existing canister:
 /// ```
 /// // First deployment:
-/// let pic_canister = PicCanisterBuilder::default().deploy();
+/// let first = PicCanisterBuilder::new("my_canister_name").deploy();
+/// let canister_id = first.canister_id();
 /// // Subsequent deployment:
-/// let canister_id = PicCanisterBuilder::default().with_canister(canister_id).deploy_to(&pic);
+/// let canister_id = PicCanisterBuilder::new("my_canister_name").with_canister(canister_id).deploy_to(&pic);
 /// ```
 /// To customise the deployment, use the `.with_*` modifiers.  E.g.:
 /// ```
@@ -198,7 +199,7 @@ impl Default for PicCanisterBuilder {
 // Customisation
 impl PicCanisterBuilder {
     /// Create a new canister builder.
-    /// 
+    ///
     /// The canister name is used to find the .wasm.gz used in the local dfx deployment.
     #[allow(dead_code)]
     fn new(name: &str) -> Self {
