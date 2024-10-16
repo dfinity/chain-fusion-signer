@@ -60,41 +60,40 @@ pub trait PicCanisterTrait {
             })
     }
 }
-    fn workspace_dir() -> PathBuf {
-        let output = std::process::Command::new(env!("CARGO"))
-            .arg("locate-project")
-            .arg("--workspace")
-            .arg("--message-format=plain")
-            .output()
-            .unwrap()
-            .stdout;
-        let cargo_path = Path::new(std::str::from_utf8(&output).unwrap().trim());
-        cargo_path.parent().unwrap().to_path_buf()
-    }
-    /// The path to a typical Cargo Wasm build.
-    #[allow(dead_code)]
-    fn cargo_wasm_path(name: &str) -> String {
-        let workspace_dir = workspace_dir();
-        workspace_dir
-            .join("target/wasm32-unknown-unknown/release")
-            .join(name)
-            .with_extension("wasm")
-            .to_str()
-            .unwrap()
-            .to_string()
-    }
-    /// The path to the wasm after `dfx deploy`.  Expects the Wasm to be gzipped.
-    ///
-    /// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
-    #[allow(dead_code)]
-    fn dfx_wasm_path(name: &str) -> String {
-        workspace_dir()
-            .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
-            .to_str()
-            .unwrap()
-            .to_string()
-    }
-
+fn workspace_dir() -> PathBuf {
+    let output = std::process::Command::new(env!("CARGO"))
+        .arg("locate-project")
+        .arg("--workspace")
+        .arg("--message-format=plain")
+        .output()
+        .unwrap()
+        .stdout;
+    let cargo_path = Path::new(std::str::from_utf8(&output).unwrap().trim());
+    cargo_path.parent().unwrap().to_path_buf()
+}
+/// The path to a typical Cargo Wasm build.
+#[allow(dead_code)]
+fn cargo_wasm_path(name: &str) -> String {
+    let workspace_dir = workspace_dir();
+    workspace_dir
+        .join("target/wasm32-unknown-unknown/release")
+        .join(name)
+        .with_extension("wasm")
+        .to_str()
+        .unwrap()
+        .to_string()
+}
+/// The path to the wasm after `dfx deploy`.  Expects the Wasm to be gzipped.
+///
+/// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
+#[allow(dead_code)]
+fn dfx_wasm_path(name: &str) -> String {
+    workspace_dir()
+        .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
+        .to_str()
+        .unwrap()
+        .to_string()
+}
 
 /// A typical canister running on PocketIC.
 pub struct PicCanister {
@@ -198,9 +197,9 @@ impl Default for PicCanisterBuilder {
 }
 // Customisation
 impl PicCanisterBuilder {
-     /// Create a new canister builder.
-     #[allow(dead_code)]
-     fn new(name: &str) -> Self {
+    /// Create a new canister builder.
+    #[allow(dead_code)]
+    fn new(name: &str) -> Self {
         Self {
             canister_name: Some(name.to_string()),
             canister_id: None,
@@ -245,10 +244,7 @@ impl PicCanisterBuilder {
 impl PicCanisterBuilder {
     /// Reads the Wasm bytes from the configured path.
     fn wasm_bytes(&self) -> Vec<u8> {
-        fs::read(self.wasm_path.clone()).expect(&format!(
-            "Could not find wasm: {}",
-            self.wasm_path
-        ))
+        fs::read(self.wasm_path.clone()).expect(&format!("Could not find wasm: {}", self.wasm_path))
     }
 }
 // Builder
@@ -303,7 +299,6 @@ impl PicCanisterBuilder {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -318,7 +313,8 @@ mod tests {
     impl Default for MulticanisterTestEnv {
         fn default() -> Self {
             let example_backend = PicCanisterBuilder::new("example_backend").deploy();
-            let cycles_depositor = PicCanisterBuilder::new("cycles_depositor").deploy_to(example_backend.pic());
+            let cycles_depositor =
+                PicCanisterBuilder::new("cycles_depositor").deploy_to(example_backend.pic());
             Self {
                 example_backend,
                 cycles_depositor,
