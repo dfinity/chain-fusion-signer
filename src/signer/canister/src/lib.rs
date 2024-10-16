@@ -247,7 +247,7 @@ async fn btc_caller_address(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            20_000_000,  // Determined with the aid of scripts/check-pricing
+            20_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     match params.address_type {
