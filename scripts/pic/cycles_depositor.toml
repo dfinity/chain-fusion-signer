@@ -1,0 +1,10 @@
+[didc.rust]
+target = "custom"
+template = "scripts/pic/cycles_depositor.hbs"
+# any tags mentioned from hbs
+candid_crate = "candid"
+canister_name = "CyclesDepositor"
+
+[rust]
+visibility = "pub(crate)"
+attributes = "#[derive(CandidType, Deserialize, Debug)]"
