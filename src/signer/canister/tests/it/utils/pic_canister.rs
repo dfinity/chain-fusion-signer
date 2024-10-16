@@ -126,23 +126,23 @@ impl PicCanister {
 /// # Example
 /// For a default test environment:
 /// ```
-/// let pic_canister = BackendBuilder::default().deploy();
+/// let pic_canister = PicCanisterBuilder::default().deploy();
 /// ```
-/// To add a backend canister to an existing `PocketIC`:
+/// To add a canister to an existing `PocketIC`:
 /// ```
 /// let pic = PocketIc::new();
-/// let canister_id = BackendBuilder::default().deploy_to(&pic);
+/// let canister_id = PicCanisterBuilder::default().deploy_to(&pic);
 /// ```
 /// To redeploy an existing canister:
 /// ```
 /// // First deployment:
-/// let (pic, canister_id) = BackendBuilder::default().deploy();
+/// let (pic, canister_id) = PicCanisterBuilder::default().deploy();
 /// // Subsequent deployment:
-/// let canister_id = BackendBuilder::default().with_canister(canister_id).deploy_to(&pic);
+/// let canister_id = PicCanisterBuilder::default().with_canister(canister_id).deploy_to(&pic);
 /// ```
 /// To customise the deployment, use the `.with_*` modifiers.  E.g.:
 /// ```
-/// let (pic, canister_id) = BackendBuilder::default()
+/// let (pic, canister_id) = PicCanisterBuilder::default()
 ///    .with_wasm("path/to/ic_chainfusion_signer.wasm")
 ///    .with_arg(vec![1, 2, 3])
 ///    .with_controllers(vec![Principal::from_text("controller").unwrap()])
@@ -151,26 +151,26 @@ impl PicCanister {
 /// ```
 #[derive(Debug)]
 pub struct PicCanisterBuilder {
-    /// Canister ID of the backend canister.  If not set, a new canister will be created.
+    /// Canister ID of the canister.  If not set, a new canister will be created.
     canister_id: Option<Principal>,
-    /// Cycles to add to the backend canister.
+    /// Cycles to add to the canister.
     cycles: u128,
-    /// Path to the backend wasm file.
+    /// Path to the wasm file.
     wasm_path: String,
-    /// Argument to pass to the backend canister.
+    /// Argument to pass to the canister.
     arg: Vec<u8>,
-    /// Controllers of the backend canister.
+    /// Controllers of the canister.
     ///
     /// If the list is not specified, controllers will be unchnaged from the PocketIc defaults.
     controllers: Option<Vec<Principal>>,
 }
 // Defaults
 impl PicCanisterBuilder {
-    /// The default number of cycles to add to the backend canister on deployment.
+    /// The default number of cycles to add to the canister on deployment.
     ///
     /// To override, please use `with_cycles()`.
     pub const DEFAULT_CYCLES: u128 = 2_000_000_000_000;
-    /// The default argument to pass to the backend canister:  `()`.
+    /// The default argument to pass to the canister:  `()`.
     ///
     /// To override, please use `with_arg()`.
     pub fn default_arg() -> Vec<u8> {
@@ -190,7 +190,7 @@ impl Default for PicCanisterBuilder {
 }
 // Customisation
 impl PicCanisterBuilder {
-    /// Sets a custom argument for the backend canister.
+    /// Sets a custom argument for the canister.
     #[allow(dead_code)]
     pub fn with_arg(mut self, arg: Vec<u8>) -> Self {
         self.arg = arg;
@@ -202,13 +202,13 @@ impl PicCanisterBuilder {
         self.canister_id = Some(canister_id);
         self
     }
-    /// Sets custom controllers for the backend canister.
+    /// Sets custom controllers for the canister.
     #[allow(dead_code)]
     pub fn with_controllers(mut self, controllers: Vec<Principal>) -> Self {
         self.controllers = Some(controllers);
         self
     }
-    /// Sets the cycles to add to the backend canister.
+    /// Sets the cycles to add to the canister.
     #[allow(dead_code)]
     pub fn with_cycles(mut self, cycles: u128) -> Self {
         self.cycles = cycles;
@@ -223,10 +223,10 @@ impl PicCanisterBuilder {
 }
 // Get parameters
 impl PicCanisterBuilder {
-    /// Reads the backend Wasm bytes from the configured path.
+    /// Reads the Wasm bytes from the configured path.
     fn wasm_bytes(&self) -> Vec<u8> {
         fs::read(self.wasm_path.clone()).expect(&format!(
-            "Could not find the backend wasm: {}",
+            "Could not find wasm: {}",
             self.wasm_path
         ))
     }
@@ -243,21 +243,21 @@ impl PicCanisterBuilder {
             canister_id
         }
     }
-    /// Add cycles to the backend canister.
+    /// Add cycles to the canister.
     fn add_cycles(&mut self, pic: &PocketIc) {
         if self.cycles > 0 {
             let canister_id = self.canister_id(pic);
             pic.add_cycles(canister_id, self.cycles);
         }
     }
-    /// Install the backend canister.
+    /// Install the canister.
     fn install(&mut self, pic: &PocketIc) {
         let wasm_bytes = self.wasm_bytes();
         let canister_id = self.canister_id(pic);
         let arg = self.arg.clone();
         pic.install_canister(canister_id, wasm_bytes, arg, None);
     }
-    /// Set controllers of the backend canister.
+    /// Set controllers of the canister.
     fn set_controllers(&mut self, pic: &PocketIc) {
         if let Some(controllers) = self.controllers.clone() {
             let canister_id = self.canister_id(pic);
@@ -265,7 +265,7 @@ impl PicCanisterBuilder {
                 .expect("Test setup error: Failed to set controllers");
         }
     }
-    /// Setup the backend canister.
+    /// Setup the canister.
     pub fn deploy_to(&mut self, pic: Arc<PocketIc>) -> PicCanister {
         let canister_id = self.canister_id(&pic);
         self.add_cycles(&pic);
