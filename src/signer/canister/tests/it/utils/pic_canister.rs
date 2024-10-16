@@ -307,17 +307,20 @@ mod tests {
         let _pic = PicCanisterBuilder::new("example_backend").deploy();
     }
     struct MulticanisterTestEnv {
+        #[allow(dead_code)] // Created in tests.
         pub example_backend: PicCanister,
-        pub cycles_depositor: PicCanister,
+        #[allow(dead_code)] // Created in tests.
+        pub example_frontend: PicCanister,
     }
     impl Default for MulticanisterTestEnv {
         fn default() -> Self {
             let example_backend = PicCanisterBuilder::new("example_backend").deploy();
-            let cycles_depositor =
-                PicCanisterBuilder::new("cycles_depositor").deploy_to(example_backend.pic());
+            // Deploy the frontend to the same pic:
+            let pic = example_backend.pic();
+            let example_frontend = PicCanisterBuilder::new("example_frontend").deploy_to(pic);
             Self {
                 example_backend,
-                cycles_depositor,
+                example_frontend,
             }
         }
     }
