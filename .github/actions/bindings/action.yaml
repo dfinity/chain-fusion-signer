@@ -4,23 +4,23 @@ description: |
 runs:
   using: "composite"
   steps:
-      - name: Install tools
-        shell: bash
-        run: |
-                curl -Lf "https://github.com/dfinity/candid/releases/download/${version}/didc-linux64" | install -m 755 /dev/stdin "$USER_BIN/didc"
-      - name: Generate bindings
-        shell: bash
-        run: |
-          scripts/did.sh
-          scripts/bind/pic.sh
-      - name: Format code
-        shell: bash
-        uses: ./.github/actions/format
-      - name: Check for changes
-        shell: bash
-        run: |
-          test -z "$(git status --porcelain src)" || {
-                  echo "FIX: Please update the canister bindings."
-                  git diff
-                  exit 1
-          }
+    - name: Install tools
+      shell: bash
+      run: |
+        curl -Lf "https://github.com/dfinity/candid/releases/download/${version}/didc-linux64" | install -m 755 /dev/stdin "$USER_BIN/didc"
+    - name: Generate bindings
+      shell: bash
+      run: |
+        scripts/did.sh
+        scripts/bind/pic.sh
+    - name: Format code
+      shell: bash
+      uses: ./.github/actions/format
+    - name: Check for changes
+      shell: bash
+      run: |
+        test -z "$(git status --porcelain src)" || {
+                echo "FIX: Please update the canister bindings."
+                git diff
+                exit 1
+        }
