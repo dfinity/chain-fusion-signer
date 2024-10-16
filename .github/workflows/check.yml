@@ -111,6 +111,17 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
+      - name: Verify that bindings are up to date
+        run: |
+          # Generate bindings
+          scripts/did.sh
+          scripts/bind/pic.sh
+          # Check for changes
+          test -z "$(git status --porcelain src)" || {
+                  echo "FIX: Please update the canister bindings."
+                  git diff
+                  exit 1
+          }
       - name: Run integration tests
         run: ./scripts/test.signer.sh
       - name: Stop dfx
