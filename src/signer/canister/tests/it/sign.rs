@@ -1,6 +1,7 @@
 use crate::utils::{
     mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
-    pocketic::{setup, PicCanisterTrait},
+    pic_canister::PicCanisterTrait,
+    pocketic::setup,
 };
 use candid::{Nat, Principal};
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;

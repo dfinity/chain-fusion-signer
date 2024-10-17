@@ -3,7 +3,8 @@ use crate::utils::{
         CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET,
         CALLER_ETH_ADDRESS,
     },
-    pocketic::{setup, PicCanisterTrait},
+    pic_canister::PicCanisterTrait,
+    pocketic::setup,
 };
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
