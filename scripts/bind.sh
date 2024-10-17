@@ -8,5 +8,7 @@
   exit 0
 }
 
+# Generate candid and bindings for the signer
 scripts/did.sh
+# Generate canister bindings for use with pocket-ic
 scripts/bind/pic.sh
