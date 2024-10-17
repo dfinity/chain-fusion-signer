@@ -3,7 +3,7 @@ target = "custom"
 template = "scripts/bind/pic/cycles_depositor.hbs"
 # any tags mentioned from hbs
 candid_crate = "candid"
-canister_name = "CyclesDepositor"
+canister_name = "cycles_depositor"
 
 [rust]
 visibility = "pub(crate)"
