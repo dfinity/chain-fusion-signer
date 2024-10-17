@@ -103,7 +103,7 @@ jobs:
       - name: Deploy all canisters
         run: dfx deploy
       - name: Verify that bindings are up to date
-        with: .github/actions/bindings/
+        uses: .github/actions/bindings
       - name: Run integration tests
         run: ./scripts/test.signer.sh
       - name: Stop dfx
