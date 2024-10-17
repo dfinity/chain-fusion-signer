@@ -1,0 +1,27 @@
+name: 'Checks that the bindings are up to date'
+description: |
+  - Creates the signer candid file
+  - Creates bindings for the signer and other canisters
+  - Verifies that the generated bindings match the ones in the repository
+  Prerequisites:
+  - The candid files for external canisters need to be in `.dfx/local/canisters/${canister}/`, as after `dfx deploy`.
+runs:
+  using: "composite"
+  steps:
+    - name: Install tools
+      shell: bash
+      run: scripts/setup didc
+    - name: Generate bindings
+      shell: bash
+      run: |
+        scripts/bind.sh
+    - name: Format code
+      uses: ./.github/actions/format
+    - name: Check for changes
+      shell: bash
+      run: |
+        test -z "$(git status --porcelain src)" || {
+                echo "FIX: Please update the canister bindings."
+                git diff
+                exit 1
+        }
