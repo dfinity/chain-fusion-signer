@@ -12,8 +12,7 @@ runs:
     - name: Generate bindings
       shell: bash
       run: |
-        scripts/did.sh
-        scripts/bind/pic.sh
+        scripts/bind.sh
     - name: Format code
       shell: bash
       uses: ./.github/actions/format
