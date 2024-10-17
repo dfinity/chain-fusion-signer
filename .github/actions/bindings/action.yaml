@@ -12,7 +12,6 @@ runs:
       run: |
         scripts/bind.sh
     - name: Format code
-      shell: bash
       uses: ./.github/actions/format
     - name: Check for changes
       shell: bash
