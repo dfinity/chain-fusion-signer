@@ -3,7 +3,7 @@ set -euo pipefail
 
 [[ "${1:-}" != "--help" ]] || {
   cat <<-EOF
-	Generates candid file and javascript bindings for the signer
+	Generates canister bindings for use with pocket-ic.
 	EOF
 
   exit 0

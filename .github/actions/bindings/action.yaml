@@ -1,6 +1,10 @@
 name: 'Checks that the bindings are up to date'
 description: |
-  Formats all the code in the repository
+  - Creates the signer candid file
+  - Creates bindings for the signer and other canisters
+  - Verifies that the generated bindings match the ones in the repository
+  Prerequisites:
+  - The candid files for external canisters need to be in `.dfx/local/canisters/${canister}/`, as after `dfx deploy`.
 runs:
   using: "composite"
   steps:
