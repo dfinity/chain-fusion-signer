@@ -6,8 +6,7 @@ runs:
   steps:
     - name: Install tools
       shell: bash
-      run: |
-        scripts/setup didc
+      run: scripts/setup didc
     - name: Generate bindings
       shell: bash
       run: |
