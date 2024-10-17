@@ -32,6 +32,7 @@
 		"example_backend": {
 			"candid": "src/example_backend/example_backend.did",
 			"package": "example_backend",
+			"gzip": true,
 			"type": "rust"
 		},
 		"example_frontend": {
