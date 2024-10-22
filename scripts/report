@@ -29,8 +29,11 @@ report() {
   echo
 }
 
-readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
+if (( $# > 0 ))
+then NETWORKS=("${@}")
+else readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
+fi
 
-for DFX_NETWORK in "${1:-${NETWORKS[@]}}" ; do
+for DFX_NETWORK in "${NETWORKS[@]}" ; do
   report
 done
