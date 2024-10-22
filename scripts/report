@@ -8,7 +8,7 @@ set -euo pipefail
 	Usage: $(basename "$0") [DFX_NETWORK]
 	EOF
 
-	exit 0
+  exit 0
 }
 
 report_git_ref() {
@@ -29,11 +29,12 @@ report() {
   echo
 }
 
-if (( $# > 0 ))
-then NETWORKS=("${@}")
-else readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
+if (($# > 0)); then
+  NETWORKS=("${@}")
+else
+  readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
 fi
 
-for DFX_NETWORK in "${NETWORKS[@]}" ; do
+for DFX_NETWORK in "${NETWORKS[@]}"; do
   report
 done
