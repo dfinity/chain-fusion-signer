@@ -1,5 +1,5 @@
+use crate::canister::cycles_depositor::{self, CyclesDepositorPic};
 use crate::utils::{
-    cycles_depositor::{self, CyclesDepositorPic},
     cycles_ledger::{
         Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
     },
