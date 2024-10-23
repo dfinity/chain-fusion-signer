@@ -7,6 +7,8 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
+pub mod impls;
+
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum ChangeIndexId { SetTo(Principal), Unset }
 #[derive(CandidType, Deserialize, Debug)]
@@ -323,7 +325,6 @@ pub(crate) enum WithdrawFromError {
 }
 
 
-
 pub struct CyclesLedgerPic {
     pub pic: Arc<PocketIc>,
     pub canister_id: Principal,
@@ -366,28 +367,28 @@ impl CyclesLedgerPic {
       self.update(self.canister_id, "icrc1_balance_of", arg0)
   }
   pub fn icrc_1_decimals(&self, _caller: Principal) -> Result<u8, String> {
-      self.update(self.canister_id, "icrc1_decimals", arg0)
+      self.update(self.canister_id, "icrc1_decimals", ())
   }
   pub fn icrc_1_fee(&self, _caller: Principal) -> Result<candid::Nat, String> {
-      self.update(self.canister_id, "icrc1_fee", arg0)
+      self.update(self.canister_id, "icrc1_fee", ())
   }
   pub fn icrc_1_metadata(&self, _caller: Principal) -> Result<Vec<(String,MetadataValue,)>, String> {
-      self.update(self.canister_id, "icrc1_metadata", arg0)
+      self.update(self.canister_id, "icrc1_metadata", ())
   }
   pub fn icrc_1_minting_account(&self, _caller: Principal) -> Result<Option<Account>, String> {
-      self.update(self.canister_id, "icrc1_minting_account", arg0)
+      self.update(self.canister_id, "icrc1_minting_account", ())
   }
   pub fn icrc_1_name(&self, _caller: Principal) -> Result<String, String> {
-      self.update(self.canister_id, "icrc1_name", arg0)
+      self.update(self.canister_id, "icrc1_name", ())
   }
   pub fn icrc_1_supported_standards(&self, _caller: Principal) -> Result<Vec<SupportedStandard>, String> {
-      self.update(self.canister_id, "icrc1_supported_standards", arg0)
+      self.update(self.canister_id, "icrc1_supported_standards", ())
   }
   pub fn icrc_1_symbol(&self, _caller: Principal) -> Result<String, String> {
-      self.update(self.canister_id, "icrc1_symbol", arg0)
+      self.update(self.canister_id, "icrc1_symbol", ())
   }
   pub fn icrc_1_total_supply(&self, _caller: Principal) -> Result<candid::Nat, String> {
-      self.update(self.canister_id, "icrc1_total_supply", arg0)
+      self.update(self.canister_id, "icrc1_total_supply", ())
   }
   pub fn icrc_1_transfer(&self, _caller: Principal, arg0: &TransferArgs) -> Result<std::result::Result<BlockIndex, TransferError>, String> {
       self.update(self.canister_id, "icrc1_transfer", arg0)
@@ -408,10 +409,10 @@ impl CyclesLedgerPic {
       self.update(self.canister_id, "icrc3_get_blocks", arg0)
   }
   pub fn icrc_3_get_tip_certificate(&self, _caller: Principal) -> Result<Option<DataCertificate>, String> {
-      self.update(self.canister_id, "icrc3_get_tip_certificate", arg0)
+      self.update(self.canister_id, "icrc3_get_tip_certificate", ())
   }
   pub fn icrc_3_supported_block_types(&self, _caller: Principal) -> Result<Vec<SupportedBlockType>, String> {
-      self.update(self.canister_id, "icrc3_supported_block_types", arg0)
+      self.update(self.canister_id, "icrc3_supported_block_types", ())
   }
   pub fn withdraw(&self, _caller: Principal, arg0: &WithdrawArgs) -> Result<std::result::Result<BlockIndex, WithdrawError>, String> {
       self.update(self.canister_id, "withdraw", arg0)

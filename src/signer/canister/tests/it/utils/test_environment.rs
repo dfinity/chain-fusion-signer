@@ -1,10 +1,14 @@
-use crate::canister::cycles_depositor::{self, CyclesDepositorPic};
-use crate::canister::cycles_ledger::{
-    Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
-};
-use crate::utils::{ 
-    pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
-    signer::{Arg, InitArg, SignerPic},
+use crate::{
+    canister::{
+        cycles_depositor::{self, CyclesDepositorPic},
+        cycles_ledger::{
+            Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
+        },
+    },
+    utils::{
+        pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
+        signer::{Arg, InitArg, SignerPic},
+    },
 };
 use candid::{encode_one, CandidType, Nat, Principal};
 use ic_papi_api::{cycles::cycles_ledger_canister_id, PaymentError};
@@ -201,14 +205,13 @@ impl TestSetup {
         self.ledger
             .icrc_2_approve(
                 self.user,
-                &ApproveArgs {
-                    spender: Account {
+                &ApproveArgs::new(
+                    Account {
                         owner: self.signer.canister_id(),
                         subaccount: None,
                     },
-                    amount: amount.into(),
-                    ..ApproveArgs::default()
-                },
+                    amount.into(),
+                ),
             )
             .expect("Failed to call the ledger to approve")
             .expect("Failed to approve the paid service to spend the user's ICRC-2 tokens");
