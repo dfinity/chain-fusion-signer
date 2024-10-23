@@ -7,7 +7,9 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
-pub mod impls;
+{{#if submodule}}
+pub mod {{submodule}};
+{{/if}}
 
 {{type_defs}}
 
