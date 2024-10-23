@@ -1,8 +1,8 @@
 use crate::canister::cycles_depositor::{self, CyclesDepositorPic};
-use crate::utils::{
-    cycles_ledger::{
-        Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
-    },
+use crate::canister::cycles_ledger::{
+    Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
+};
+use crate::utils::{ 
     pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
     signer::{Arg, InitArg, SignerPic},
 };
