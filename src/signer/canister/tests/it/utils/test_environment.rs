@@ -41,6 +41,7 @@ impl PaidMethods {
     }
 }
 
+#[allow(dead_code)] // Not all fields need to be used
 pub struct TestSetup {
     /// The PocketIC instance.
     #[allow(dead_code)]

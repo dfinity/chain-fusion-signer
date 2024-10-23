@@ -1,5 +1,5 @@
 //! Common methods for interacting with a canister using `PocketIc`.
-use candid::{decode_one, encode_one, encode_args, CandidType, Deserialize, Principal};
+use candid::{decode_one, encode_one, CandidType, Deserialize, Principal};
 use pocket_ic::{PocketIc, WasmResult};
 use std::{
     fs,
