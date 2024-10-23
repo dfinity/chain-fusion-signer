@@ -23,7 +23,6 @@ use ic_chain_fusion_signer_api::{
     },
 };
 use ic_papi_api::PaymentType;
-use ic_papi_guard::guards::{PaymentContext, PaymentGuard2};
 use serde_bytes::ByteBuf;
 use sign::{
     bitcoin::{
@@ -117,13 +116,9 @@ async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
-    let fee = 1_000_000_000;
+    let fee = 1_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
-        .deduct(
-            PaymentContext::default(),
-            payment.unwrap_or(PaymentType::AttachedCycles),
-            fee,
-        )
+        .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
         .await?;
     generic::caller_ecdsa_public_key(arg).await
 }
@@ -134,13 +129,9 @@ async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
-    let fee = 1_000_000_000;
+    let fee = 40_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
-        .deduct(
-            PaymentContext::default(),
-            payment.unwrap_or(PaymentType::AttachedCycles),
-            fee,
-        )
+        .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
         .await?;
     generic::sign_with_ecdsa(arg).await
 }
@@ -164,9 +155,8 @@ async fn eth_address(
     }
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            1_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     eth::eth_address(principal).await
@@ -184,9 +174,8 @@ async fn eth_address_of_caller(
     }
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            1_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     eth::eth_address(principal).await
@@ -200,9 +189,8 @@ async fn eth_sign_transaction(
 ) -> Result<EthSignTransactionResponse, EthSignTransactionError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     Ok(EthSignTransactionResponse {
@@ -218,9 +206,8 @@ async fn eth_personal_sign(
 ) -> Result<EthPersonalSignResponse, EthPersonalSignError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
     Ok(EthPersonalSignResponse {
@@ -236,9 +223,8 @@ async fn eth_sign_prehash(
 ) -> Result<EthSignPrehashResponse, EthSignPrehashError> {
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
 
@@ -258,15 +244,12 @@ async fn btc_caller_address(
     params: GetAddressRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetAddressResponse, GetAddressError> {
-    /* TODO: uncomment when the payment guard is ready
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            20_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
@@ -286,15 +269,12 @@ async fn btc_caller_balance(
     params: GetBalanceRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetBalanceResponse, GetBalanceError> {
-    /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            40_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
@@ -319,15 +299,12 @@ async fn btc_caller_send(
     params: SendBtcRequest,
     payment: Option<PaymentType>,
 ) -> Result<SendBtcResponse, SendBtcError> {
-    /* TODO: Uncomment the payment guard once the payment is implemented.
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000,
+            130_000_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let principal = ic_cdk::caller();

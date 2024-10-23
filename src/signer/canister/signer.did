@@ -102,6 +102,7 @@ type PaymentError = variant {
     ledger : principal;
   };
   LedgerUnreachable : CallerPaysIcrc2Tokens;
+  InvalidPatron;
   LedgerTransferFromError : record {
     error : TransferFromError;
     ledger : principal;

@@ -1,12 +1,13 @@
-use crate::utils::cycles_depositor::{self, CyclesDepositorPic};
-use crate::utils::cycles_ledger::{
-    Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
+use crate::utils::{
+    cycles_depositor::{self, CyclesDepositorPic},
+    cycles_ledger::{
+        Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
+    },
+    pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
+    signer::{Arg, InitArg, SignerPic},
 };
-use crate::utils::pic_canister::{PicCanister, PicCanisterBuilder, PicCanisterTrait};
-use crate::utils::signer::{Arg, InitArg, SignerPic};
 use candid::{encode_one, CandidType, Nat, Principal};
-use ic_papi_api::cycles::cycles_ledger_canister_id;
-use ic_papi_api::PaymentError;
+use ic_papi_api::{cycles::cycles_ledger_canister_id, PaymentError};
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
@@ -75,7 +76,7 @@ impl Default for TestSetup {
         let ledger = CyclesLedgerPic::from(
             PicCanisterBuilder::default()
                 .with_canister(cycles_ledger_canister_id)
-                .with_wasm(&PicCanister::dfx_wasm_path("cycles_ledger"))
+                .with_wasm(&dfx_wasm_path("cycles_ledger"))
                 .with_arg(
                     encode_one(LedgerArgs::Init(LedgerInitArgs {
                         index_id: None,
@@ -87,7 +88,7 @@ impl Default for TestSetup {
         );
         let signer = SignerPic::from(
             PicCanisterBuilder::default()
-                .with_wasm(&PicCanister::cargo_wasm_path("signer"))
+                .with_wasm(&cargo_wasm_path("signer"))
                 .with_arg(
                     encode_one(Arg::Init(InitArg {
                         ecdsa_key_name: format!("test_key_1"),
@@ -120,7 +121,7 @@ impl Default for TestSetup {
             Principal::from_text("rg3gz-22tjp-jh7hl-migkq-vb7in-i2ylc-6umlc-dtbug-v6jgc-uo24d-nqe")
                 .unwrap();
         let cycles_depositor = PicCanisterBuilder::default()
-            .with_wasm(&PicCanister::dfx_wasm_path("cycles_depositor"))
+            .with_wasm(&dfx_wasm_path("cycles_depositor"))
             .with_controllers(vec![user])
             .with_arg(
                 encode_one(cycles_depositor::InitArg {

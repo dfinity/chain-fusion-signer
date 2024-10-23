@@ -17,17 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install tools
-        run: ./scripts/setup cargo-binstall shfmt yq cargo-sort
-      - name: Install node dependencies
-        run: npm ci --no-audit
-      - name: Install nightly rust
-        run: |
-          # Note: These commands should be the same as in the help message in scripts/fmt-rs
-          rustup toolchain install nightly
-          rustup component add rustfmt --toolchain nightly
-      - name: Format
-        run: ./scripts/fmt
+      - name: Format code
+        uses: ./.github/actions/format
       - name: Ignore some changes
         run: while read -r line ; do git checkout "$line" ; done <.relaxedfmt
       - name: Check formatted
@@ -37,6 +28,16 @@ jobs:
                   git diff
                   exit 1
           }
+  sh-tests:
+    name: "Shell tests"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get install -yy shellcheck
+      - name: Lint shell
+        run: ./scripts/lint-sh
   rust-tests:
     name: "Rust tests"
     runs-on: ${{ matrix.os }}
@@ -101,13 +102,15 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
+      - name: Verify that bindings are up to date
+        uses: ./.github/actions/bindings
       - name: Run integration tests
         run: ./scripts/test.signer.sh
       - name: Stop dfx
         run: dfx stop
   check-pass:
     name: "Checks pass"
-    needs: ["format", "rust-tests", "installation"]
+    needs: ["format", "rust-tests", "sh-tests", "installation"]
     if: ${{ always() }}
     runs-on: ubuntu-22.04
     steps:
