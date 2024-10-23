@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+[[ "${1:-}" != "--help" ]] || {
+  cat <<-EOF
+	Generates candid file and javascript bindings for the signer
+	EOF
+
+  exit 0
+}
+
 function generate_did() {
   local canister candid_file
   canister=$1

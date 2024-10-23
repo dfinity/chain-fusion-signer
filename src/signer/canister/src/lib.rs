@@ -244,15 +244,12 @@ async fn btc_caller_address(
     params: GetAddressRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetAddressResponse, GetAddressError> {
-    /* TODO: uncomment when the payment guard is ready
     PAYMENT_GUARD
         .deduct(
-            PaymentContext::default(),
             payment.unwrap_or(PaymentType::AttachedCycles),
-            20_000_000,  // Determined with the aid of scripts/check-pricing
+            20_000_000, // Determined with the aid of scripts/check-pricing
         )
         .await?;
-    */
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
             let address =
