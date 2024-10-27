@@ -7,8 +7,11 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
-{{type_defs}}
+{{#if submodule}}
+pub mod {{submodule}};
+{{/if}}
 
+{{type_defs}}
 
 {{#if methods}}
 pub struct {{PascalCase canister_name}}Pic {
@@ -39,7 +42,13 @@ impl PicCanisterTrait for {{PascalCase canister_name}}Pic {
 impl {{PascalCase canister_name}}Pic {
   {{#each methods}}
   pub fn {{this.name}}(&self, _caller: Principal{{#each this.args}}, {{this.0}}: &{{this.1}}{{/each}}) -> Result<{{vec_to_arity this.rets}}, String> {
-      self.update(self.canister_id, "{{escape_debug this.original_name}}", arg0)
+      {{#if this.args.[1]}}
+      unimplemented!("The update function handles only a single argument.")
+      {{else if this.args.[0]}}
+      self.update(self.canister_id, "{{escape_debug this.original_name}}", {{#each this.args}}{{this.0}}{{/each}})
+      {{else}}
+      self.update(self.canister_id, "{{escape_debug this.original_name}}", ())
+      {{/if}}
   }
   {{/each}}
 }
