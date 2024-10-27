@@ -5,7 +5,7 @@ set -euo pipefail
   cat <<-EOF
 	Prints which versions of the signer are deployed where and with what arguments.
 
-	Usage: $(basename "$0") [DFX_NETWORK]
+	Usage: $(basename "$0") [DFX_NETWORK...]
 	EOF
 
   exit 0
