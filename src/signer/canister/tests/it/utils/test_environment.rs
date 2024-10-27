@@ -225,7 +225,7 @@ impl TestSetup {
         arg: impl CandidType,
     ) -> Result<String, PaymentError> {
         self.signer
-            .update(caller, method.name(), arg)
+            .update_one(caller, method.name(), arg)
             .expect("Failed to call the paid service")
     }
 }

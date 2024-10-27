@@ -340,7 +340,7 @@ impl SignerPic {
         arg0: &GetAddressRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result_,), String> {
-        self.update(caller, "btc_caller_address", (arg0, arg1))
+        self.update_one(caller, "btc_caller_address", (arg0, arg1))
     }
     pub async fn btc_caller_balance(
         &self,
@@ -348,7 +348,7 @@ impl SignerPic {
         arg0: &GetAddressRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result1,), String> {
-        self.update(caller, "btc_caller_balance", (arg0, arg1))
+        self.update_one(caller, "btc_caller_balance", (arg0, arg1))
     }
     pub async fn btc_caller_send(
         &self,
@@ -356,27 +356,27 @@ impl SignerPic {
         arg0: &SendBtcRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result2,), String> {
-        self.update(caller, "btc_caller_send", (arg0, arg1))
+        self.update_one(caller, "btc_caller_send", (arg0, arg1))
     }
     pub async fn caller_eth_address(&self, caller: Principal) -> Result<(String,), String> {
-        self.update(caller, "caller_eth_address", ())
+        self.update_one(caller, "caller_eth_address", ())
     }
     pub async fn config(&self, caller: Principal) -> Result<(Config,), String> {
-        self.update(caller, "config", ())
+        self.update_one(caller, "config", ())
     }
     pub async fn eth_address_of(
         &self,
         caller: Principal,
         arg0: &Principal,
     ) -> Result<(String,), String> {
-        self.update(caller, "eth_address_of", (arg0,))
+        self.update_one(caller, "eth_address_of", (arg0,))
     }
     pub async fn eth_address_of_caller(
         &self,
         caller: Principal,
         arg0: &Option<PaymentType>,
     ) -> Result<(Result3,), String> {
-        self.update(caller, "eth_address_of_caller", (arg0,))
+        self.update_one(caller, "eth_address_of_caller", (arg0,))
     }
     pub async fn eth_address_of_principal(
         &self,
@@ -384,7 +384,7 @@ impl SignerPic {
         arg0: &Principal,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result3,), String> {
-        self.update(caller, "eth_address_of_principal", (arg0, arg1))
+        self.update_one(caller, "eth_address_of_principal", (arg0, arg1))
     }
     pub async fn eth_personal_sign(
         &self,
@@ -392,7 +392,7 @@ impl SignerPic {
         arg0: &String,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result3,), String> {
-        self.update(caller, "eth_personal_sign", (arg0, arg1))
+        self.update_one(caller, "eth_personal_sign", (arg0, arg1))
     }
     pub async fn eth_sign_transaction(
         &self,
@@ -400,7 +400,7 @@ impl SignerPic {
         arg0: &SignRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result3,), String> {
-        self.update(caller, "eth_sign_transaction", (arg0, arg1))
+        self.update_one(caller, "eth_sign_transaction", (arg0, arg1))
     }
     pub async fn generic_caller_ecdsa_public_key(
         &self,
@@ -408,7 +408,7 @@ impl SignerPic {
         arg0: &EcdsaPublicKeyArgument,
         arg1: &Option<PaymentType>,
     ) -> Result<(Result4,), String> {
-        self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
+        self.update_one(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
     }
     pub async fn generic_sign_with_ecdsa(
         &self,
@@ -416,40 +416,40 @@ impl SignerPic {
         arg0: &Option<PaymentType>,
         arg1: &SignWithEcdsaArgument,
     ) -> Result<(Result5,), String> {
-        self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1))
+        self.update_one(caller, "generic_sign_with_ecdsa", (arg0, arg1))
     }
     pub async fn get_canister_status(
         &self,
         caller: Principal,
     ) -> Result<(CanisterStatusResultV2,), String> {
-        self.update(caller, "get_canister_status", ())
+        self.update_one(caller, "get_canister_status", ())
     }
     pub async fn http_request(
         &self,
         caller: Principal,
         arg0: &HttpRequest,
     ) -> Result<(HttpResponse,), String> {
-        self.update(caller, "http_request", (arg0,))
+        self.update_one(caller, "http_request", (arg0,))
     }
     pub async fn personal_sign(
         &self,
         caller: Principal,
         arg0: &String,
     ) -> Result<(String,), String> {
-        self.update(caller, "personal_sign", (arg0,))
+        self.update_one(caller, "personal_sign", (arg0,))
     }
     pub async fn sign_prehash(
         &self,
         caller: Principal,
         arg0: &String,
     ) -> Result<(String,), String> {
-        self.update(caller, "sign_prehash", (arg0,))
+        self.update_one(caller, "sign_prehash", (arg0,))
     }
     pub async fn sign_transaction(
         &self,
         caller: Principal,
         arg0: &SignRequest,
     ) -> Result<(String,), String> {
-        self.update(caller, "sign_transaction", (arg0,))
+        self.update_one(caller, "sign_transaction", (arg0,))
     }
 }

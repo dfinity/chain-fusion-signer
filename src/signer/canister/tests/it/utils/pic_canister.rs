@@ -17,8 +17,8 @@ pub trait PicCanisterTrait {
     /// The ID of this canister.
     fn canister_id(&self) -> Principal;
 
-    /// Makes an update call to the canister.
-    fn update<T>(&self, caller: Principal, method: &str, arg: impl CandidType) -> Result<T, String>
+    /// Makes an update call to the canister, for the common case of a single argument and a single return value.
+    fn update_one<T>(&self, caller: Principal, method: &str, arg: impl CandidType) -> Result<T, String>
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
