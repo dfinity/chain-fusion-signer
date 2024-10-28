@@ -373,7 +373,7 @@ impl SignerPic {
         arg0: &GetAddressRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result_, String> {
-        self.update_two(caller, "btc_caller_address", arg0, arg1)
+        self.update(caller, "btc_caller_address", (arg0, arg1))
     }
     pub fn btc_caller_balance(
         &self,
@@ -381,7 +381,7 @@ impl SignerPic {
         arg0: &GetBalanceRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result1, String> {
-        self.update_two(caller, "btc_caller_balance", arg0, arg1)
+        self.update(caller, "btc_caller_balance", (arg0, arg1))
     }
     pub fn btc_caller_send(
         &self,
@@ -389,10 +389,10 @@ impl SignerPic {
         arg0: &SendBtcRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result2, String> {
-        self.update_two(caller, "btc_caller_send", arg0, arg1)
+        self.update(caller, "btc_caller_send", (arg0, arg1))
     }
     pub fn config(&self, caller: Principal) -> Result<Config, String> {
-        self.update_one(caller, "config", ())
+        self.update(caller, "config", ())
     }
     pub fn eth_address(
         &self,
@@ -400,14 +400,14 @@ impl SignerPic {
         arg0: &EthAddressRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result3, String> {
-        self.update_two(caller, "eth_address", arg0, arg1)
+        self.update(caller, "eth_address", (arg0, arg1))
     }
     pub fn eth_address_of_caller(
         &self,
         caller: Principal,
         arg0: &Option<PaymentType>,
     ) -> Result<Result3, String> {
-        self.update_one(caller, "eth_address_of_caller", arg0)
+        self.update(caller, "eth_address_of_caller", (arg0,))
     }
     pub fn eth_personal_sign(
         &self,
@@ -415,7 +415,7 @@ impl SignerPic {
         arg0: &EthPersonalSignRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result4, String> {
-        self.update_two(caller, "eth_personal_sign", arg0, arg1)
+        self.update(caller, "eth_personal_sign", (arg0, arg1))
     }
     pub fn eth_sign_prehash(
         &self,
@@ -423,7 +423,7 @@ impl SignerPic {
         arg0: &EthSignPrehashRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result5, String> {
-        self.update_two(caller, "eth_sign_prehash", arg0, arg1)
+        self.update(caller, "eth_sign_prehash", (arg0, arg1))
     }
     pub fn eth_sign_transaction(
         &self,
@@ -431,7 +431,7 @@ impl SignerPic {
         arg0: &EthSignTransactionRequest,
         arg1: &Option<PaymentType>,
     ) -> Result<Result5, String> {
-        self.update_two(caller, "eth_sign_transaction", arg0, arg1)
+        self.update(caller, "eth_sign_transaction", (arg0, arg1))
     }
     pub fn generic_caller_ecdsa_public_key(
         &self,
@@ -439,7 +439,7 @@ impl SignerPic {
         arg0: &EcdsaPublicKeyArgument,
         arg1: &Option<PaymentType>,
     ) -> Result<Result6, String> {
-        self.update_two(caller, "generic_caller_ecdsa_public_key", arg0, arg1)
+        self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
     }
     pub fn generic_sign_with_ecdsa(
         &self,
@@ -447,16 +447,16 @@ impl SignerPic {
         arg0: &Option<PaymentType>,
         arg1: &SignWithEcdsaArgument,
     ) -> Result<Result7, String> {
-        self.update_two(caller, "generic_sign_with_ecdsa", arg0, arg1)
+        self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1))
     }
     pub fn get_canister_status(&self, caller: Principal) -> Result<CanisterStatusResultV2, String> {
-        self.update_one(caller, "get_canister_status", ())
+        self.update(caller, "get_canister_status", ())
     }
     pub fn http_request(
         &self,
         caller: Principal,
         arg0: &HttpRequest,
     ) -> Result<HttpResponse, String> {
-        self.update_one(caller, "http_request", arg0)
+        self.update(caller, "http_request", (arg0,))
     }
 }

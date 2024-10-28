@@ -42,15 +42,7 @@ impl PicCanisterTrait for {{PascalCase canister_name}}Pic {
 impl {{PascalCase canister_name}}Pic {
   {{#each methods}}
   pub fn {{this.name}}(&self, caller: Principal{{#each this.args}}, {{this.0}}: &{{this.1}}{{/each}}) -> Result<{{vec_to_arity this.rets}}, String> {
-      {{#if this.args.[2]}}
-        unimplemented!("At  most two arguments are supported");
-      {{else if this.args.[1]}}
-        self.update_two(caller, "{{escape_debug this.original_name}}", {{#each this.args}}{{this.0}}, {{/each}})
-      {{else if this.args.[0]}}
-      self.update_one(caller, "{{escape_debug this.original_name}}", {{#each this.args}}{{this.0}}{{/each}})
-      {{else}}
-      self.update_one(caller, "{{escape_debug this.original_name}}", ())
-      {{/if}}
+      self.update(caller, "{{escape_debug this.original_name}}", ({{#each this.args}}{{this.0}}, {{/each}}))
   }
   {{/each}}
 }

@@ -1,5 +1,7 @@
 //! Common methods for interacting with a canister using `PocketIc`.
-use candid::{decode_one, encode_args, encode_one, CandidType, Deserialize, Principal};
+use candid::{
+    decode_one, encode_args, encode_one, utils::ArgumentEncoder, CandidType, Deserialize, Principal,
+};
 use pocket_ic::{PocketIc, WasmResult};
 use std::{
     fs,
@@ -43,12 +45,11 @@ pub trait PicCanisterTrait {
             })
     }
     /// Makes an update call to the canister, to a method with signature `(_,_) -> T`.
-    fn update_two<T>(
+    fn update<Tuple: ArgumentEncoder, T>(
         &self,
         caller: Principal,
         method: &str,
-        arg0: impl CandidType,
-        arg1: impl CandidType,
+        args: Tuple,
     ) -> Result<T, String>
     where
         T: for<'a> Deserialize<'a> + CandidType,
@@ -58,7 +59,7 @@ pub trait PicCanisterTrait {
                 self.canister_id(),
                 caller,
                 method,
-                encode_args((arg0, arg1)).unwrap(),
+                encode_args(args).unwrap(),
             )
             .map_err(|e| {
                 format!(
