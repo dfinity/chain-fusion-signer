@@ -24,7 +24,7 @@ fn test_sign_transaction() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let transaction = pic_setup.update::<String>(caller, "sign_transaction", sign_request);
+    let transaction = pic_setup.update_one::<String>(caller, "sign_transaction", sign_request);
 
     assert_eq!(
         transaction.unwrap(),
@@ -39,7 +39,7 @@ fn test_personal_sign() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let transaction = pic_setup.update::<String>(
+    let transaction = pic_setup.update_one::<String>(
         caller,
         "personal_sign",
         hex::encode("test message".to_string()),
@@ -58,7 +58,8 @@ fn test_cannot_personal_sign_if_message_is_not_hex_string() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let result = pic_setup.update::<String>(caller, "personal_sign", "test message".to_string());
+    let result =
+        pic_setup.update_one::<String>(caller, "personal_sign", "test message".to_string());
 
     assert!(result.is_err());
     assert!(result.unwrap_err().contains("failed to decode hex"));
@@ -82,7 +83,7 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let result = pic_setup.update::<String>(caller, "sign_transaction", sign_request);
+    let result = pic_setup.update_one::<String>(caller, "sign_transaction", sign_request);
 
     assert!(result.is_err());
     assert!(result
@@ -95,7 +96,7 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
 fn test_anonymous_cannot_sign_transaction() {
     let pic_setup = setup();
 
-    let result = pic_setup.update::<String>(Principal::anonymous(), "sign_transaction", ());
+    let result = pic_setup.update_one::<String>(Principal::anonymous(), "sign_transaction", ());
 
     assert!(result.is_err());
     assert_eq!(
@@ -109,7 +110,7 @@ fn test_anonymous_cannot_sign_transaction() {
 fn test_anonymous_cannot_personal_sign() {
     let pic_setup = setup();
 
-    let result = pic_setup.update::<String>(Principal::anonymous(), "personal_sign", ());
+    let result = pic_setup.update_one::<String>(Principal::anonymous(), "personal_sign", ());
 
     assert!(result.is_err());
     assert_eq!(

@@ -39,7 +39,7 @@ impl PicCanisterTrait for {{PascalCase canister_name}}Pic {
 impl {{PascalCase canister_name}}Pic {
   {{#each methods}}
   pub fn {{this.name}}(&self, _caller: Principal{{#each this.args}}, {{this.0}}: &{{this.1}}{{/each}}) -> Result<{{vec_to_arity this.rets}}, String> {
-      self.update(self.canister_id, "{{escape_debug this.original_name}}", arg0)
+      self.update_one(self.canister_id, "{{escape_debug this.original_name}}", arg0)
   }
   {{/each}}
 }
