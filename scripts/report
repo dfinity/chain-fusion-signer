@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+[[ "${1:-}" != "--help" ]] || {
+  cat <<-EOF
+	Prints which versions of the signer are deployed where and with what arguments.
+
+	Usage: $(basename "$0") [DFX_NETWORK...]
+	EOF
+
+  exit 0
+}
+
+report_git_ref() {
+  dfx canister metadata signer git_commit_id --network "$DFX_NETWORK"
+}
+report_args() {
+  dfx canister call signer config --network "$DFX_NETWORK"
+}
+hrule() {
+  echo "########################################"
+}
+report() {
+  hrule
+  echo "network: $DFX_NETWORK"
+  echo "git ref: $(report_git_ref)"
+  echo "args:"
+  report_args
+  echo
+}
+
+if (($# > 0)); then
+  NETWORKS=("${@}")
+else
+  readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
+fi
+
+for DFX_NETWORK in "${NETWORKS[@]}"; do
+  report
+done
