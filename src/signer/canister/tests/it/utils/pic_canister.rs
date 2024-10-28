@@ -17,7 +17,7 @@ pub trait PicCanisterTrait {
     /// The ID of this canister.
     fn canister_id(&self) -> Principal;
 
-    /// Makes an update call to the canister.
+    /// Makes an update call to the canister, to a method with signature `(_) -> T`.
     fn update_one<T>(
         &self,
         caller: Principal,
@@ -42,6 +42,7 @@ pub trait PicCanisterTrait {
                 WasmResult::Reject(error) => Err(error),
             })
     }
+    /// Makes an update call to the canister, to a method with signature `(_,_) -> T`.
     fn update_two<T>(
         &self,
         caller: Principal,
@@ -53,7 +54,12 @@ pub trait PicCanisterTrait {
         T: for<'a> Deserialize<'a> + CandidType,
     {
         self.pic()
-            .update_call(self.canister_id(), caller, method, encode_args((arg0, arg1)).unwrap())
+            .update_call(
+                self.canister_id(),
+                caller,
+                method,
+                encode_args((arg0, arg1)).unwrap(),
+            )
             .map_err(|e| {
                 format!(
                     "Update call error. RejectionCode: {:?}, Error: {}",
