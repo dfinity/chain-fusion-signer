@@ -1,5 +1,5 @@
 //! Common methods for interacting with a canister using `PocketIc`.
-use candid::{decode_one, encode_one, CandidType, Deserialize, Principal};
+use candid::{decode_one, encode_args, encode_one, CandidType, Deserialize, Principal};
 use pocket_ic::{PocketIc, WasmResult};
 use std::{
     fs,
@@ -29,6 +29,31 @@ pub trait PicCanisterTrait {
     {
         self.pic()
             .update_call(self.canister_id(), caller, method, encode_one(arg).unwrap())
+            .map_err(|e| {
+                format!(
+                    "Update call error. RejectionCode: {:?}, Error: {}",
+                    e.code, e.description
+                )
+            })
+            .and_then(|reply| match reply {
+                WasmResult::Reply(reply) => {
+                    decode_one(&reply).map_err(|e| format!("Decoding failed: {e}"))
+                }
+                WasmResult::Reject(error) => Err(error),
+            })
+    }
+    fn update_two<T>(
+        &self,
+        caller: Principal,
+        method: &str,
+        arg0: impl CandidType,
+        arg1: impl CandidType,
+    ) -> Result<T, String>
+    where
+        T: for<'a> Deserialize<'a> + CandidType,
+    {
+        self.pic()
+            .update_call(self.canister_id(), caller, method, encode_args((arg0, arg1)).unwrap())
             .map_err(|e| {
                 format!(
                     "Update call error. RejectionCode: {:?}, Error: {}",
