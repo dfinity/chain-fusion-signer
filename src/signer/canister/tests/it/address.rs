@@ -82,7 +82,11 @@ fn test_caller_btc_address_mainnet() {
     };
 
     let address_response = pic_setup
-        .update_one::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
+        .update_one::<Result<GetAddressResponse, GetAddressError>>(
+            caller,
+            "btc_caller_address",
+            params,
+        )
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -105,7 +109,11 @@ fn test_caller_btc_address_testnet() {
     };
 
     let address_response = pic_setup
-        .update_one::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
+        .update_one::<Result<GetAddressResponse, GetAddressError>>(
+            caller,
+            "btc_caller_address",
+            params,
+        )
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -128,7 +136,11 @@ fn test_caller_btc_address_regtest() {
     };
 
     let address_response = pic_setup
-        .update_one::<Result<GetAddressResponse, GetAddressError>>(caller, "btc_caller_address", params)
+        .update_one::<Result<GetAddressResponse, GetAddressError>>(
+            caller,
+            "btc_caller_address",
+            params,
+        )
         .expect("Failed to call testnet btc address.")
         .expect("Failed to get successful response");
 
@@ -148,7 +160,8 @@ fn test_anonymous_cannot_call_btc_address() {
         address_type: BitcoinAddressType::P2WPKH,
     };
 
-    let address = pic_setup.update_one::<String>(Principal::anonymous(), "btc_caller_address", params);
+    let address =
+        pic_setup.update_one::<String>(Principal::anonymous(), "btc_caller_address", params);
 
     assert!(address.is_err());
     assert_eq!(

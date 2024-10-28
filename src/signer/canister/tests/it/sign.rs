@@ -58,7 +58,8 @@ fn test_cannot_personal_sign_if_message_is_not_hex_string() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let result = pic_setup.update_one::<String>(caller, "personal_sign", "test message".to_string());
+    let result =
+        pic_setup.update_one::<String>(caller, "personal_sign", "test message".to_string());
 
     assert!(result.is_err());
     assert!(result.unwrap_err().contains("failed to decode hex"));
