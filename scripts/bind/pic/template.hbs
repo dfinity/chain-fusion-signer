@@ -45,9 +45,9 @@ impl {{PascalCase canister_name}}Pic {
       {{#if this.args.[1]}}
       unimplemented!("The update function handles only a single argument.")
       {{else if this.args.[0]}}
-      self.update(self.canister_id, "{{escape_debug this.original_name}}", {{#each this.args}}{{this.0}}{{/each}})
+      self.update_one(self.canister_id, "{{escape_debug this.original_name}}", {{#each this.args}}{{this.0}}{{/each}})
       {{else}}
-      self.update(self.canister_id, "{{escape_debug this.original_name}}", ())
+      self.update_one(self.canister_id, "{{escape_debug this.original_name}}", ())
       {{/if}}
   }
   {{/each}}
