@@ -55,6 +55,6 @@ impl PicCanisterTrait for CyclesDepositorPic {
 
 impl CyclesDepositorPic {
     pub fn deposit(&self, _caller: Principal, arg0: &DepositArg) -> Result<DepositResult, String> {
-        self.update(self.canister_id, "deposit", arg0)
+        self.update_one(self.canister_id, "deposit", arg0)
     }
 }

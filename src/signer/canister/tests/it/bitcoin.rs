@@ -19,7 +19,11 @@ fn test_caller_btc_balance() {
     };
 
     let balance_response = pic_setup
-        .update::<Result<GetBalanceResponse, GetBalanceError>>(caller, "btc_caller_balance", params)
+        .update_one::<Result<GetBalanceResponse, GetBalanceError>>(
+            caller,
+            "btc_caller_balance",
+            params,
+        )
         .expect("Failed to call testnet btc balance.")
         .expect("Failed to get successul balance response");
 
