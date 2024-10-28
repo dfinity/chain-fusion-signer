@@ -44,7 +44,7 @@ pub trait PicCanisterTrait {
                 WasmResult::Reject(error) => Err(error),
             })
     }
-    /// Makes an update call to the canister, to a method with signature `(_,_) -> T`.
+    /// Makes an update call to the canister, to a method with signature `(...) -> T`.
     fn update<Tuple: ArgumentEncoder, T>(
         &self,
         caller: Principal,
