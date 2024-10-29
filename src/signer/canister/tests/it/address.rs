@@ -13,21 +13,6 @@ use ic_chain_fusion_signer_api::types::bitcoin::{
 
 #[ignore] // TODO: Update this test
 #[test]
-fn test_cannot_call_eth_address_of_for_anonymous() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup.update_one::<String>(caller, "eth_address_of", Principal::anonymous());
-
-    assert!(address.is_err());
-    assert!(address
-        .unwrap_err()
-        .contains("Anonymous principal is not authorized"));
-}
-
-#[ignore] // TODO: Update this test
-#[test]
 fn test_caller_btc_address_mainnet() {
     let pic_setup = setup();
 
