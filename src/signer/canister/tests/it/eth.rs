@@ -61,7 +61,7 @@ fn can_eth_sign_transaction() {
 
     assert_eq!(
         response,
-        EthSignPrehashResponse{ signature: "0x02f86783aa36a7808203158201c87b945e9f1caf942aa8ee887b75f5a6bccaf4b10242480180c001a0fc97df3cb643abb3b565cd95b8d55f108db336612abbb79e0054588587306809a04014551c96d89a90ff89065f08b05772cd582d26e3e1eee4ccf85d2fedc2ad50".to_string()}
+        EthSignPrehashResponse{ signature: "0x02f86783aa36a7808203158201c87b94dfb554b25a5fc2f44aec0fcd8b541f065ac33c0a0180c001a0e3ad6b0aa1c424d92654ae10133a2b32aedc36c30bb51807c3ced27097f208dea00f95ed904d376e384cd5144c0109ffa3b5051d7f86273f9212f3b0d6e6071603".to_string()}
     );
 }
 
@@ -253,10 +253,17 @@ fn test_eth_address_of() {
         .expect("Failed to call ledger canister")
         .expect("Failed to approve payment");
 
-    let request = EthAddressRequest {principal: None};
-    let address = test_env.signer.eth_address(caller, &request, &Some(payment_type))
+    let request = EthAddressRequest { principal: None };
+    let address = test_env
+        .signer
+        .eth_address(caller, &request, &Some(payment_type))
         .expect("Failed to call signer")
         .expect("Failed to call eth address of.");
 
-    assert_eq!(address, EthAddressResponse{address: CALLER_ETH_ADDRESS.to_string()});
+    assert_eq!(
+        address,
+        EthAddressResponse {
+            address: CALLER_ETH_ADDRESS.to_string()
+        }
+    );
 }

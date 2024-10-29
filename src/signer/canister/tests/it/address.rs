@@ -1,7 +1,6 @@
 use crate::utils::{
     mock::{
         CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET,
-        CALLER_ETH_ADDRESS,
     },
     pic_canister::PicCanisterTrait,
     pocketic::setup,
