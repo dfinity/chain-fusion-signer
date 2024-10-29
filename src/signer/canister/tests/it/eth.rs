@@ -14,7 +14,7 @@ use crate::{
     },
 };
 use candid::{Nat, Principal};
-use ic_chain_fusion_signer_api::{methods::SignerMethods, types::transaction::SignRequest};
+use ic_chain_fusion_signer_api::methods::SignerMethods;
 
 #[test]
 fn can_eth_sign_transaction() {
@@ -123,12 +123,25 @@ fn cannot_personal_sign_if_message_is_not_hex_string() {
     assert!(result.unwrap_err().contains("failed to decode hex"));
 }
 
-#[ignore] // TODO: Update this test
 #[test]
 fn test_cannot_sign_transaction_with_invalid_to_address() {
-    let pic_setup = setup();
+    let test_env = TestSetup::default();
 
-    let sign_request: SignRequest = SignRequest {
+    let caller = Principal::from_text(CALLER).unwrap();
+
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+    let payment_recipient = cycles_ledger::Account {
+        owner: test_env.signer.canister_id(),
+        subaccount: None,
+    };
+    let amount: u64 = SignerMethods::EthPersonalSign.fee() + LEDGER_FEE as u64;
+    test_env
+        .ledger
+        .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+
+    let request = EthSignTransactionRequest {
         chain_id: Nat::from(SEPOLIA_CHAIN_ID),
         to: "invalid_address".to_string(),
         gas: Nat::from(123u64),
@@ -139,9 +152,9 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
         data: None,
     };
 
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let result = pic_setup.update_one::<String>(caller, "sign_transaction", sign_request);
+    let result = test_env
+        .signer
+        .eth_sign_transaction(caller, &request, &Some(payment_type));
 
     assert!(result.is_err());
     assert!(result
