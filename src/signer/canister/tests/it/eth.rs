@@ -186,7 +186,11 @@ mod eth_address {
     use super::*;
 
     /// A standard eth_address call, including payment.
-    fn paid_eth_address(test_env: &TestSetup, caller: Principal, principal: Option<Principal>) -> Result<Result<EthAddressResponse, EthAddressError>, String> {
+    fn paid_eth_address(
+        test_env: &TestSetup,
+        caller: Principal,
+        principal: Option<Principal>,
+    ) -> Result<Result<EthAddressResponse, EthAddressError>, String> {
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
             owner: test_env.signer.canister_id(),
@@ -199,9 +203,11 @@ mod eth_address {
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
-        test_env
-            .signer
-            .eth_address(caller, &EthAddressRequest { principal }, &Some(payment_type))
+        test_env.signer.eth_address(
+            caller,
+            &EthAddressRequest { principal },
+            &Some(payment_type),
+        )
     }
 
     #[test]
@@ -237,7 +243,13 @@ mod eth_address {
     #[test]
     fn test_anonymous_cannot_call_eth_address() {
         let test_env = TestSetup::default();
-        let response = test_env.signer.eth_address(Principal::anonymous(), &EthAddressRequest{principal: Some(test_env.user)}, &Some(PaymentType::CallerPaysIcrc2Cycles));
+        let response = test_env.signer.eth_address(
+            Principal::anonymous(),
+            &EthAddressRequest {
+                principal: Some(test_env.user),
+            },
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
+        );
         assert!(response.is_err());
         assert_eq!(
             response.unwrap_err(),
@@ -248,7 +260,13 @@ mod eth_address {
     #[test]
     fn test_cannot_call_eth_address_of_for_anonymous() {
         let test_env = TestSetup::default();
-        let response = test_env.signer.eth_address(test_env.user, &EthAddressRequest{principal: Some(Principal::anonymous())}, &Some(PaymentType::CallerPaysIcrc2Cycles));
+        let response = test_env.signer.eth_address(
+            test_env.user,
+            &EthAddressRequest {
+                principal: Some(Principal::anonymous()),
+            },
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
+        );
         assert!(response.is_err());
         assert!(response
             .unwrap_err()
