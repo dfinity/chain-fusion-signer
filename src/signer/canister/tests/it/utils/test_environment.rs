@@ -8,36 +8,12 @@ use crate::{
     },
     utils::pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
 };
-use candid::{encode_one, CandidType, Nat, Principal};
-use ic_papi_api::{cycles::cycles_ledger_canister_id, PaymentError};
+use candid::{encode_one, Nat, Principal};
+use ic_papi_api::cycles::cycles_ledger_canister_id;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
-
-/// Methods protected by PAPI.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum PaidMethods {
-    Cost1bIcrc2Cycles,
-    CallerPays1bIcrc2Tokens,
-    Cost1b,
-}
-impl PaidMethods {
-    pub fn name(&self) -> &str {
-        match self {
-            Self::Cost1bIcrc2Cycles => "caller_pays_1b_icrc2_cycles",
-            Self::CallerPays1bIcrc2Tokens => "caller_pays_1b_icrc2_tokens",
-            Self::Cost1b => "cost_1b",
-        }
-    }
-    pub fn cost(&self) -> u128 {
-        match self {
-            Self::Cost1bIcrc2Cycles => 1_000_000_000,
-            Self::CallerPays1bIcrc2Tokens => 1_000_000_000,
-            Self::Cost1b => 1_000_000_000,
-        }
-    }
-}
 
 #[allow(dead_code)] // Not all fields need to be used
 pub struct TestSetup {
@@ -214,17 +190,6 @@ impl TestSetup {
             )
             .expect("Failed to call the ledger to approve")
             .expect("Failed to approve the paid service to spend the user's ICRC-2 tokens");
-    }
-    /// Calls a paid service.
-    pub fn call_paid_service(
-        &self,
-        caller: Principal,
-        method: PaidMethods,
-        arg: impl CandidType,
-    ) -> Result<String, PaymentError> {
-        self.signer
-            .update_one(caller, method.name(), arg)
-            .expect("Failed to call the paid service")
     }
 }
 
