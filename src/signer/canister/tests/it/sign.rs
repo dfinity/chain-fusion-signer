@@ -1,18 +1,17 @@
 use crate::{
     canister::{
-        cycles_ledger,
-        cycles_ledger::ApproveArgs,
+        cycles_ledger::{self, ApproveArgs},
         signer::{EthSignPrehashResponse, EthSignTransactionRequest, PaymentType},
     },
     utils::{
         mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
         pic_canister::PicCanisterTrait,
         pocketic::setup,
-        test_environment::TestSetup,
+        test_environment::{TestSetup, LEDGER_FEE},
     },
 };
 use candid::{Nat, Principal};
-use ic_chain_fusion_signer_api::types::transaction::SignRequest;
+use ic_chain_fusion_signer_api::{methods::SignerMethods, types::transaction::SignRequest};
 
 #[test]
 fn test_eth_sign_transaction() {
@@ -35,7 +34,7 @@ fn test_eth_sign_transaction() {
         owner: test_env.signer.canister_id(),
         subaccount: None,
     };
-    let amount: u64 = 40_000_000_000 + 1000000000;
+    let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
     test_env
         .ledger
         .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
