@@ -1,3 +1,4 @@
+//! Tests for ethereum methods on the signer canister.
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
