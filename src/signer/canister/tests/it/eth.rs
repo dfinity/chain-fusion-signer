@@ -79,30 +79,11 @@ mod sign_transaction {
     #[test]
     fn test_cannot_sign_transaction_with_invalid_to_address() {
         let test_env = TestSetup::default();
-
-        let caller = test_env.user;
-
-        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
-        let payment_recipient = cycles_ledger::Account {
-            owner: test_env.signer.canister_id(),
-            subaccount: None,
-        };
-        let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
-        test_env
-            .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
-            .expect("Failed to call ledger canister")
-            .expect("Failed to approve payment");
-
         let request = EthSignTransactionRequest {
             to: "invalid_address".to_string(),
             ..GOOD_SIGN_TRANSACTION_REQUEST.clone()
         };
-
-        let result = test_env
-            .signer
-            .eth_sign_transaction(caller, &request, &Some(payment_type));
-
+        let result = paid_sign_transaction(&test_env, test_env.user, &request);
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
