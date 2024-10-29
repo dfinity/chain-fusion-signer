@@ -29,6 +29,9 @@ lazy_static! {
             nonce: Nat::from(0u64),
             data: None,
         };
+    static ref GOOD_PERSONAL_SIGN_REQUEST: EthPersonalSignRequest = EthPersonalSignRequest {
+        message: hex::encode("test message"),
+    };
 }
 
 #[test]
@@ -69,10 +72,6 @@ fn can_eth_personal_sign() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let request = EthPersonalSignRequest {
-        message: hex::encode("test message"),
-    };
-
     let payment_type = PaymentType::CallerPaysIcrc2Cycles;
     let payment_recipient = cycles_ledger::Account {
         owner: test_env.signer.canister_id(),
@@ -87,7 +86,7 @@ fn can_eth_personal_sign() {
 
     let result = test_env
         .signer
-        .eth_personal_sign(caller, &request, &Some(payment_type))
+        .eth_personal_sign(caller, &GOOD_PERSONAL_SIGN_REQUEST, &Some(payment_type))
         .expect("Failed to call the signer canister")
         .expect("Failed to sign");
 
@@ -182,12 +181,18 @@ fn test_anonymous_cannot_sign_transaction() {
     );
 }
 
-#[ignore] // TODO: Update this test
 #[test]
 fn test_anonymous_cannot_personal_sign() {
-    let pic_setup = setup();
+    let test_env = TestSetup::default();
 
-    let result = pic_setup.update_one::<String>(Principal::anonymous(), "personal_sign", ());
+    let caller = Principal::anonymous();
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+
+    let result = test_env.signer.eth_personal_sign(
+        caller,
+        &GOOD_PERSONAL_SIGN_REQUEST,
+        &Some(payment_type),
+    );
 
     assert!(result.is_err());
     assert_eq!(
