@@ -2,8 +2,9 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            EthAddressRequest, EthAddressResponse, EthPersonalSignRequest, EthPersonalSignResponse,
-            EthSignPrehashResponse, EthSignTransactionRequest, PaymentType,
+            EthAddressError, EthAddressRequest, EthAddressResponse, EthPersonalSignRequest,
+            EthPersonalSignResponse, EthSignPrehashResponse, EthSignTransactionRequest,
+            PaymentType,
         },
     },
     utils::{
@@ -110,12 +111,12 @@ mod sign_transaction {
 mod personal_sign {
     use super::*;
 
-    #[test]
-    fn can_eth_personal_sign() {
-        let test_env = TestSetup::default();
-
-        let caller = test_env.user;
-
+    /// A standard personal_sign call, including payment.
+    fn paid_personal_sign(
+        test_env: &TestSetup,
+        caller: Principal,
+        request: &EthPersonalSignRequest,
+    ) -> Result<Result<EthPersonalSignResponse, EthAddressError>, String> {
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
             owner: test_env.signer.canister_id(),
@@ -128,10 +129,16 @@ mod personal_sign {
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
-        let result = test_env
+        test_env
             .signer
-            .eth_personal_sign(caller, &GOOD_PERSONAL_SIGN_REQUEST, &Some(payment_type))
-            .expect("Failed to call the signer canister")
+            .eth_personal_sign(caller, &request, &Some(payment_type))
+    }
+
+    #[test]
+    fn can_eth_personal_sign() {
+        let test_env = TestSetup::default();
+        let result = paid_personal_sign(&test_env, test_env.user, &GOOD_PERSONAL_SIGN_REQUEST)
+            .expect("Failed to reach signer canister")
             .expect("Failed to sign");
 
         assert_eq!(
