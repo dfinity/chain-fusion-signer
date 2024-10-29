@@ -7,7 +7,7 @@ use crate::{
         },
     },
     utils::{
-        mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
+        mock::{CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
         pic_canister::PicCanisterTrait,
         test_environment::{TestSetup, LEDGER_FEE},
     },
@@ -40,7 +40,7 @@ mod sign_transaction {
     fn can_eth_sign_transaction() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let sign_request = &GOOD_SIGN_TRANSACTION_REQUEST;
 
@@ -72,7 +72,7 @@ mod sign_transaction {
     fn test_cannot_sign_transaction_with_invalid_to_address() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
@@ -130,7 +130,7 @@ mod personal_sign {
     fn can_eth_personal_sign() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
@@ -162,7 +162,7 @@ mod personal_sign {
     fn cannot_personal_sign_if_message_is_not_hex_string() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let request = EthPersonalSignRequest {
             message: "test message".to_string(),
@@ -217,7 +217,7 @@ mod eth_address {
     fn test_caller_eth_address() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
@@ -253,7 +253,7 @@ mod eth_address {
     fn test_eth_address_of() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
@@ -286,7 +286,7 @@ mod eth_address {
     fn test_anonymous_cannot_call_eth_address() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
@@ -317,7 +317,7 @@ mod eth_address {
     fn test_cannot_call_eth_address_of_for_anonymous() {
         let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
+        let caller = test_env.user;
 
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
