@@ -2,7 +2,8 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            EthAddressRequest, EthAddressResponse, EthPersonalSignRequest, EthPersonalSignResponse, EthSignPrehashResponse, EthSignTransactionRequest, PaymentType
+            EthAddressRequest, EthAddressResponse, EthPersonalSignRequest, EthPersonalSignResponse,
+            EthSignPrehashResponse, EthSignTransactionRequest, PaymentType,
         },
     },
     utils::{
@@ -186,11 +187,10 @@ fn test_anonymous_cannot_personal_sign() {
     let caller = Principal::anonymous();
     let payment_type = PaymentType::CallerPaysIcrc2Cycles;
 
-    let result = test_env.signer.eth_personal_sign(
-        caller,
-        &GOOD_PERSONAL_SIGN_REQUEST,
-        &Some(payment_type),
-    );
+    let result =
+        test_env
+            .signer
+            .eth_personal_sign(caller, &GOOD_PERSONAL_SIGN_REQUEST, &Some(payment_type));
 
     assert!(result.is_err());
     assert_eq!(
@@ -217,9 +217,20 @@ fn test_caller_eth_address() {
         .expect("Failed to call ledger canister")
         .expect("Failed to approve payment");
 
-    let address = test_env.signer.eth_address(caller, &EthAddressRequest{ principal: None }, &Some(payment_type))
+    let address = test_env
+        .signer
+        .eth_address(
+            caller,
+            &EthAddressRequest { principal: None },
+            &Some(payment_type),
+        )
         .expect("Failed to call signer")
         .expect("Failed to get eth address.");
 
-    assert_eq!(address, EthAddressResponse{ address: "0xDFB554B25A5fC2F44aEc0fCd8b541F065Ac33C0a".to_string()});
+    assert_eq!(
+        address,
+        EthAddressResponse {
+            address: "0xDFB554B25A5fC2F44aEc0fCd8b541F065Ac33C0a".to_string()
+        }
+    );
 }
