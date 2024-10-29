@@ -185,36 +185,34 @@ mod personal_sign {
 mod eth_address {
     use super::*;
 
-    #[test]
-    fn test_caller_eth_address() {
-        let test_env = TestSetup::default();
-
-        let caller = test_env.user;
-
+    /// A standard eth_address call, including payment.
+    fn paid_eth_address(test_env: &TestSetup, caller: Principal, principal: Option<Principal>) -> Result<Result<EthAddressResponse, EthAddressError>, String> {
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
+        let amount: u64 = SignerMethods::EthAddress.fee() + LEDGER_FEE as u64;
         test_env
             .ledger
             .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
-        let address = test_env
+        test_env
             .signer
-            .eth_address(
-                caller,
-                &EthAddressRequest { principal: None },
-                &Some(payment_type),
-            )
-            .expect("Failed to call signer")
+            .eth_address(caller, &EthAddressRequest { principal }, &Some(payment_type))
+    }
+
+    #[test]
+    fn test_caller_eth_address() {
+        let test_env = TestSetup::default();
+        let response = paid_eth_address(&test_env, test_env.user, None)
+            .expect("Failed to reach signer canister")
             .expect("Failed to get eth address.");
 
         assert_eq!(
-            address,
+            response,
             EthAddressResponse {
                 address: "0xDFB554B25A5fC2F44aEc0fCd8b541F065Ac33C0a".to_string()
             }
