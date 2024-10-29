@@ -234,3 +234,29 @@ fn test_caller_eth_address() {
         }
     );
 }
+
+#[test]
+fn test_eth_address_of() {
+    let test_env = TestSetup::default();
+
+    let caller = Principal::from_text(CALLER).unwrap();
+
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+    let payment_recipient = cycles_ledger::Account {
+        owner: test_env.signer.canister_id(),
+        subaccount: None,
+    };
+    let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
+    test_env
+        .ledger
+        .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+
+    let request = EthAddressRequest {principal: None};
+    let address = test_env.signer.eth_address(caller, &request, &Some(payment_type))
+        .expect("Failed to call signer")
+        .expect("Failed to call eth address of.");
+
+    assert_eq!(address, EthAddressResponse{address: CALLER_ETH_ADDRESS.to_string()});
+}
