@@ -35,15 +35,16 @@ lazy_static! {
 
 /// Tests for `eth_sign_transaction()`
 mod sign_transaction {
+    use crate::canister::signer::EthAddressError;
+
     use super::*;
-    #[test]
-    fn can_eth_sign_transaction() {
-        let test_env = TestSetup::default();
 
-        let caller = test_env.user;
-
-        let sign_request = &GOOD_SIGN_TRANSACTION_REQUEST;
-
+    // A standard sign_transaction call, including payment.
+    fn paid_sign_transaction(
+        test_env: &TestSetup,
+        caller: Principal,
+        request: &EthSignTransactionRequest,
+    ) -> Result<Result<EthSignPrehashResponse, EthAddressError>, String> {
         let payment_type = PaymentType::CallerPaysIcrc2Cycles;
         let payment_recipient = cycles_ledger::Account {
             owner: test_env.signer.canister_id(),
@@ -56,11 +57,18 @@ mod sign_transaction {
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
-        let response = test_env
+        test_env
             .signer
-            .eth_sign_transaction(caller, sign_request, &Some(payment_type))
-            .expect("Failed to reach the signer canister")
-            .expect("Failed to sign");
+            .eth_sign_transaction(caller, &request, &Some(payment_type))
+    }
+
+    #[test]
+    fn can_eth_sign_transaction() {
+        let test_env = TestSetup::default();
+        let response =
+            paid_sign_transaction(&test_env, test_env.user, &GOOD_SIGN_TRANSACTION_REQUEST)
+                .expect("Failed to call the signer canister")
+                .expect("Failed to sign");
 
         assert_eq!(
         response,
