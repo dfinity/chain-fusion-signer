@@ -13,6 +13,8 @@ use ic_papi_api::cycles::cycles_ledger_canister_id;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
+use super::mock::CALLER;
+
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
 
 #[allow(dead_code)] // Not all fields need to be used
@@ -79,7 +81,7 @@ impl Default for TestSetup {
                 .deploy_to(pic.clone()),
         );
         let user =
-            Principal::from_text("xzg7k-thc6c-idntg-knmtz-2fbhh-utt3e-snqw6-5xph3-54pbp-7axl5-tae")
+            Principal::from_text(CALLER)
                 .unwrap();
         let user2 =
             Principal::from_text("jwhyn-xieqy-drmun-h7uci-jzycw-vnqhj-s62vl-4upsg-cmub3-vakaq-rqe")
