@@ -93,16 +93,11 @@ mod sign_transaction {
     #[test]
     fn test_anonymous_cannot_sign_transaction() {
         let test_env = TestSetup::default();
-
-        let caller = Principal::anonymous();
-        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
-
         let result = test_env.signer.eth_sign_transaction(
-            caller,
+            Principal::anonymous(),
             &GOOD_SIGN_TRANSACTION_REQUEST,
-            &Some(payment_type),
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
-
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
