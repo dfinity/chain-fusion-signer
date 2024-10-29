@@ -2,14 +2,12 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            EthPersonalSignRequest, EthPersonalSignResponse, EthSignPrehashResponse,
-            EthSignTransactionRequest, PaymentType,
+            EthAddressRequest, EthAddressResponse, EthPersonalSignRequest, EthPersonalSignResponse, EthSignPrehashResponse, EthSignTransactionRequest, PaymentType
         },
     },
     utils::{
         mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
         pic_canister::PicCanisterTrait,
-        pocketic::setup,
         test_environment::{TestSetup, LEDGER_FEE},
     },
 };
@@ -199,4 +197,29 @@ fn test_anonymous_cannot_personal_sign() {
         result.unwrap_err(),
         "Anonymous caller not authorized.".to_string()
     );
+}
+
+#[test]
+fn test_caller_eth_address() {
+    let test_env = TestSetup::default();
+
+    let caller = Principal::from_text(CALLER).unwrap();
+
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+    let payment_recipient = cycles_ledger::Account {
+        owner: test_env.signer.canister_id(),
+        subaccount: None,
+    };
+    let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
+    test_env
+        .ledger
+        .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+
+    let address = test_env.signer.eth_address(caller, &EthAddressRequest{ principal: None }, &Some(payment_type))
+        .expect("Failed to call signer")
+        .expect("Failed to get eth address.");
+
+    assert_eq!(address, EthAddressResponse{ address: "0xDFB554B25A5fC2F44aEc0fCd8b541F065Ac33C0a".to_string()});
 }

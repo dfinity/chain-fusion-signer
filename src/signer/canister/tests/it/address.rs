@@ -14,20 +14,6 @@ use ic_chain_fusion_signer_api::types::bitcoin::{
 
 #[ignore] // TODO: Update this test
 #[test]
-fn test_caller_eth_address() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup
-        .update_one::<String>(caller, "caller_eth_address", ())
-        .expect("Failed to call eth address.");
-
-    assert_eq!(address, CALLER_ETH_ADDRESS.to_string());
-}
-
-#[ignore] // TODO: Update this test
-#[test]
 fn test_eth_address_of() {
     let pic_setup = setup();
 
