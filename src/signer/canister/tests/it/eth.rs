@@ -84,9 +84,9 @@ mod sign_transaction {
             to: "invalid_address".to_string(),
             ..GOOD_SIGN_TRANSACTION_REQUEST.clone()
         };
-        let result = paid_sign_transaction(&test_env, test_env.user, &request);
-        assert!(result.is_err());
-        assert!(result
+        let response = paid_sign_transaction(&test_env, test_env.user, &request);
+        assert!(response.is_err());
+        assert!(response
             .unwrap_err()
             .contains("failed to parse the destination address"));
     }
@@ -94,14 +94,14 @@ mod sign_transaction {
     #[test]
     fn test_anonymous_cannot_sign_transaction() {
         let test_env = TestSetup::default();
-        let result = test_env.signer.eth_sign_transaction(
+        let response = test_env.signer.eth_sign_transaction(
             Principal::anonymous(),
             &GOOD_SIGN_TRANSACTION_REQUEST,
             &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
-        assert!(result.is_err());
+        assert!(response.is_err());
         assert_eq!(
-            result.unwrap_err(),
+            response.unwrap_err(),
             "Anonymous caller not authorized.".to_string()
         );
     }
@@ -137,12 +137,12 @@ mod personal_sign {
     #[test]
     fn can_eth_personal_sign() {
         let test_env = TestSetup::default();
-        let result = paid_personal_sign(&test_env, test_env.user, &GOOD_PERSONAL_SIGN_REQUEST)
+        let response = paid_personal_sign(&test_env, test_env.user, &GOOD_PERSONAL_SIGN_REQUEST)
             .expect("Failed to reach signer canister")
             .expect("Failed to sign");
 
         assert_eq!(
-            result,
+            response,
             EthPersonalSignResponse {
                 signature: "0x91f0caeca09d8520c905be5287e3fd13fcd355f17fdec41d72430b5bd6c5274266a2840f693377c853f36bc7b82f9e353d8da53e2c8530250f85adf5551268e800".to_string()
             }
@@ -152,31 +152,12 @@ mod personal_sign {
     #[test]
     fn cannot_personal_sign_if_message_is_not_hex_string() {
         let test_env = TestSetup::default();
-
-        let caller = test_env.user;
-
         let request = EthPersonalSignRequest {
-            message: "test message".to_string(),
+            message: "test message".to_string(), // Note: This should be a hex string.  Let' stest what happens when it's not.
         };
-
-        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
-        let payment_recipient = cycles_ledger::Account {
-            owner: test_env.signer.canister_id(),
-            subaccount: None,
-        };
-        let amount: u64 = SignerMethods::EthPersonalSign.fee() + LEDGER_FEE as u64;
-        test_env
-            .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
-            .expect("Failed to call ledger canister")
-            .expect("Failed to approve payment");
-
-        let result = test_env
-            .signer
-            .eth_personal_sign(caller, &request, &Some(payment_type));
-
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("failed to decode hex"));
+        let response = paid_personal_sign(&test_env, test_env.user, &request);
+        assert!(response.is_err());
+        assert!(response.unwrap_err().contains("failed to decode hex"));
     }
 
     #[test]
