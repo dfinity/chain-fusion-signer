@@ -246,7 +246,7 @@ fn test_eth_address_of() {
         owner: test_env.signer.canister_id(),
         subaccount: None,
     };
-    let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
+    let amount: u64 = SignerMethods::EthAddress.fee() + LEDGER_FEE as u64;
     test_env
         .ledger
         .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
@@ -265,5 +265,36 @@ fn test_eth_address_of() {
         EthAddressResponse {
             address: CALLER_ETH_ADDRESS.to_string()
         }
+    );
+}
+
+#[test]
+fn test_anonymous_cannot_call_eth_address() {
+    let test_env = TestSetup::default();
+
+    let caller = Principal::from_text(CALLER).unwrap();
+
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+    let payment_recipient = cycles_ledger::Account {
+        owner: test_env.signer.canister_id(),
+        subaccount: None,
+    };
+    let amount: u64 = SignerMethods::EthAddress.fee() + LEDGER_FEE as u64;
+    test_env
+        .ledger
+        .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+
+    let request = EthAddressRequest { principal: None };
+    let address =
+        test_env
+            .signer
+            .eth_address(Principal::anonymous(), &request, &Some(payment_type));
+
+    assert!(address.is_err());
+    assert_eq!(
+        address.unwrap_err(),
+        "Anonymous caller not authorized.".to_string()
     );
 }
