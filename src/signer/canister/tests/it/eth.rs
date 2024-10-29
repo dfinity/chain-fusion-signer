@@ -15,6 +15,21 @@ use crate::{
 };
 use candid::{Nat, Principal};
 use ic_chain_fusion_signer_api::methods::SignerMethods;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref GOOD_SIGN_TRANSACTION_REQUEST: EthSignTransactionRequest =
+        EthSignTransactionRequest {
+            chain_id: Nat::from(SEPOLIA_CHAIN_ID),
+            to: CALLER_ETH_ADDRESS.to_string(),
+            gas: Nat::from(123u64),
+            max_fee_per_gas: Nat::from(456u64),
+            max_priority_fee_per_gas: Nat::from(789u64),
+            value: Nat::from(1u64),
+            nonce: Nat::from(0u64),
+            data: None,
+        };
+}
 
 #[test]
 fn can_eth_sign_transaction() {
@@ -22,16 +37,7 @@ fn can_eth_sign_transaction() {
 
     let caller = Principal::from_text(CALLER).unwrap();
 
-    let sign_request = &EthSignTransactionRequest {
-        chain_id: Nat::from(SEPOLIA_CHAIN_ID),
-        to: CALLER_ETH_ADDRESS.to_string(),
-        gas: Nat::from(123u64),
-        max_fee_per_gas: Nat::from(456u64),
-        max_priority_fee_per_gas: Nat::from(789u64),
-        value: Nat::from(1u64),
-        nonce: Nat::from(0u64),
-        data: None,
-    };
+    let sign_request = &GOOD_SIGN_TRANSACTION_REQUEST;
 
     let payment_type = PaymentType::CallerPaysIcrc2Cycles;
     let payment_recipient = cycles_ledger::Account {
@@ -134,7 +140,7 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
         owner: test_env.signer.canister_id(),
         subaccount: None,
     };
-    let amount: u64 = SignerMethods::EthPersonalSign.fee() + LEDGER_FEE as u64;
+    let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
     test_env
         .ledger
         .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
@@ -142,14 +148,8 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
         .expect("Failed to approve payment");
 
     let request = EthSignTransactionRequest {
-        chain_id: Nat::from(SEPOLIA_CHAIN_ID),
         to: "invalid_address".to_string(),
-        gas: Nat::from(123u64),
-        max_fee_per_gas: Nat::from(456u64),
-        max_priority_fee_per_gas: Nat::from(789u64),
-        value: Nat::from(1u64),
-        nonce: Nat::from(0u64),
-        data: None,
+        ..GOOD_SIGN_TRANSACTION_REQUEST.clone()
     };
 
     let result = test_env
@@ -162,12 +162,18 @@ fn test_cannot_sign_transaction_with_invalid_to_address() {
         .contains("failed to parse the destination address"));
 }
 
-#[ignore] // TODO: Update this test
 #[test]
 fn test_anonymous_cannot_sign_transaction() {
-    let pic_setup = setup();
+    let test_env = TestSetup::default();
 
-    let result = pic_setup.update_one::<String>(Principal::anonymous(), "sign_transaction", ());
+    let caller = Principal::anonymous();
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+
+    let result = test_env.signer.eth_sign_transaction(
+        caller,
+        &GOOD_SIGN_TRANSACTION_REQUEST,
+        &Some(payment_type),
+    );
 
     assert!(result.is_err());
     assert_eq!(

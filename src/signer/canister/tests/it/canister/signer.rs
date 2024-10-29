@@ -7,18 +7,18 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct InitArg {
     pub(crate) ecdsa_key_name: String,
     pub(crate) ic_root_key_der: Option<serde_bytes::ByteBuf>,
     pub(crate) cycles_ledger: Option<Principal>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum Arg {
     Upgrade,
     Init(InitArg),
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BitcoinNetwork {
     #[serde(rename = "mainnet")]
     Mainnet,
@@ -27,31 +27,31 @@ pub(crate) enum BitcoinNetwork {
     #[serde(rename = "testnet")]
     Testnet,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BitcoinAddressType {
     #[serde(rename = "P2WPKH")]
     P2Wpkh,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetAddressRequest {
     pub(crate) network: BitcoinNetwork,
     pub(crate) address_type: BitcoinAddressType,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Account {
     pub(crate) owner: Principal,
     pub(crate) subaccount: Option<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct PatronPaysIcrc2Tokens {
     pub(crate) ledger: Principal,
     pub(crate) patron: Account,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CallerPaysIcrc2Tokens {
     pub(crate) ledger: Principal,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum PaymentType {
     PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens),
     AttachedCycles,
@@ -59,11 +59,11 @@ pub(crate) enum PaymentType {
     CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens),
     PatronPaysIcrc2Cycles(Account),
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetAddressResponse {
     pub(crate) address: String,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum RejectionCode1 {
     NoError,
     CanisterError,
@@ -73,7 +73,7 @@ pub(crate) enum RejectionCode1 {
     SysFatal,
     CanisterReject,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum WithdrawFromError {
     GenericError {
         message: String,
@@ -104,7 +104,7 @@ pub(crate) enum WithdrawFromError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum TransferFromError {
     GenericError {
         message: String,
@@ -131,7 +131,7 @@ pub(crate) enum TransferFromError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum PaymentError {
     LedgerWithdrawFromError {
         error: WithdrawFromError,
@@ -149,40 +149,40 @@ pub(crate) enum PaymentError {
         available: u64,
     },
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum GetAddressError {
     InternalError { msg: String },
     PaymentError(PaymentError),
 }
 pub(crate) type Result_ = std::result::Result<GetAddressResponse, GetAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBalanceRequest {
     pub(crate) network: BitcoinNetwork,
     pub(crate) address_type: BitcoinAddressType,
     pub(crate) min_confirmations: Option<u32>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBalanceResponse {
     pub(crate) balance: u64,
 }
 pub(crate) type Result1 = std::result::Result<GetBalanceResponse, GetAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Outpoint {
     pub(crate) txid: serde_bytes::ByteBuf,
     pub(crate) vout: u32,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Utxo {
     pub(crate) height: u32,
     pub(crate) value: u64,
     pub(crate) outpoint: Outpoint,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct BtcTxOutput {
     pub(crate) destination_address: String,
     pub(crate) sent_satoshis: u64,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SendBtcRequest {
     pub(crate) fee_satoshis: Option<u64>,
     pub(crate) network: BitcoinNetwork,
@@ -190,11 +190,11 @@ pub(crate) struct SendBtcRequest {
     pub(crate) address_type: BitcoinAddressType,
     pub(crate) outputs: Vec<BtcTxOutput>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SendBtcResponse {
     pub(crate) txid: String,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BuildP2WpkhTxError {
     NotEnoughFunds {
         available: u64,
@@ -206,7 +206,7 @@ pub(crate) enum BuildP2WpkhTxError {
     InvalidDestinationAddress(GetAddressResponse),
     InvalidSourceAddress(GetAddressResponse),
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SendBtcError {
     #[serde(rename = "BuildP2wpkhError")]
     BuildP2WpkhError(BuildP2WpkhTxError),
@@ -216,45 +216,45 @@ pub(crate) enum SendBtcError {
     PaymentError(PaymentError),
 }
 pub(crate) type Result2 = std::result::Result<SendBtcResponse, SendBtcError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Config {
     pub(crate) ecdsa_key_name: String,
     pub(crate) ic_root_key_raw: Option<serde_bytes::ByteBuf>,
     pub(crate) cycles_ledger: Principal,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthAddressRequest {
     pub(crate) principal: Option<Principal>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthAddressResponse {
     pub(crate) address: String,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EthAddressError {
     SigningError(RejectionCode1, String),
     PaymentError(PaymentError),
 }
 pub(crate) type Result3 = std::result::Result<EthAddressResponse, EthAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthPersonalSignRequest {
     pub(crate) message: String,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthPersonalSignResponse {
     pub(crate) signature: String,
 }
 pub(crate) type Result4 = std::result::Result<EthPersonalSignResponse, EthAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignPrehashRequest {
     pub(crate) hash: String,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignPrehashResponse {
     pub(crate) signature: String,
 }
 pub(crate) type Result5 = std::result::Result<EthSignPrehashResponse, EthAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignTransactionRequest {
     pub(crate) to: String,
     pub(crate) gas: candid::Nat,
@@ -265,40 +265,40 @@ pub(crate) struct EthSignTransactionRequest {
     pub(crate) chain_id: candid::Nat,
     pub(crate) nonce: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EcdsaCurve {
     #[serde(rename = "secp256k1")]
     Secp256K1,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaKeyId {
     pub(crate) name: String,
     pub(crate) curve: EcdsaCurve,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaPublicKeyArgument {
     pub(crate) key_id: EcdsaKeyId,
     pub(crate) canister_id: Option<Principal>,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaPublicKeyResponse {
     pub(crate) public_key: serde_bytes::ByteBuf,
     pub(crate) chain_code: serde_bytes::ByteBuf,
 }
 pub(crate) type Result6 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithEcdsaArgument {
     pub(crate) key_id: EcdsaKeyId,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
     pub(crate) message_hash: serde_bytes::ByteBuf,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithEcdsaResponse {
     pub(crate) signature: serde_bytes::ByteBuf,
 }
 pub(crate) type Result7 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CanisterStatusType {
     #[serde(rename = "stopped")]
     Stopped,
@@ -307,7 +307,7 @@ pub(crate) enum CanisterStatusType {
     #[serde(rename = "running")]
     Running,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DefiniteCanisterSettingsArgs {
     pub(crate) controller: Principal,
     pub(crate) freezing_threshold: candid::Nat,
@@ -315,7 +315,7 @@ pub(crate) struct DefiniteCanisterSettingsArgs {
     pub(crate) memory_allocation: candid::Nat,
     pub(crate) compute_allocation: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CanisterStatusResultV2 {
     pub(crate) controller: Principal,
     pub(crate) status: CanisterStatusType,
@@ -327,14 +327,14 @@ pub(crate) struct CanisterStatusResultV2 {
     pub(crate) idle_cycles_burned_per_day: candid::Nat,
     pub(crate) module_hash: Option<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpRequest {
     pub(crate) url: String,
     pub(crate) method: String,
     pub(crate) body: serde_bytes::ByteBuf,
     pub(crate) headers: Vec<(String, String)>,
 }
-#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpResponse {
     pub(crate) body: serde_bytes::ByteBuf,
     pub(crate) headers: Vec<(String, String)>,

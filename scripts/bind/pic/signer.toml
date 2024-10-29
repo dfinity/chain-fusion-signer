@@ -7,4 +7,4 @@ canister_name = "signer"
 
 [rust]
 visibility = "pub(crate)"
-attributes = "#[derive(CandidType, Deserialize, Debug, Eq, PartialEq)]"
+attributes = "#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]"
