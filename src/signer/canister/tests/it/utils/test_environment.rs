@@ -80,9 +80,7 @@ impl Default for TestSetup {
                 )
                 .deploy_to(pic.clone()),
         );
-        let user =
-            Principal::from_text(CALLER)
-                .unwrap();
+        let user = Principal::from_text(CALLER).unwrap();
         let user2 =
             Principal::from_text("jwhyn-xieqy-drmun-h7uci-jzycw-vnqhj-s62vl-4upsg-cmub3-vakaq-rqe")
                 .unwrap();
