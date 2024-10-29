@@ -6,6 +6,7 @@ use ic_cdk::api::management_canister::ecdsa::{
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
+    methods::SignerMethods,
     metrics::get_metrics,
     std_canister_status,
     types::{
@@ -116,9 +117,11 @@ async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
-    let fee = 1_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
-        .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+        )
         .await?;
     generic::caller_ecdsa_public_key(arg).await
 }
@@ -129,9 +132,11 @@ async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
-    let fee = 40_000_000_000; // Determined with the aid of scripts/check-pricing
     PAYMENT_GUARD
-        .deduct(payment.unwrap_or(PaymentType::AttachedCycles), fee)
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericSignWithEcdsa.fee(),
+        )
         .await?;
     generic::sign_with_ecdsa(arg).await
 }
@@ -156,7 +161,7 @@ async fn eth_address(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::EthAddress.fee(),
         )
         .await?;
     eth::eth_address(principal).await
@@ -175,7 +180,7 @@ async fn eth_address_of_caller(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            1_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::EthAddressOfCaller.fee(),
         )
         .await?;
     eth::eth_address(principal).await
@@ -190,7 +195,7 @@ async fn eth_sign_transaction(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            40_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::EthSignTransaction.fee(),
         )
         .await?;
     Ok(EthSignTransactionResponse {
@@ -207,7 +212,7 @@ async fn eth_personal_sign(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            40_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::EthPersonalSign.fee(),
         )
         .await?;
     Ok(EthPersonalSignResponse {
@@ -224,7 +229,7 @@ async fn eth_sign_prehash(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            40_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::EthSignPrehash.fee(),
         )
         .await?;
 
@@ -247,7 +252,7 @@ async fn btc_caller_address(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            20_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::BtcCallerAddress.fee(),
         )
         .await?;
     match params.address_type {
@@ -272,7 +277,7 @@ async fn btc_caller_balance(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            40_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::BtcCallerBalance.fee(),
         )
         .await?;
     match params.address_type {
@@ -302,7 +307,7 @@ async fn btc_caller_send(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            130_000_000_000, // Determined with the aid of scripts/check-pricing
+            SignerMethods::BtcCallerSend.fee(),
         )
         .await?;
     match params.address_type {
