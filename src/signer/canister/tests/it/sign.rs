@@ -1,17 +1,24 @@
-use crate::utils::{
-    mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
-    pic_canister::PicCanisterTrait,
-    pocketic::setup,
+use crate::{
+    canister::{
+        cycles_ledger,
+        cycles_ledger::ApproveArgs,
+        signer::{EthSignPrehashResponse, EthSignTransactionRequest, PaymentType},
+    },
+    utils::{
+        mock::{CALLER, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID},
+        pic_canister::PicCanisterTrait,
+        pocketic::setup,
+        test_environment::TestSetup,
+    },
 };
 use candid::{Nat, Principal};
 use ic_chain_fusion_signer_api::types::transaction::SignRequest;
 
-#[ignore] // TODO: Update this test
 #[test]
-fn test_sign_transaction() {
-    let pic_setup = setup();
+fn test_eth_sign_transaction() {
+    let test_env = TestSetup::default();
 
-    let sign_request: SignRequest = SignRequest {
+    let sign_request = &EthSignTransactionRequest {
         chain_id: Nat::from(SEPOLIA_CHAIN_ID),
         to: CALLER_ETH_ADDRESS.to_string(),
         gas: Nat::from(123u64),
@@ -23,12 +30,25 @@ fn test_sign_transaction() {
     };
 
     let caller = Principal::from_text(CALLER).unwrap();
-
-    let transaction = pic_setup.update_one::<String>(caller, "sign_transaction", sign_request);
+    let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+    let payment_recipient = cycles_ledger::Account {
+        owner: test_env.signer.canister_id(),
+        subaccount: None,
+    };
+    let amount: u64 = 40_000_000_000 + 1000000000;
+    test_env
+        .ledger
+        .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+    let transaction = test_env
+        .signer
+        .eth_sign_transaction(caller, sign_request, &Some(payment_type))
+        .unwrap();
 
     assert_eq!(
         transaction.unwrap(),
-        "0x02f86783aa36a7808203158201c87b945e9f1caf942aa8ee887b75f5a6bccaf4b10242480180c080a02fc93932ea116781baffa2f5e62079772c2d6ed91219caff433f653a6e657460a0301f525ac8a55602cc4bddb8c714c2be08aa2bf43fb0ddad974aa4f589d505b9".to_string()
+        EthSignPrehashResponse{ signature: "0x02f86783aa36a7808203158201c87b945e9f1caf942aa8ee887b75f5a6bccaf4b10242480180c001a0fc97df3cb643abb3b565cd95b8d55f108db336612abbb79e0054588587306809a04014551c96d89a90ff89065f08b05772cd582d26e3e1eee4ccf85d2fedc2ad50".to_string()}
     );
 }
 

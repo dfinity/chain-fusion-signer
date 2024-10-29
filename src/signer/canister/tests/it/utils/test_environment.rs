@@ -4,11 +4,9 @@ use crate::{
         cycles_ledger::{
             Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
         },
-    },
-    utils::{
-        pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
         signer::{Arg, InitArg, SignerPic},
     },
+    utils::pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
 };
 use candid::{encode_one, CandidType, Nat, Principal};
 use ic_papi_api::{cycles::cycles_ledger_canister_id, PaymentError};
