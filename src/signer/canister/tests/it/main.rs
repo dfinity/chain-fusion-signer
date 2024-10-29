@@ -2,5 +2,5 @@ mod address;
 mod bitcoin;
 //mod generic;
 mod canister;
-mod sign;
+mod eth;
 mod utils;
