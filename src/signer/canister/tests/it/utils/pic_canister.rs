@@ -110,7 +110,7 @@ fn workspace_dir() -> PathBuf {
 }
 /// The path to a typical Cargo Wasm build.
 #[allow(dead_code)]
-fn cargo_wasm_path(name: &str) -> String {
+pub fn cargo_wasm_path(name: &str) -> String {
     let workspace_dir = workspace_dir();
     workspace_dir
         .join("target/wasm32-unknown-unknown/release")
@@ -124,7 +124,7 @@ fn cargo_wasm_path(name: &str) -> String {
 ///
 /// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
 #[allow(dead_code)]
-fn dfx_wasm_path(name: &str) -> String {
+pub fn dfx_wasm_path(name: &str) -> String {
     workspace_dir()
         .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
         .to_str()
