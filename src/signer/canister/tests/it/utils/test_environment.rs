@@ -128,11 +128,11 @@ impl Default for TestSetup {
 impl TestSetup {
     /// The user's initial balance.
     pub const USER_INITIAL_BALANCE: u128 = 100_000_000_000;
-    /// Deposit 100 * the ledger fee in the user's ledger wallet. That should be enough to be getting on with.
-    pub fn fund_user(&self, megasquigs: u128) {
+    /// Deposit cycles in `self.user`'s cycles ledger account.
+    pub fn fund_user(&self, cycles: u128) {
         let initial_balance = self.user_balance();
         // .. Magic cycles into existence (test only - not IRL).
-        let deposit = megasquigs + LEDGER_FEE;
+        let deposit = cycles + LEDGER_FEE;
         self.pic
             .add_cycles(self.cycles_depositor.canister_id, deposit);
         // .. Send cycles to the cycles ledger.
@@ -150,8 +150,8 @@ impl TestSetup {
             )
             .expect("Failed to deposit funds in the ledger");
         // .. That should have cost one fee.
-        let expected_balance = initial_balance.clone() + megasquigs;
-        self.assert_user_balance_eq(expected_balance.clone(), format!("Expected user balance to be the initial balance ({initial_balance}) plus the requested sum ({megasquigs}) = {expected_balance}"));
+        let expected_balance = initial_balance.clone() + cycles;
+        self.assert_user_balance_eq(expected_balance.clone(), format!("Expected user balance to be the initial balance ({initial_balance}) plus the requested sum ({cycles}) = {expected_balance}"));
     }
     /// Gets the user balance
     pub fn user_balance(&self) -> Nat {
