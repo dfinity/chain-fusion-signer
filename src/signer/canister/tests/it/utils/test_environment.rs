@@ -33,7 +33,7 @@ pub struct TestSetup {
     pub user2: Principal,
     /// A crowd
     pub users: [Principal; 5],
-    /// Unauthorized user
+    /// Unauthorized user, used in tests to ensure that random third parties cannot use resources they are not entitled to.
     pub unauthorized_user: Principal,
     /// A canister used to deposit cycles into the ledger.
     pub cycles_depositor: CyclesDepositorPic,
