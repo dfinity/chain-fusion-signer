@@ -8,8 +8,7 @@ use crate::{
     },
     utils::{
         mock::{
-            CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST,
-            CALLER_BTC_ADDRESS_TESTNET,
+            CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET,
         },
         pic_canister::PicCanisterTrait,
         test_environment::{TestSetup, LEDGER_FEE},

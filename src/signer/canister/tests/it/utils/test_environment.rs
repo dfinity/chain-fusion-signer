@@ -1,3 +1,4 @@
+use super::mock::CALLER;
 use crate::{
     canister::{
         bitcoin::{self, BitcoinPic},
@@ -14,8 +15,7 @@ use ic_papi_api::cycles::cycles_ledger_canister_id;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
-use super::{mock::CALLER, pocketic::BITCOIN_CANISTER_ID};
-
+pub const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
 
 #[allow(dead_code)] // Not all fields need to be used
