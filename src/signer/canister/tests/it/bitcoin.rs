@@ -2,16 +2,14 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            BitcoinAddressType, BitcoinNetwork, EthAddressError, EthAddressRequest,
-            EthAddressResponse, EthPersonalSignRequest, EthPersonalSignResponse,
-            EthSignPrehashResponse, EthSignTransactionRequest, GetAddressError, GetAddressRequest,
+            BitcoinAddressType, BitcoinNetwork, GetAddressError, GetAddressRequest,
             GetAddressResponse, GetBalanceRequest, GetBalanceResponse, PaymentType,
         },
     },
     utils::{
         mock::{
             CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST,
-            CALLER_BTC_ADDRESS_TESTNET, CALLER_ETH_ADDRESS, SEPOLIA_CHAIN_ID,
+            CALLER_BTC_ADDRESS_TESTNET,
         },
         pic_canister::PicCanisterTrait,
         pocketic::setup,
@@ -70,30 +68,49 @@ mod caller_balance {
 mod address {
     use super::*;
 
-    #[ignore] // TODO: Update this test
+    /// A standard btc_caller_address() call, including payment.
+    fn paid_caller_address(
+        test_env: &TestSetup,
+        caller: Principal,
+        request: &GetAddressRequest,
+    ) -> Result<Result<GetAddressResponse, GetAddressError>, String> {
+        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+        let payment_recipient = cycles_ledger::Account {
+            owner: test_env.signer.canister_id(),
+            subaccount: None,
+        };
+        let amount: u64 = SignerMethods::BtcCallerAddress.fee() + LEDGER_FEE as u64;
+        test_env
+            .ledger
+            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .expect("Failed to call ledger canister")
+            .expect("Failed to approve payment");
+
+        test_env
+            .signer
+            .btc_caller_address(caller, &request, &Some(payment_type))
+    }
+
     #[test]
     fn test_caller_btc_address_mainnet() {
-        let pic_setup = setup();
+        let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
-        let network = BitcoinNetwork::Mainnet;
-        let params = GetAddressRequest {
-            network,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
-
-        let address_response = pic_setup
-            .update_one::<Result<GetAddressResponse, GetAddressError>>(
-                caller,
-                "btc_caller_address",
-                params,
-            )
-            .expect("Failed to call testnet btc address.")
-            .expect("Failed to get successful response");
+        let response = paid_caller_address(
+            &test_env,
+            test_env.user,
+            &GetAddressRequest {
+                network: BitcoinNetwork::Mainnet,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+        )
+        .expect("Failed to call testnet btc address.")
+        .expect("Failed to get successul btc address response");
 
         assert_eq!(
-            address_response.address,
-            CALLER_BTC_ADDRESS_MAINNET.to_string()
+            response,
+            GetAddressResponse {
+                address: CALLER_BTC_ADDRESS_MAINNET.to_string()
+            }
         );
     }
 
