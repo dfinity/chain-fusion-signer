@@ -8,11 +8,10 @@ use crate::{
     },
     utils::{
         mock::{
-            CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST,
+            CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST,
             CALLER_BTC_ADDRESS_TESTNET,
         },
         pic_canister::PicCanisterTrait,
-        pocketic::setup,
         test_environment::{TestSetup, LEDGER_FEE},
     },
 };
