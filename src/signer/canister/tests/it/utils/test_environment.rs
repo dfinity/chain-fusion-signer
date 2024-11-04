@@ -1,5 +1,6 @@
 use crate::{
     canister::{
+        bitcoin::{self, BitcoinPic},
         cycles_depositor::{self, CyclesDepositorPic},
         cycles_ledger::{
             Account, ApproveArgs, CyclesLedgerPic, InitArgs as LedgerInitArgs, LedgerArgs,
@@ -13,7 +14,7 @@ use ic_papi_api::cycles::cycles_ledger_canister_id;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use std::sync::Arc;
 
-use super::mock::CALLER;
+use super::{mock::CALLER, pocketic::BITCOIN_CANISTER_ID};
 
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
 
@@ -37,6 +38,8 @@ pub struct TestSetup {
     pub unauthorized_user: Principal,
     /// A canister used to deposit cycles into the ledger.
     pub cycles_depositor: CyclesDepositorPic,
+    /// Bitcoin canister
+    pub bitcoin_canister: BitcoinPic,
 }
 impl Default for TestSetup {
     fn default() -> Self {
@@ -80,6 +83,35 @@ impl Default for TestSetup {
                 )
                 .deploy_to(pic.clone()),
         );
+        let bitcoin_canister_id = pic
+            .create_canister_with_id(
+                None,
+                None,
+                Principal::from_text(BITCOIN_CANISTER_ID).unwrap(),
+            )
+            .unwrap();
+        let bitcoin_canister = BitcoinPic::from(
+            PicCanisterBuilder::default()
+                .with_canister(bitcoin_canister_id)
+                .with_wasm(&dfx_wasm_path("bitcoin"))
+                .with_arg(
+                    encode_one(bitcoin::InitConfig {
+                        stability_threshold: None,
+                        network: Some(bitcoin::Network::Regtest),
+                        blocks_source: None,
+                        syncing: None,
+                        fees: None,
+                        api_access: None,
+                        disable_api_if_not_fully_synced: None,
+                        watchdog_canister: None,
+                        burn_cycles: None,
+                        lazily_evaluate_fee_percentiles: None,
+                    })
+                    .unwrap(),
+                )
+                .deploy_to(pic.clone()),
+        );
+
         let user = Principal::from_text(CALLER).unwrap();
         let user2 =
             Principal::from_text("jwhyn-xieqy-drmun-h7uci-jzycw-vnqhj-s62vl-4upsg-cmub3-vakaq-rqe")
@@ -120,6 +152,7 @@ impl Default for TestSetup {
             users,
             unauthorized_user,
             cycles_depositor,
+            bitcoin_canister,
         };
         ans.fund_user(Self::USER_INITIAL_BALANCE);
         ans
