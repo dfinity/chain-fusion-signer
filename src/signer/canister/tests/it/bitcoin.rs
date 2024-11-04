@@ -114,57 +114,49 @@ mod address {
         );
     }
 
-    #[ignore] // TODO: Update this test
     #[test]
     fn test_caller_btc_address_testnet() {
-        let pic_setup = setup();
+        let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
-        let network = BitcoinNetwork::Testnet;
-        let params = GetAddressRequest {
-            network,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
-
-        let address_response = pic_setup
-            .update_one::<Result<GetAddressResponse, GetAddressError>>(
-                caller,
-                "btc_caller_address",
-                params,
-            )
-            .expect("Failed to call testnet btc address.")
-            .expect("Failed to get successful response");
+        let response = paid_caller_address(
+            &test_env,
+            test_env.user,
+            &GetAddressRequest {
+                network: BitcoinNetwork::Testnet,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+        )
+        .expect("Failed to call testnet btc address.")
+        .expect("Failed to get successul btc address response");
 
         assert_eq!(
-            address_response.address,
-            CALLER_BTC_ADDRESS_TESTNET.to_string()
+            response,
+            GetAddressResponse {
+                address: CALLER_BTC_ADDRESS_TESTNET.to_string()
+            }
         );
     }
 
-    #[ignore] // TODO: Update this test
     #[test]
     fn test_caller_btc_address_regtest() {
-        let pic_setup = setup();
+        let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
-        let network = BitcoinNetwork::Regtest;
-        let params = GetAddressRequest {
-            network,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
-
-        let address_response = pic_setup
-            .update_one::<Result<GetAddressResponse, GetAddressError>>(
-                caller,
-                "btc_caller_address",
-                params,
-            )
-            .expect("Failed to call testnet btc address.")
-            .expect("Failed to get successful response");
+        let response = paid_caller_address(
+            &test_env,
+            test_env.user,
+            &GetAddressRequest {
+                network: BitcoinNetwork::Regtest,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+        )
+        .expect("Failed to call testnet btc address.")
+        .expect("Failed to get successul btc address response");
 
         assert_eq!(
-            address_response.address,
-            CALLER_BTC_ADDRESS_REGTEST.to_string()
+            response,
+            GetAddressResponse {
+                address: CALLER_BTC_ADDRESS_REGTEST.to_string()
+            }
         );
     }
 
