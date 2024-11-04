@@ -180,42 +180,34 @@ mod address {
         );
     }
 
-    #[ignore] // TODO: Update this test
     #[test]
     fn test_testnet_btc_address_is_not_same_as_regtest() {
-        let pic_setup = setup();
+        let test_env = TestSetup::default();
 
-        let caller = Principal::from_text(CALLER).unwrap();
-        let params_testnet = GetAddressRequest {
-            network: BitcoinNetwork::Testnet,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
-        let params_regtest = GetAddressRequest {
-            network: BitcoinNetwork::Regtest,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
+        let testnet_address = paid_caller_address(
+            &test_env,
+            test_env.user,
+            &GetAddressRequest {
+                network: BitcoinNetwork::Testnet,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+        )
+        .expect("Failed to call testnet btc address.")
+        .expect("Failed to get successul btc address response")
+        .address;
 
-        let address_response_testnet = pic_setup
-            .update_one::<Result<GetAddressResponse, GetAddressError>>(
-                caller,
-                "btc_caller_address",
-                params_testnet,
-            )
-            .expect("Failed to call testnet btc address.")
-            .expect("Failed to get successful response");
+        let regtest_address = paid_caller_address(
+            &test_env,
+            test_env.user,
+            &GetAddressRequest {
+                network: BitcoinNetwork::Regtest,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+        )
+        .expect("Failed to call testnet btc address.")
+        .expect("Failed to get successul btc address response")
+        .address;
 
-        let address_response_regtest = pic_setup
-            .update_one::<Result<GetAddressResponse, GetAddressError>>(
-                caller,
-                "btc_caller_address",
-                params_regtest,
-            )
-            .expect("Failed to call testnet btc address.")
-            .expect("Failed to get successful response");
-
-        assert_ne!(
-            address_response_testnet.address,
-            address_response_regtest.address
-        );
+        assert_ne!(testnet_address, regtest_address);
     }
 }
