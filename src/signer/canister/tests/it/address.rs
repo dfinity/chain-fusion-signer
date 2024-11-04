@@ -1,7 +1,6 @@
 use crate::utils::{
     mock::{
         CALLER, CALLER_BTC_ADDRESS_MAINNET, CALLER_BTC_ADDRESS_REGTEST, CALLER_BTC_ADDRESS_TESTNET,
-        CALLER_ETH_ADDRESS,
     },
     pic_canister::PicCanisterTrait,
     pocketic::setup,
@@ -11,63 +10,6 @@ use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use ic_chain_fusion_signer_api::types::bitcoin::{
     BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse,
 };
-
-#[ignore] // TODO: Update this test
-#[test]
-fn test_caller_eth_address() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup
-        .update_one::<String>(caller, "caller_eth_address", ())
-        .expect("Failed to call eth address.");
-
-    assert_eq!(address, CALLER_ETH_ADDRESS.to_string());
-}
-
-#[ignore] // TODO: Update this test
-#[test]
-fn test_eth_address_of() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup
-        .update_one::<String>(caller, "eth_address_of", caller)
-        .expect("Failed to call eth address of.");
-
-    assert_eq!(address, CALLER_ETH_ADDRESS.to_string());
-}
-
-#[ignore] // TODO: Update this test
-#[test]
-fn test_anonymous_cannot_call_eth_address() {
-    let pic_setup = setup();
-
-    let address = pic_setup.update_one::<String>(Principal::anonymous(), "caller_eth_address", ());
-
-    assert!(address.is_err());
-    assert_eq!(
-        address.unwrap_err(),
-        "Anonymous caller not authorized.".to_string()
-    );
-}
-
-#[ignore] // TODO: Update this test
-#[test]
-fn test_cannot_call_eth_address_of_for_anonymous() {
-    let pic_setup = setup();
-
-    let caller = Principal::from_text(CALLER).unwrap();
-
-    let address = pic_setup.update_one::<String>(caller, "eth_address_of", Principal::anonymous());
-
-    assert!(address.is_err());
-    assert!(address
-        .unwrap_err()
-        .contains("Anonymous principal is not authorized"));
-}
 
 #[ignore] // TODO: Update this test
 #[test]
