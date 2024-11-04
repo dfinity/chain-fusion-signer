@@ -26,8 +26,6 @@ fn workspace_dir() -> PathBuf {
 }
 
 // Default file paths relative to the cargo workspace.
-const DEFAULT_SIGNER_WASM: &str = "/target/wasm32-unknown-unknown/release/signer.wasm";
-const DEFAULT_BITCOIN_WASM: &str = "/ic-btc-canister.wasm.gz";
 pub const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
 
 // This is necessary to deploy the bitcoin canister.
@@ -47,10 +45,4 @@ struct BitcoinInitConfig {
     watchdog_canister: Option<Principal>,
     burn_cycles: Option<String>,
     lazily_evaluate_fee_percentiles: Option<String>,
-}
-
-#[inline]
-pub fn controller() -> Principal {
-    Principal::from_text(CONTROLLER)
-        .expect("Test setup error: Failed to parse controller principal")
 }
