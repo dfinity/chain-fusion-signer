@@ -160,22 +160,22 @@ mod address {
         );
     }
 
-    #[ignore] // TODO: Update this test
     #[test]
     fn test_anonymous_cannot_call_btc_address() {
-        let pic_setup = setup();
-        let network = BitcoinNetwork::Testnet;
-        let params = GetAddressRequest {
-            network,
-            address_type: BitcoinAddressType::P2Wpkh,
-        };
+        let test_env = TestSetup::default();
 
-        let address =
-            pic_setup.update_one::<String>(Principal::anonymous(), "btc_caller_address", params);
+        let response = test_env.signer.btc_caller_address(
+            Principal::anonymous(),
+            &GetAddressRequest {
+                network: BitcoinNetwork::Testnet,
+                address_type: BitcoinAddressType::P2Wpkh,
+            },
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
+        );
 
-        assert!(address.is_err());
+        assert!(response.is_err());
         assert_eq!(
-            address.unwrap_err(),
+            response.unwrap_err(),
             "Anonymous caller not authorized.".to_string()
         );
     }
