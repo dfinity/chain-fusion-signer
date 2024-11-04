@@ -306,10 +306,6 @@ pub fn controller() -> Principal {
         .expect("Test setup error: Failed to parse controller principal")
 }
 
-pub fn setup() -> PicSigner {
-    BackendBuilder::default().deploy()
-}
-
 impl PicSigner {
     #[allow(dead_code)]
     pub fn upgrade_latest_wasm(&self, encoded_arg: Option<Vec<u8>>) -> Result<(), String> {
