@@ -11,7 +11,7 @@ pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,
 };
 
-/// Signs a message with a generic ECDSA key for the user.
+/// A generic ECDSA public key for the user.
 ///
 /// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 pub async fn caller_ecdsa_public_key(
@@ -22,6 +22,9 @@ pub async fn caller_ecdsa_public_key(
     Ok(canister_ecdsa::ecdsa_public_key(arg).await?)
 }
 
+/// Signs a message with a generic ECDSA key for the user.
+///
+/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 pub async fn sign_with_ecdsa(
     mut arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
