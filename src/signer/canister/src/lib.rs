@@ -164,6 +164,9 @@ pub async fn generic_sign_with_ecdsa(
 /// Returns the Ethereum address of a specified user.
 ///
 /// If no user is specified, the caller's address is returned.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_address(
     request: EthAddressRequest,
@@ -184,6 +187,9 @@ pub async fn eth_address(
 }
 
 /// Returns the Ethereum address of the caller.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_address_of_caller(
     payment: Option<PaymentType>,
@@ -203,6 +209,9 @@ pub async fn eth_address_of_caller(
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_sign_transaction(
     req: EthSignTransactionRequest,
@@ -220,6 +229,9 @@ pub async fn eth_sign_transaction(
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_personal_sign(
     request: EthPersonalSignRequest,
@@ -237,6 +249,9 @@ pub async fn eth_personal_sign(
 }
 
 /// Computes an Ethereum signature for a precomputed hash.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_sign_prehash(
     req: EthSignPrehashRequest,
@@ -259,6 +274,9 @@ pub async fn eth_sign_prehash(
 // ///////////////////
 
 /// Returns the Bitcoin address of the caller.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_address(
@@ -284,6 +302,9 @@ pub async fn btc_caller_address(
 }
 
 /// Returns the Bitcoin balance of the caller's address.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_balance(
@@ -314,6 +335,9 @@ pub async fn btc_caller_balance(
 }
 
 /// Creates, signs and sends a BTC transaction from the caller's address.
+///
+/// # Errors
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_send(
