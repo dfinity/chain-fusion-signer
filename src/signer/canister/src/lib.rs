@@ -50,16 +50,21 @@ mod types;
 // // CANISTER MANAGEMENT //
 // /////////////////////////
 
+/// Initializes state on canister creation
 #[init]
-fn init(arg: Arg) {
+pub fn init(arg: Arg) {
     match arg {
         Arg::Init(arg) => set_config(arg),
         Arg::Upgrade => ic_cdk::trap("upgrade args in init"),
     }
 }
 
+/// Updates state after canister upgrade
+///
+/// # Panics
+/// - If there is an attempt to upgrade a canister without existing state.  This is most likely an attept to upgrade a new canister when an installation was intended.
 #[post_upgrade]
-fn post_upgrade(arg: Option<Arg>) {
+pub fn post_upgrade(arg: Option<Arg>) {
     match arg {
         Some(Arg::Init(arg)) => set_config(arg),
         _ => {
@@ -75,7 +80,7 @@ fn post_upgrade(arg: Option<Arg>) {
 /// Show the canister configuration.
 #[query(guard = "caller_is_not_anonymous")]
 #[must_use]
-fn config() -> Config {
+pub fn config() -> Config {
     read_config(std::clone::Clone::clone)
 }
 
@@ -101,7 +106,7 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 
 /// API method to get cycle balance and burn rate.
 #[update]
-async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
+pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }
 
@@ -113,9 +118,13 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 ///
 /// Note: This is an exact dual of the canister [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key) method.  The argument and response types are also the same.
 ///
-/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+/// # Warnings
+/// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn generic_caller_ecdsa_public_key(
+pub async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
@@ -132,9 +141,13 @@ async fn generic_caller_ecdsa_public_key(
 ///
 /// Note: This is an exact dual of the canister [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa) method.  The argument and response types are also the same.
 ///
-/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+/// # Warnings
+/// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn generic_sign_with_ecdsa(
+pub async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
@@ -154,8 +167,11 @@ async fn generic_sign_with_ecdsa(
 /// Returns the Ethereum address of a specified user.
 ///
 /// If no user is specified, the caller's address is returned.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address(
+pub async fn eth_address(
     request: EthAddressRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
@@ -174,8 +190,11 @@ async fn eth_address(
 }
 
 /// Returns the Ethereum address of the caller.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_address_of_caller(
+pub async fn eth_address_of_caller(
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
     let principal = ic_cdk::caller();
@@ -193,8 +212,11 @@ async fn eth_address_of_caller(
 }
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_sign_transaction(
+pub async fn eth_sign_transaction(
     req: EthSignTransactionRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthSignTransactionResponse, EthSignTransactionError> {
@@ -210,8 +232,11 @@ async fn eth_sign_transaction(
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_personal_sign(
+pub async fn eth_personal_sign(
     request: EthPersonalSignRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthPersonalSignResponse, EthPersonalSignError> {
@@ -227,8 +252,11 @@ async fn eth_personal_sign(
 }
 
 /// Computes an Ethereum signature for a precomputed hash.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-async fn eth_sign_prehash(
+pub async fn eth_sign_prehash(
     req: EthSignPrehashRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthSignPrehashResponse, EthSignPrehashError> {
@@ -249,9 +277,12 @@ async fn eth_sign_prehash(
 // ///////////////////
 
 /// Returns the Bitcoin address of the caller.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
-async fn btc_caller_address(
+pub async fn btc_caller_address(
     params: GetAddressRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetAddressResponse, GetAddressError> {
@@ -274,9 +305,12 @@ async fn btc_caller_address(
 }
 
 /// Returns the Bitcoin balance of the caller's address.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
-async fn btc_caller_balance(
+pub async fn btc_caller_balance(
     params: GetBalanceRequest,
     payment: Option<PaymentType>, // Note: Do NOT use underscore, please, so that the underscore doesn't show up in the generated candid.
 ) -> Result<GetBalanceResponse, GetBalanceError> {
@@ -304,9 +338,12 @@ async fn btc_caller_balance(
 }
 
 /// Creates, signs and sends a BTC transaction from the caller's address.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
-async fn btc_caller_send(
+pub async fn btc_caller_send(
     params: SendBtcRequest,
     payment: Option<PaymentType>,
 ) -> Result<SendBtcResponse, SendBtcError> {
