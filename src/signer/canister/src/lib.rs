@@ -121,7 +121,7 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn generic_caller_ecdsa_public_key(
@@ -144,7 +144,7 @@ pub async fn generic_caller_ecdsa_public_key(
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn generic_sign_with_ecdsa(
@@ -168,7 +168,7 @@ pub async fn generic_sign_with_ecdsa(
 ///
 /// If no user is specified, the caller's address is returned.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_address(
@@ -191,7 +191,7 @@ pub async fn eth_address(
 
 /// Returns the Ethereum address of the caller.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_address_of_caller(
@@ -213,7 +213,7 @@ pub async fn eth_address_of_caller(
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_sign_transaction(
@@ -233,7 +233,7 @@ pub async fn eth_sign_transaction(
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_personal_sign(
@@ -253,7 +253,7 @@ pub async fn eth_personal_sign(
 
 /// Computes an Ethereum signature for a precomputed hash.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn eth_sign_prehash(
@@ -278,7 +278,7 @@ pub async fn eth_sign_prehash(
 
 /// Returns the Bitcoin address of the caller.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
@@ -306,7 +306,7 @@ pub async fn btc_caller_address(
 
 /// Returns the Bitcoin balance of the caller's address.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
@@ -339,7 +339,7 @@ pub async fn btc_caller_balance(
 
 /// Creates, signs and sends a BTC transaction from the caller's address.
 ///
-/// # Errors
+/// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 #[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
