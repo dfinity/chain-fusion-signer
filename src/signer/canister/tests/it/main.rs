@@ -1,5 +1,4 @@
-mod address;
 mod bitcoin;
 mod canister;
-mod sign;
+mod eth;
 mod utils;
