@@ -41,7 +41,7 @@ mod sign_transaction {
 
     use super::*;
 
-    // A standard sign_transaction call, including payment.
+    /// A standard sign_transaction call, including payment.
     fn paid_sign_transaction(
         test_env: &TestSetup,
         caller: Principal,
