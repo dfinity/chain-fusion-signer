@@ -60,6 +60,9 @@ pub fn init(arg: Arg) {
 }
 
 /// Updates state after canister upgrade
+///
+/// # Panics
+/// - If there is an attempt to upgrade a canister without existing state.  This is most likely an attept to upgrade a new canister when an installation was intended.
 #[post_upgrade]
 pub fn post_upgrade(arg: Option<Arg>) {
     match arg {
