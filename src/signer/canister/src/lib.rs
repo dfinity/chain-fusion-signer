@@ -109,9 +109,11 @@ async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
 // // GENERIC SIGNATURES //
 // ////////////////////////
 
-/// Returns the generic Ed25519 public key of the caller.
+/// Returns the generic ECDSA public key of the caller.
 ///
-/// Note: This is an exact dual of the canister `ecdsa_public_key` method.  The argument and response types are also the same.
+/// Note: This is an exact dual of the canister [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key) method.  The argument and response types are also the same.
+///
+/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
@@ -126,7 +128,11 @@ async fn generic_caller_ecdsa_public_key(
     generic::caller_ecdsa_public_key(arg).await
 }
 
-/// Returns the generic Ed25519 public key of the caller.
+/// Signs a message using the caller's ECDSA key.
+///
+/// Note: This is an exact dual of the canister [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa) method.  The argument and response types are also the same.
+///
+/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
 #[update(guard = "caller_is_not_anonymous")]
 async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
