@@ -11,7 +11,7 @@
 		"format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
 	},
 	"devDependencies": {
-		"@testing-library/jest-dom": "^6.6.2",
+		"@testing-library/jest-dom": "^6.6.3",
 		"cross-fetch": "^4.0.0",
 		"dotenv": "^16.3.1",
 		"sass": "^1.80.6",
