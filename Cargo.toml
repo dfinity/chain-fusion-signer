@@ -2,6 +2,7 @@
 members = [
     "src/example_backend",
     "src/signer/api",
+    "src/signer/cli",
     "src/signer/canister"]
 resolver = "2"
 
