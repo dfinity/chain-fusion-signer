@@ -128,12 +128,12 @@ pub async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
-//    PAYMENT_GUARD
-//        .deduct(
-//            payment.unwrap_or(PaymentType::AttachedCycles),
-//            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
-//        )
-//        .await?;
+    //    PAYMENT_GUARD
+    //        .deduct(
+    //            payment.unwrap_or(PaymentType::AttachedCycles),
+    //            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+    //        )
+    //        .await?;
     generic::caller_ecdsa_public_key(arg).await
 }
 
@@ -151,12 +151,12 @@ pub async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
-//    PAYMENT_GUARD
-//        .deduct(
-//            payment.unwrap_or(PaymentType::AttachedCycles),
-//            SignerMethods::GenericSignWithEcdsa.fee(),
-//        )
-//        .await?;
+    //    PAYMENT_GUARD
+    //        .deduct(
+    //            payment.unwrap_or(PaymentType::AttachedCycles),
+    //            SignerMethods::GenericSignWithEcdsa.fee(),
+    //        )
+    //        .await?;
     generic::sign_with_ecdsa(arg).await
 }
 

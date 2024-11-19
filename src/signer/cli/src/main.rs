@@ -1,8 +1,6 @@
 use clap::Parser;
-use signer_cli::args::SignerCliArgs;
-use signer_cli::execute;
+use signer_cli::{args::SignerCliArgs, execute};
 use tokio::runtime::Builder;
-
 
 fn main() {
     let args = SignerCliArgs::parse();
