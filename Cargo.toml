@@ -13,6 +13,7 @@ ic-stable-structures = "0.6.5"
 ic-metrics-encoder = "1.1.1"
 ic-canister-sig-creation = "1.1.0"
 candid = "0.10.10"
+clap = { version = "4.5.7", features = ["derive"] }
 ethers-core = "= 2.0.11"
 futures = "0.3"
 serde = "1"
@@ -29,6 +30,7 @@ strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
 ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
+tokio = { version = "1.33.0" }
 
 # START papi dependencies
 ic-ledger-types = "0.13.0"
