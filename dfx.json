@@ -15,6 +15,7 @@
 					"path": "target/commit"
 				}
 			],
+			"specified_id": "grghe-syaaa-aaaar-qabyq-cai",
 			"init_arg_file": "out/signer.args.did"
 		},
 		"bitcoin": {
