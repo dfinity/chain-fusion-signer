@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 clap = { workspace = true }
 tokio = { workspace = true, features = ['rt'] }
+dfx-core = {workspace = true}
