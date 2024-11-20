@@ -1,8 +1,15 @@
 use crate::guards::caller_is_not_anonymous;
 use candid::Principal;
-use ic_cdk::api::management_canister::{ecdsa::{
-    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
-}, schnorr::{SchnorrPublicKeyArgument, SchnorrPublicKeyResponse}};
+use ic_cdk::api::management_canister::{
+    ecdsa::{
+        EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument,
+        SignWithEcdsaResponse,
+    },
+    schnorr::{
+        SchnorrPublicKeyArgument, SchnorrPublicKeyResponse, SignWithSchnorrArgument,
+        SignWithSchnorrResponse,
+    },
+};
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
@@ -20,10 +27,10 @@ use ic_chain_fusion_signer_api::{
             EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
             EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
         },
+        generic::SignerSchnorrPublicKeyError,
         Arg, Config,
     },
 };
-use ic_chain_fusion_signer_api::types::generic::SignerSchnorrPublicKeyError;
 use ic_papi_api::PaymentType;
 use serde_bytes::ByteBuf;
 use sign::{
@@ -138,7 +145,6 @@ pub async fn generic_caller_ecdsa_public_key(
     generic::caller_ecdsa_public_key(arg).await
 }
 
-
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_caller_public_key(
     arg: SchnorrPublicKeyArgument,
@@ -174,6 +180,19 @@ pub async fn generic_sign_with_ecdsa(
     //        )
     //        .await?;
     generic::sign_with_ecdsa(arg).await
+}
+
+pub async fn schnorr_sign(
+    payment: Option<PaymentType>,
+    arg: SignWithSchnorrArgument,
+) -> Result<(SignWithSchnorrResponse,), ()> {
+    //    PAYMENT_GUARD
+    //        .deduct(
+    //            payment.unwrap_or(PaymentType::AttachedCycles),
+    //            SignerMethods::GenericSignWithEcdsa.fee(),
+    //        )
+    //        .await?;
+    generic::schnorr_sign(arg).await
 }
 
 // ////////////////////

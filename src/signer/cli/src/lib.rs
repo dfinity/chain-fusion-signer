@@ -11,7 +11,9 @@ use slog::Logger;
 pub mod args;
 pub mod logger;
 use anyhow::Context;
-use ic_cdk::api::management_canister::ecdsa::{EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse};
+use ic_cdk::api::management_canister::ecdsa::{
+    EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
+};
 use ic_chain_fusion_signer_api::types::generic::GenericCallerEcdsaPublicKeyError;
 
 pub struct SignerCli {
@@ -92,19 +94,28 @@ impl SignerCli {
             .dfx_interface
             .agent()
             .update(&signer_canister_id, "generic_caller_ecdsa_public_key")
-            .with_arg(candid::encode_one(EcdsaPublicKeyArgument {
-                canister_id: None,
-                derivation_path: vec![],
-                key_id: EcdsaKeyId {
-                    curve: EcdsaCurve::Secp256k1,
-                    name: key_name,
-                },
-            }).with_context(|| "Failed to encode argument")?).call_and_wait().await.with_context(|| "Failed to make canister call")?;
-        let response = candid::decode_one::<Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError>>(&response_bytes).with_context(|| "Failed to decode response")?;
-         let response = match response {
+            .with_arg(
+                candid::encode_one(EcdsaPublicKeyArgument {
+                    canister_id: None,
+                    derivation_path: vec![],
+                    key_id: EcdsaKeyId {
+                        curve: EcdsaCurve::Secp256k1,
+                        name: key_name,
+                    },
+                })
+                .with_context(|| "Failed to encode argument")?,
+            )
+            .call_and_wait()
+            .await
+            .with_context(|| "Failed to make canister call")?;
+        let response = candid::decode_one::<
+            Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError>,
+        >(&response_bytes)
+        .with_context(|| "Failed to decode response")?;
+        let response = match response {
             Ok((response,)) => response,
             Err(err) => panic!("Failed to get pubkey: {:?}", err),
-         };
+        };
 
         Ok(response)
     }
