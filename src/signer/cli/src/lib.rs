@@ -29,6 +29,7 @@ impl SignerCli {
             verbose,
             quiet,
         } = config;
+
         let dfx_interface = Self::dfx_interface(network, identity).await?;
         let logger = init_logger(verbose, quiet)?;
 
