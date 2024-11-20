@@ -1,9 +1,9 @@
 //! Off-chain client for the chain fusion signer.
 
-use slog::Logger;
-use args::SignerCliArgs;
 use anyhow::Context;
+use args::SignerCliArgs;
 use dfx_core::interface::{builder::IdentityPicker, dfx::DfxInterface};
+use slog::Logger;
 pub mod args;
 
 pub async fn execute(args: &SignerCliArgs) -> Result<String, String> {
@@ -13,8 +13,8 @@ pub async fn execute(args: &SignerCliArgs) -> Result<String, String> {
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
-        /// A logger; some public `sdk` repository methods require a specific type of logger so this is a compatible logger.
-        logger: Logger,
+    /// A logger; some public `sdk` repository methods require a specific type of logger so this is a compatible logger.
+    logger: Logger,
 }
 
 impl SignerCli {
