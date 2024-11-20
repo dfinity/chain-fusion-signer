@@ -1,8 +1,8 @@
 use crate::guards::caller_is_not_anonymous;
 use candid::Principal;
-use ic_cdk::api::management_canister::ecdsa::{
+use ic_cdk::api::management_canister::{ecdsa::{
     EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
-};
+}, schnorr::{SchnorrPublicKeyArgument, SchnorrPublicKeyResponse}};
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
@@ -23,6 +23,7 @@ use ic_chain_fusion_signer_api::{
         Arg, Config,
     },
 };
+use ic_chain_fusion_signer_api::types::generic::SignerSchnorrPublicKeyError;
 use ic_papi_api::PaymentType;
 use serde_bytes::ByteBuf;
 use sign::{
@@ -135,6 +136,21 @@ pub async fn generic_caller_ecdsa_public_key(
     //        )
     //        .await?;
     generic::caller_ecdsa_public_key(arg).await
+}
+
+
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn schnorr_caller_public_key(
+    arg: SchnorrPublicKeyArgument,
+    payment: Option<PaymentType>,
+) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
+    //    PAYMENT_GUARD
+    //        .deduct(
+    //            payment.unwrap_or(PaymentType::AttachedCycles),
+    //            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+    //        )
+    //        .await?;
+    generic::schnorr_caller_public_key(arg).await
 }
 
 /// Signs a message using the caller's ECDSA key.

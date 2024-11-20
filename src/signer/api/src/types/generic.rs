@@ -16,6 +16,14 @@ impl From<ic_papi_api::PaymentError> for GenericSigningError {
 }
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
+pub enum SignerSchnorrPublicKeyError {
+        /// Payment failed.
+        PaymentError(ic_papi_api::PaymentError),
+        // Signing Failed
+    SigningError
+}
+
+#[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum GenericCallerEcdsaPublicKeyError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),

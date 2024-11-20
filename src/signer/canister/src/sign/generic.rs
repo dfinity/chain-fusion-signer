@@ -1,15 +1,13 @@
 //! A generic signing API equivalent to that provided by the canister API.
 use crate::derivation_path::Schema;
 use ic_cdk::api::management_canister::{
-    ecdsa as canister_ecdsa,
-    ecdsa::{
-        EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument,
-        SignWithEcdsaResponse,
-    },
+    ecdsa::{self as canister_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse},
+    schnorr::{SchnorrPublicKeyArgument, SchnorrPublicKeyResponse},
 };
 pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,
 };
+use ic_chain_fusion_signer_api::types::generic::SignerSchnorrPublicKeyError;
 
 /// A generic ECDSA public key for the user.
 ///
@@ -31,4 +29,9 @@ pub async fn sign_with_ecdsa(
     arg.derivation_path =
         Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
     Ok(canister_ecdsa::sign_with_ecdsa(arg).await?)
+}
+
+pub async fn schnorr_caller_public_key(mut arg: SchnorrPublicKeyArgument) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
+   arg.derivation_path = Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
+   Ok(ic_cdk::api::management_canister::schnorr::schnorr_public_key(arg).await.unwrap()) // TODO: convert error
 }
