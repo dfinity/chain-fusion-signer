@@ -3,8 +3,10 @@
 use anyhow::Context;
 use args::SignerCliArgs;
 use dfx_core::interface::{builder::IdentityPicker, dfx::DfxInterface};
+use logger::init_logger;
 use slog::Logger;
 pub mod args;
+pub mod logger;
 
 pub async fn execute(args: &SignerCliArgs) -> Result<String, String> {
     println!("Hello, world!");
@@ -20,13 +22,15 @@ pub struct SignerCli {
 impl SignerCli {
     pub async fn new(
         config: SignerCliArgs,
-        logger: Logger,
     ) -> anyhow::Result<Self> {
         let SignerCliArgs {
             network,
             identity,
+            verbose,
+            quiet,
         } = config;
         let dfx_interface = Self::dfx_interface(network, identity).await?;
+        let logger = init_logger(verbose, quiet)?;
 
         Ok(Self {
             dfx_interface,
