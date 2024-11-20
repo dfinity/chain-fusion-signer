@@ -242,5 +242,5 @@ service : (Arg) -> {
   schnorr_caller_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
       Result_8,
     );
-  schnorr_sign : (opt PaymentType, SignWithSchnorrArgument) -> (Result_9);
+  schnorr_sign : (SignWithSchnorrArgument, opt PaymentType) -> (Result_9);
 }

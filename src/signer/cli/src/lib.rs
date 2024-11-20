@@ -26,8 +26,9 @@ pub struct SignerCli {
 impl SignerCli {
     pub async fn execute(args: SignerCliArgs) -> anyhow::Result<()> {
         let signer_cli = Self::new(args).await?;
-        let public_key = signer_cli.ecdsa_public_key().await?;
-        println!("{:?}", public_key);
+        println!("ecdsa pub key {:?}", signer_cli.ecdsa_public_key().await?);
+        println!("schnorr pub key {:?}", signer_cli.schnorr_public_key().await?);
+        println!("schnorr signature {:?}", signer_cli.schnorr_sign(&vec![1,2,3]).await?);
         Ok(())
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
@@ -125,7 +126,6 @@ impl SignerCli {
         let signer_canister_id = self
             .canister_id("signer")
             .expect("Signer canister ID is not known");
-        let key_name = "dfx_test_key".to_string(); // TODO: "key_1" on mainnet
         let response_bytes = self
             .dfx_interface
             .agent()
@@ -136,7 +136,7 @@ impl SignerCli {
                     derivation_path: vec![],
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
-                        name: "test_key_1".to_string(),
+                        name:Self::schnorr_key_name(),
                     },
                 })
                 .with_context(|| "Failed to encode argument")?,
@@ -156,11 +156,14 @@ impl SignerCli {
         Ok(response)
     }
 
+    fn schnorr_key_name() -> String {
+        "dfx_test_key".to_string() // TODO: "key_1" on mainnet
+    }
+
     pub async fn schnorr_sign(&self, message: &[u8]) -> anyhow::Result<Vec<u8>> {
         let signer_canister_id = self
             .canister_id("signer")
             .expect("Signer canister ID is not known");
-        let key_name = "dfx_test_key".to_string(); // TODO: "key_1" on mainnet
         let response_bytes = self
             .dfx_interface
             .agent()
@@ -171,7 +174,7 @@ impl SignerCli {
                     derivation_path: vec![],
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
-                        name: "test_key_1".to_string(),
+                        name: Self::schnorr_key_name(),
                     },
                 })
                 .with_context(|| "Failed to encode argument")?,
