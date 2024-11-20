@@ -7,6 +7,7 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
+anyhow = "1.0.75"
 ic-cdk = "0.17.0"
 ic-cdk-macros = "0.17.0"
 ic-stable-structures = "0.6.5"
@@ -32,6 +33,9 @@ ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23
 ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 tokio = { version = "1.33.0" }
 dfx-core = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
+slog = "2.5.2"
+slog-async = "2.4.0"
+slog-term = "2.9.0"
 
 # START papi dependencies
 ic-ledger-types = "0.13.0"
