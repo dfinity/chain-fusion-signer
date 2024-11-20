@@ -11,10 +11,11 @@ use slog::Logger;
 pub mod args;
 pub mod logger;
 use anyhow::Context;
-use ic_cdk::api::management_canister::ecdsa::{
+use ic_cdk::api::management_canister::{ecdsa::{
     EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
-};
+}, schnorr::{SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyResponse}};
 use ic_chain_fusion_signer_api::types::generic::GenericCallerEcdsaPublicKeyError;
+use ic_cdk::api::management_canister::schnorr::SchnorrPublicKeyArgument;
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
@@ -119,4 +120,42 @@ impl SignerCli {
 
         Ok(response)
     }
+
+
+    pub async fn schnorr_public_key(&self) -> anyhow::Result<SchnorrPublicKeyResponse> {
+        let signer_canister_id = self
+            .canister_id("signer")
+            .expect("Signer canister ID is not known");
+        let key_name = "dfx_test_key".to_string(); // TODO: "key_1" on mainnet
+        let response_bytes = self
+            .dfx_interface
+            .agent()
+            .update(&signer_canister_id, "schnorr_caller_public_key")
+            .with_arg(
+                candid::encode_one(SchnorrPublicKeyArgument {
+                    canister_id: None,
+                    derivation_path: vec![],
+                    key_id: SchnorrKeyId {
+                        algorithm: SchnorrAlgorithm::Ed25519,
+                        name: "test_key_1".to_string(),
+                    },
+                })
+                .with_context(|| "Failed to encode argument")?,
+            )
+            .call_and_wait()
+            .await
+            .with_context(|| "Failed to make canister call")?;
+        let response = candid::decode_one::<
+            Result<(SchnorrPublicKeyResponse,), GenericCallerEcdsaPublicKeyError>,
+        >(&response_bytes)
+        .with_context(|| "Failed to decode response")?;
+        let response = match response {
+            Ok((response,)) => response,
+            Err(err) => panic!("Failed to get pubkey: {:?}", err),
+        };
+
+        Ok(response)
+    }
+
+
 }
