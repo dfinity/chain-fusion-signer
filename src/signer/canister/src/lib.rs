@@ -182,6 +182,7 @@ pub async fn generic_sign_with_ecdsa(
     generic::sign_with_ecdsa(arg).await
 }
 
+#[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_sign(
     payment: Option<PaymentType>,
     arg: SignWithSchnorrArgument,

@@ -153,6 +153,7 @@ type Result_8 = variant {
   Ok : record { EcdsaPublicKeyResponse };
   Err : SignerSchnorrPublicKeyError;
 };
+type Result_9 = variant { Ok : record { SignWithEcdsaResponse }; Err };
 type SchnorrAlgorithm = variant { ed25519; bip340secp256k1 };
 type SchnorrKeyId = record { algorithm : SchnorrAlgorithm; name : text };
 type SchnorrPublicKeyArgument = record {
@@ -179,6 +180,11 @@ type SignWithEcdsaArgument = record {
   message_hash : blob;
 };
 type SignWithEcdsaResponse = record { signature : blob };
+type SignWithSchnorrArgument = record {
+  key_id : SchnorrKeyId;
+  derivation_path : vec blob;
+  message : blob;
+};
 type SignerSchnorrPublicKeyError = variant {
   SigningError;
   PaymentError : PaymentError;
@@ -236,4 +242,5 @@ service : (Arg) -> {
   schnorr_caller_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
       Result_8,
     );
+  schnorr_sign : (opt PaymentType, SignWithSchnorrArgument) -> (Result_9);
 }
