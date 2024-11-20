@@ -21,11 +21,11 @@ pub struct SignerCli {
 }
 
 impl SignerCli {
-    pub async fn execute(args: SignerCliArgs) -> anyhow::Result<String> {
+    pub async fn execute(args: SignerCliArgs) -> anyhow::Result<()> {
         let signer_cli = Self::new(args).await?;
-        let public_key = signer_cli.public_key().await?;
+        let public_key = signer_cli.ecdsa_public_key().await?;
         println!("{:?}", public_key);
-        Ok(public_key)
+        Ok(())
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
         let SignerCliArgs {
@@ -83,7 +83,7 @@ impl SignerCli {
         Ok(canister_id)
     }
 
-    pub async fn public_key(&self) -> anyhow::Result<String> {
+    pub async fn ecdsa_public_key(&self) -> anyhow::Result<EcdsaPublicKeyResponse> {
         let signer_canister_id = self
             .canister_id("signer")
             .expect("Signer canister ID is not known");
@@ -101,6 +101,11 @@ impl SignerCli {
                 },
             }).with_context(|| "Failed to encode argument")?).call_and_wait().await.with_context(|| "Failed to make canister call")?;
         let response = candid::decode_one::<Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError>>(&response_bytes).with_context(|| "Failed to decode response")?;
-        Ok(format!("{:?}", response))
+         let response = match response {
+            Ok((response,)) => response,
+            Err(err) => panic!("Failed to get pubkey: {:?}", err),
+         };
+
+        Ok(response)
     }
 }
