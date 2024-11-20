@@ -27,8 +27,10 @@ impl SignerCli {
     pub async fn execute(args: SignerCliArgs) -> anyhow::Result<()> {
         let signer_cli = Self::new(args).await?;
         println!("ecdsa pub key {:?}", signer_cli.ecdsa_public_key().await?);
-        println!("schnorr pub key {:?}", signer_cli.schnorr_public_key().await?);
-        println!("schnorr signature {:?}", signer_cli.schnorr_sign(&vec![1,2,3]).await?);
+        let schnorr_pub_key = signer_cli.schnorr_public_key().await?;
+        println!("schnorr pub key ([u8;{}]): {:?}", schnorr_pub_key.public_key.len(), schnorr_pub_key.public_key);
+        let schnorr_sig = signer_cli.schnorr_sign(&vec![1,2,3]).await?;
+        println!("schnorr signature ([u8;{}]): {:?}", schnorr_sig.len(), schnorr_sig);
         Ok(())
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
