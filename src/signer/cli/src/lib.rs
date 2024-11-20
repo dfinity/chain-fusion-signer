@@ -5,6 +5,7 @@ use args::SignerCliArgs;
 use dfx_core::interface::{builder::IdentityPicker, dfx::DfxInterface};
 use logger::init_logger;
 use slog::Logger;
+use candid::Principal;
 pub mod args;
 pub mod logger;
 
@@ -55,4 +56,16 @@ impl SignerCli {
         }
         Ok(interface)
     }
+
+    pub async fn signer_canister_id(&self) -> Principal {
+        unimplemented!()
+    }
+
+    pub async fn public_key(&self) -> anyhow::Result<String> {
+        let signer_canister_id = self.signer_canister_id().await;
+        let x = self.dfx_interface.agent().update(&signer_canister_id, "public_key");
+
+        Ok("FIN".to_owned())
+    }
+
 }
