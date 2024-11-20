@@ -11,7 +11,8 @@ use slog::Logger;
 pub mod args;
 pub mod logger;
 use anyhow::Context;
-use ic_cdk::api::management_canister::ecdsa::{EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument};
+use ic_cdk::api::management_canister::ecdsa::{EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse};
+use ic_chain_fusion_signer_api::types::generic::GenericCallerEcdsaPublicKeyError;
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
@@ -23,6 +24,7 @@ impl SignerCli {
     pub async fn execute(args: SignerCliArgs) -> anyhow::Result<String> {
         let signer_cli = Self::new(args).await?;
         let public_key = signer_cli.public_key().await?;
+        println!("{:?}", public_key);
         Ok(public_key)
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
@@ -85,7 +87,8 @@ impl SignerCli {
         let signer_canister_id = self
             .canister_id("signer")
             .expect("Signer canister ID is not known");
-        let x = self
+        let key_name = "dfx_test_key".to_string(); // TODO: "key_1" on mainnet
+        let response_bytes = self
             .dfx_interface
             .agent()
             .update(&signer_canister_id, "generic_caller_ecdsa_public_key")
@@ -94,10 +97,10 @@ impl SignerCli {
                 derivation_path: vec![],
                 key_id: EcdsaKeyId {
                     curve: EcdsaCurve::Secp256k1,
-                    name: "key_1".to_string(),
+                    name: key_name,
                 },
-            })?);
-
-        Ok("FIN".to_owned())
+            }).with_context(|| "Failed to encode argument")?).call_and_wait().await.with_context(|| "Failed to make canister call")?;
+        let response = candid::decode_one::<Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError>>(&response_bytes).with_context(|| "Failed to decode response")?;
+        Ok(format!("{:?}", response))
     }
 }

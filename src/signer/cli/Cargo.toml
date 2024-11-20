@@ -13,3 +13,4 @@ slog-async = {workspace = true}
 anyhow = {workspace = true}
 candid = {workspace = true}
 ic-cdk = {workspace = true}
+ic-chain-fusion-signer-api = {workspace = true}
