@@ -1,12 +1,16 @@
 //! Off-chain client for the chain fusion signer.
 
 use args::SignerCliArgs;
-use dfx_core::interface::{builder::IdentityPicker, dfx::DfxInterface};
+use candid::Principal;
+use dfx_core::{
+    config::model::canister_id_store::CanisterIdStore,
+    interface::{builder::IdentityPicker, dfx::DfxInterface},
+};
 use logger::init_logger;
 use slog::Logger;
-use candid::Principal;
 pub mod args;
 pub mod logger;
+use anyhow::Context;
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
@@ -56,15 +60,35 @@ impl SignerCli {
         Ok(interface)
     }
 
-    pub async fn signer_canister_id(&self) -> Principal {
-        unimplemented!()
+    /// Gets the ID of a given canister name.  If the name is already an ID, it is returned as is.
+    pub fn canister_id(&self, canister_name: &str) -> anyhow::Result<Principal> {
+        let canister_id_store = CanisterIdStore::new(
+            &self.logger,
+            self.dfx_interface.network_descriptor(),
+            self.dfx_interface.config(),
+        )?;
+
+        let canister_id = Principal::from_text(canister_name).or_else(|_| {
+            canister_id_store.get(canister_name).with_context(|| {
+                format!(
+                    "Failed to look up principal id for canister named \"{}\"",
+                    canister_name
+                )
+            })
+        })?;
+
+        Ok(canister_id)
     }
 
     pub async fn public_key(&self) -> anyhow::Result<String> {
-        let signer_canister_id = self.signer_canister_id().await;
-        let x = self.dfx_interface.agent().update(&signer_canister_id, "public_key");
+        let signer_canister_id = self
+            .canister_id("signer")
+            .expect("Signer canister ID is not known");
+        let x = self
+            .dfx_interface
+            .agent()
+            .update(&signer_canister_id, "public_key");
 
         Ok("FIN".to_owned())
     }
-
 }
