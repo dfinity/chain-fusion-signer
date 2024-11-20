@@ -14,9 +14,9 @@ pub struct SignerCliArgs {
 
     /// Increase verbosity level
     #[clap(short, long, action = clap::ArgAction::Count, conflicts_with = "quiet")]
-    pub(crate) verbose: u8,
+    pub verbose: u8,
 
     /// Reduce verbosity level
     #[clap(short, long, action = clap::ArgAction::Count, conflicts_with = "verbose")]
-    pub(crate) quiet: u8,
+    pub quiet: u8,
 }
