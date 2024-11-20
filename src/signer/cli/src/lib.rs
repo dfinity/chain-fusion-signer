@@ -1,6 +1,5 @@
 //! Off-chain client for the chain fusion signer.
 
-use anyhow::Context;
 use args::SignerCliArgs;
 use dfx_core::interface::{builder::IdentityPicker, dfx::DfxInterface};
 use logger::init_logger;
@@ -9,11 +8,6 @@ use candid::Principal;
 pub mod args;
 pub mod logger;
 
-pub async fn execute(args: &SignerCliArgs) -> Result<String, String> {
-    println!("Hello, world!");
-    Ok("FIN".to_owned())
-}
-
 pub struct SignerCli {
     dfx_interface: DfxInterface,
     /// A logger; some public `sdk` repository methods require a specific type of logger so this is a compatible logger.
@@ -21,6 +15,11 @@ pub struct SignerCli {
 }
 
 impl SignerCli {
+    pub async fn execute(args: SignerCliArgs) -> anyhow::Result<String> {
+        let signer_cli = Self::new(args).await?;
+        let public_key = signer_cli.public_key().await?;
+        Ok(public_key)
+    }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
         let SignerCliArgs {
             network,

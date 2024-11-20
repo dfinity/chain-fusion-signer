@@ -1,5 +1,5 @@
 /// Manages Orbit on the Internet Computer.
-use clap::{Parser, Subcommand};
+use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[clap(version, about)]
