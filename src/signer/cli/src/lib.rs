@@ -20,9 +20,7 @@ pub struct SignerCli {
 }
 
 impl SignerCli {
-    pub async fn new(
-        config: SignerCliArgs,
-    ) -> anyhow::Result<Self> {
+    pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
         let SignerCliArgs {
             network,
             identity,
