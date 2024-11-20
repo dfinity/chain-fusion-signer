@@ -3886,6 +3886,7 @@ dependencies = [
  "candid",
  "clap",
  "dfx-core",
+ "ic-cdk 0.17.0",
  "slog",
  "slog-async",
  "slog-term",

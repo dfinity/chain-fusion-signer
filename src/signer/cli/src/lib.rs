@@ -11,6 +11,7 @@ use slog::Logger;
 pub mod args;
 pub mod logger;
 use anyhow::Context;
+use ic_cdk::api::management_canister::ecdsa::{EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument};
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
@@ -87,7 +88,15 @@ impl SignerCli {
         let x = self
             .dfx_interface
             .agent()
-            .update(&signer_canister_id, "public_key");
+            .update(&signer_canister_id, "generic_caller_ecdsa_public_key")
+            .with_arg(candid::encode_one(EcdsaPublicKeyArgument {
+                canister_id: None,
+                derivation_path: vec![],
+                key_id: EcdsaKeyId {
+                    curve: EcdsaCurve::Secp256k1,
+                    name: "key_1".to_string(),
+                },
+            })?);
 
         Ok("FIN".to_owned())
     }

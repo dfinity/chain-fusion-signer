@@ -12,3 +12,4 @@ slog-term = {workspace = true}
 slog-async = {workspace = true}
 anyhow = {workspace = true}
 candid = {workspace = true}
+ic-cdk = {workspace = true}
