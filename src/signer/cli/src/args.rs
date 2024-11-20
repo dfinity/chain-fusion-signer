@@ -4,7 +4,10 @@ use clap::{Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[clap(version, about)]
 pub struct SignerCliArgs {
-    /// Name of the station to execute the command on. (Uses default station if unspecified)
-    #[clap(short, long, conflicts_with = "station_file")]
+    /// Name of the dfx network
+    #[clap(short, long)]
     pub network: Option<String>,
+    /// Name of the identity to use
+    #[clap(short, long)]
+    pub identity: Option<String>,
 }

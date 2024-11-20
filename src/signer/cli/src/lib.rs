@@ -19,12 +19,14 @@ pub struct SignerCli {
 
 impl SignerCli {
     pub async fn new(
-        network: Option<String>,
-        identity: Option<String>,
+        config: SignerCliArgs,
         logger: Logger,
     ) -> anyhow::Result<Self> {
-        let network = network.unwrap_or_else(|| "local".to_string());
-        let dfx_interface = Self::dfx_interface(&network, identity).await?;
+        let SignerCliArgs {
+            network,
+            identity,
+        } = config;
+        let dfx_interface = Self::dfx_interface(network, identity).await?;
 
         Ok(Self {
             dfx_interface,
@@ -34,15 +36,16 @@ impl SignerCli {
 
     /// Gets the dfx_core interface
     pub(crate) async fn dfx_interface(
-        network_name: &str,
+        network_name: Option<String>,
         identity: Option<String>,
     ) -> anyhow::Result<DfxInterface> {
+        let network_name = network_name.unwrap_or_else(|| "local".to_string());
         let identity = identity
             .map(IdentityPicker::Named)
             .unwrap_or(IdentityPicker::Selected);
         let interface_builder = DfxInterface::builder()
             .with_identity(identity)
-            .with_network_named(network_name);
+            .with_network_named(&network_name);
         let interface = interface_builder.build().await?;
         if !interface.network_descriptor().is_ic {
             interface.agent().fetch_root_key().await?;
