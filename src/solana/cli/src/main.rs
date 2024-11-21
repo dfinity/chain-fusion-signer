@@ -29,8 +29,6 @@ use solana_sdk::{
 use solana_sdk::{signer::SignerError, signers::Signers};
 use tokio::runtime::Builder;
 
-//mod ic;
-
 fn main() {
     println!("Hello, world!");
     // The IC client

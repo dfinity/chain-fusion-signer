@@ -13,4 +13,4 @@ solana-client = "2.0.16"
 solana-program = "2.0.16"
 solana-sdk = "2.0.16"
 tokio = "1.41.1"
-signer-cli = { path = "/home/max/dfn/chain-fusion-signer/branches/cli/src/signer/cli" }
+signer-cli = { workspace = true }
