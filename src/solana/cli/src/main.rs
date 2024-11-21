@@ -7,7 +7,7 @@
 //! - <https://dev.to/swaroopmaddu/calling-anchor-program-from-rust-1ee2>
 //! - [Off chain message signing](https://github.com/solana-labs/solana/blob/master/docs/src/proposals/off-chain-message-signing.md)
 
-use std::{fs::File, io::BufReader, thread::sleep, time::Duration};
+use std::{thread::sleep, time::Duration};
 
 use solana_client::{
     client_error::ClientError,
@@ -22,7 +22,6 @@ use solana_sdk::{
     pubkey::Pubkey,
     signature::{Keypair, Signature},
     signer::{Signer, SignerError},
-    signers::Signers,
     system_instruction,
     transaction::Transaction,
 };
