@@ -30,14 +30,7 @@ use solana_sdk::{signer::SignerError, signers::Signers};
 fn main() {
     println!("Hello, world!");
     let rpc_client = RpcClient::new("http://localhost:8899");
-    let keypair = {
-        let keypair_file_path = concat![env!("HOME"), "/.config/solana/id.json"];
-        let file = File::open(keypair_file_path).unwrap();
-        let reader = BufReader::new(file);
-        let keypair_bytes: Vec<u8> = serde_json::from_reader(reader).unwrap();
-        Keypair::from_bytes(&keypair_bytes).unwrap()
-    };
-    let pubkey = keypair.pubkey();
+    let pubkey = Pubkey::from(signer_cli::sync::pub_key());
 
     // Get an airdrop
     let lamports = 123456789101112;
@@ -63,7 +56,6 @@ fn main() {
     send_and_confirm_transaction(
         &rpc_client,
         &transfer(
-            &keypair,
             &recipient.pubkey(),
             123456789,
             rpc_client
@@ -81,21 +73,21 @@ fn main() {
 }
 
 pub fn transfer(
-    from_keypair: &Keypair,
     to: &Pubkey,
     lamports: u64,
     recent_blockhash: Hash,
 ) -> Transaction {
-    let from_pubkey = from_keypair.pubkey();
+    let from_pubkey = Pubkey::from(signer_cli::sync::pub_key());
     let instruction = system_instruction::transfer(&from_pubkey, to, lamports);
     let message = Message::new(&[instruction], Some(&from_pubkey));
     {
         let mut tx = Transaction::new_unsigned(message);
-        let keypairs = &[from_keypair];
+        let keypairs = &[()]; // Previously: keypairs
+        let pubkeys = [from_pubkey.clone()];
         {
             // try_partial_sign
             let positions = tx
-                .get_signing_keypair_positions(&keypairs.pubkeys())
+                .get_signing_keypair_positions(&pubkeys)
                 .unwrap();
             if positions.iter().any(|pos| pos.is_none()) {
                 panic!("Keypair pubkey mismatch");
@@ -120,9 +112,10 @@ pub fn transfer(
                     keypairs
                         .into_iter()
                         .map(|keypair| {
-                            keypair.try_sign_message(&message)
+                            //keypair.try_sign_message(&message)
                             // Try a bad signature:
                             // Ok(Signature::from([6u8; 64]))
+                            Ok(Signature::from(signer_cli::sync::sign(&message)))
                         })
                         .collect()
                 };
