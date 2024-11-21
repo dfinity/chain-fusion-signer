@@ -58,18 +58,17 @@ fn ic_cli() -> SignerCli {
 fn doitall() {
     // IC client
     let ic_cli_instance = ic_cli();
-    let pubkey: [u8;32] = runtime().block_on(async {
-         ic_cli_instance
-        .schnorr_public_key()
-        .await
-        .expect("failed to get schnorr public key")
-        .public_key
-    }).try_into().expect("Public key has wrong length");
-    println!(
-        "IC public key: {:?}  ({} bytes)",
-        &pubkey,
-        pubkey.len()
-    );
+    let pubkey: [u8; 32] = runtime()
+        .block_on(async {
+            ic_cli_instance
+                .schnorr_public_key()
+                .await
+                .expect("failed to get schnorr public key")
+                .public_key
+        })
+        .try_into()
+        .expect("Public key has wrong length");
+    println!("IC public key: {:?}  ({} bytes)", &pubkey, pubkey.len());
     let pubkey = Pubkey::from(pubkey);
     //
     let rpc_client = RpcClient::new("localhost:8899");
@@ -124,12 +123,12 @@ pub fn transfer(
     let from_pubkey = {
         let pub_key = runtime().block_on(async {
             signer_cli
-            .schnorr_public_key()
-            .await
-            .expect("Failed to get schnorr public key")
-            .public_key
+                .schnorr_public_key()
+                .await
+                .expect("Failed to get schnorr public key")
+                .public_key
         });
-        let pub_key: [u8;32] = pub_key.try_into().expect("Public key has wrong length");
+        let pub_key: [u8; 32] = pub_key.try_into().expect("Public key has wrong length");
         Pubkey::from(pub_key)
     };
     let instruction = system_instruction::transfer(&from_pubkey, to, lamports);
@@ -138,7 +137,7 @@ pub fn transfer(
         let mut tx = Transaction::new_unsigned(message);
         {
             // try_partial_sign
-            let positions: Vec<Option<usize>> = vec![Some(0)]; 
+            let positions: Vec<Option<usize>> = vec![Some(0)];
             if positions.iter().any(|pos| pos.is_none()) {
                 panic!("Keypair pubkey mismatch");
             }
@@ -160,12 +159,16 @@ pub fn transfer(
                 let signatures: Result<Vec<Signature>, SignerError> = {
                     let message = tx.message_data();
                     let signature_bytes = runtime().block_on(async {
-                        SignerCli::new(SignerCliArgs::default()).await.unwrap()
-                        .schnorr_sign(&message)
-                        .await
-                        .expect("Failed to sign")
+                        SignerCli::new(SignerCliArgs::default())
+                            .await
+                            .unwrap()
+                            .schnorr_sign(&message)
+                            .await
+                            .expect("Failed to sign")
                     });
-                    let signature_bytes: [u8;64] = signature_bytes.try_into().expect("Signature has wrong length");
+                    let signature_bytes: [u8; 64] = signature_bytes
+                        .try_into()
+                        .expect("Signature has wrong length");
                     Ok(vec![Signature::from(signature_bytes)])
                     /*
                                         keypairs

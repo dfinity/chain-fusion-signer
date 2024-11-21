@@ -206,3 +206,57 @@ impl SignerCli {
         Ok(response.signature)
     }
 }
+
+pub mod sync {
+    use tokio::runtime::{Builder, Runtime};
+    use super::*;
+
+    fn runtime() -> Runtime {
+        // The IC client
+        Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Unable to create a runtime")
+    }
+
+    fn ic_cli() -> SignerCli {
+        runtime().block_on(async {
+            SignerCli::new(SignerCliArgs {
+                network: None,
+                identity: None,
+                verbose: 0,
+                quiet: 0,
+            })
+            .await
+            .expect("failed to create signer cli")
+        })
+    }
+
+    pub fn pub_key() -> [u8; 32] {
+        // IC client
+        let ic_cli_instance = ic_cli();
+        runtime()
+            .block_on(async {
+                ic_cli_instance
+                    .schnorr_public_key()
+                    .await
+                    .expect("failed to get schnorr public key")
+                    .public_key
+            })
+            .try_into()
+            .expect("Public key has wrong length")
+    }
+    pub fn sign(message: &[u8]) -> [u8; 64] {
+        // IC client
+        let ic_cli_instance = ic_cli();
+        runtime()
+            .block_on(async {
+                ic_cli_instance
+                    .schnorr_sign(message)
+                    .await
+                    .expect("failed to sign")
+            })
+            .try_into()
+            .expect("Signature has wrong length")
+    }
+}
