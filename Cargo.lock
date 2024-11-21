@@ -5580,6 +5580,7 @@ dependencies = [
  "candid",
  "clap",
  "dfx-core",
+ "hex",
  "ic-cdk 0.17.0",
  "ic-chain-fusion-signer-api",
  "slog",

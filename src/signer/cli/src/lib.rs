@@ -27,21 +27,35 @@ pub struct SignerCli {
 }
 
 impl SignerCli {
-    pub async fn execute(args: SignerCliArgs) -> anyhow::Result<()> {
+    pub async fn demo(args: SignerCliArgs) -> anyhow::Result<()> {
+        println!("=== DEMO ===");
         let signer_cli = Self::new(args).await?;
-        println!("ecdsa pub key {:?}", signer_cli.ecdsa_public_key().await?);
-        let schnorr_pub_key = signer_cli.schnorr_public_key().await?;
-        println!(
-            "schnorr pub key ([u8;{}]): {:?}",
-            schnorr_pub_key.public_key.len(),
-            schnorr_pub_key.public_key
-        );
-        let schnorr_sig = signer_cli.schnorr_sign(&vec![1, 2, 3]).await?;
-        println!(
-            "schnorr signature ([u8;{}]): {:?}",
-            schnorr_sig.len(),
-            schnorr_sig
-        );
+        {
+            let ecdsa_pub_key = signer_cli.ecdsa_public_key().await?;
+            println!(
+                "ecdsa pub key ([u8;{}]): 0x {}",
+                ecdsa_pub_key.public_key.len(),
+                hex::encode(&ecdsa_pub_key.public_key)
+            );
+        }
+        {
+            let schnorr_pub_key = signer_cli.schnorr_public_key().await?;
+            println!(
+                "schnorr pub key ([u8;{}]): 0x {:?}",
+                schnorr_pub_key.public_key.len(),
+                hex::encode(schnorr_pub_key.public_key)
+            );
+        }
+        {
+            let message = "boingboing";
+            println!("Message: {:?}", message);
+            let schnorr_sig = signer_cli.schnorr_sign(message.as_bytes()).await?;
+            println!(
+                "schnorr signature ([u8;{}]): {:?}",
+                schnorr_sig.len(),
+                hex::encode(schnorr_sig)
+            );
+        }
         Ok(())
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
@@ -208,8 +222,8 @@ impl SignerCli {
 }
 
 pub mod sync {
-    use tokio::runtime::{Builder, Runtime};
     use super::*;
+    use tokio::runtime::{Builder, Runtime};
 
     fn runtime() -> Runtime {
         // The IC client

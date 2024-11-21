@@ -21,11 +21,11 @@ use solana_sdk::{
     message::Message,
     pubkey::Pubkey,
     signature::{Keypair, Signature},
-    signer::Signer,
+    signer::{Signer, SignerError},
+    signers::Signers,
     system_instruction,
     transaction::Transaction,
 };
-use solana_sdk::{signer::SignerError, signers::Signers};
 
 fn main() {
     println!("Hello, world!");
@@ -72,11 +72,7 @@ fn main() {
     // Call canister
 }
 
-pub fn transfer(
-    to: &Pubkey,
-    lamports: u64,
-    recent_blockhash: Hash,
-) -> Transaction {
+pub fn transfer(to: &Pubkey, lamports: u64, recent_blockhash: Hash) -> Transaction {
     let from_pubkey = Pubkey::from(signer_cli::sync::pub_key());
     let instruction = system_instruction::transfer(&from_pubkey, to, lamports);
     let message = Message::new(&[instruction], Some(&from_pubkey));
@@ -86,9 +82,7 @@ pub fn transfer(
         let pubkeys = [from_pubkey.clone()];
         {
             // try_partial_sign
-            let positions = tx
-                .get_signing_keypair_positions(&pubkeys)
-                .unwrap();
+            let positions = tx.get_signing_keypair_positions(&pubkeys).unwrap();
             if positions.iter().any(|pos| pos.is_none()) {
                 panic!("Keypair pubkey mismatch");
             }

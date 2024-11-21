@@ -9,7 +9,7 @@ fn main() {
         .build()
         .expect("Unable to create a runtime");
     runtime.block_on(async {
-        if let Err(err) = SignerCli::execute(args).await {
+        if let Err(err) = SignerCli::demo(args).await {
             println!("Failed to execute command: {}", err);
             std::process::exit(1);
         }
