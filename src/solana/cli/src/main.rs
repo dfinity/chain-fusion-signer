@@ -9,7 +9,7 @@
 
 use std::{fs::File, io::BufReader, thread::sleep, time::Duration};
 
-use signer_cli::args::SignerCliArgs;
+use signer_cli::{args::SignerCliArgs, SignerCli};
 use solana_client::{
     client_error::ClientError,
     rpc_client::{RpcClient, SerializableTransaction},
@@ -22,39 +22,57 @@ use solana_sdk::{
     message::Message,
     pubkey::Pubkey,
     signature::{Keypair, Signature},
-    signer::Signer,
+    signer::{Signer, SignerError},
+    signers::Signers,
     system_instruction,
     transaction::Transaction,
 };
-use solana_sdk::{signer::SignerError, signers::Signers};
-use tokio::runtime::Builder;
+use tokio::runtime::{Builder, Runtime};
 
 fn main() {
     println!("Hello, world!");
+    doitall();
+}
+
+fn runtime() -> Runtime {
     // The IC client
-    let runtime = Builder::new_current_thread()
+    Builder::new_current_thread()
         .enable_all()
         .build()
-        .expect("Unable to create a runtime");
-    runtime.block_on(async {
-        doitall().await;
-    });
+        .expect("Unable to create a runtime")
 }
-async fn doitall() {
+
+fn ic_cli() -> SignerCli {
+    runtime().block_on(async {
+        SignerCli::new(SignerCliArgs {
+            network: None,
+            identity: None,
+            verbose: 0,
+            quiet: 0,
+        })
+        .await
+        .expect("failed to create signer cli")
+    })
+}
+
+fn doitall() {
     // IC client
-    let ic_cli = signer_cli::SignerCli::new(SignerCliArgs{ network: None, identity: None, verbose: 0, quiet: 0 }).await.expect("failed to create signer cli");
-    let ic_public_key = ic_cli.schnorr_public_key().await.expect("failed to get schnorr public key").public_key;
-    println!("IC public key: {:?}  ({} bytes)", &ic_public_key, ic_public_key.len());
+    let ic_cli_instance = ic_cli();
+    let pubkey: [u8;32] = runtime().block_on(async {
+         ic_cli_instance
+        .schnorr_public_key()
+        .await
+        .expect("failed to get schnorr public key")
+        .public_key
+    }).try_into().expect("Public key has wrong length");
+    println!(
+        "IC public key: {:?}  ({} bytes)",
+        &pubkey,
+        pubkey.len()
+    );
+    let pubkey = Pubkey::from(pubkey);
     //
     let rpc_client = RpcClient::new("localhost:8899");
-    let keypair = {
-        let keypair_file_path = concat![env!("HOME"), "/.config/solana/id.json"];
-        let file = File::open(keypair_file_path).unwrap();
-        let reader = BufReader::new(file);
-        let keypair_bytes: Vec<u8> = serde_json::from_reader(reader).unwrap();
-        Keypair::from_bytes(&keypair_bytes).unwrap()
-    };
-    let pubkey = keypair.pubkey();
 
     // Get an airdrop
     let lamports = 123456789101112;
@@ -80,7 +98,7 @@ async fn doitall() {
     send_and_confirm_transaction(
         &rpc_client,
         &transfer(
-            &keypair,
+            &ic_cli_instance,
             &recipient.pubkey(),
             123456789,
             rpc_client
@@ -98,22 +116,29 @@ async fn doitall() {
 }
 
 pub fn transfer(
-    from_keypair: &Keypair,
+    signer_cli: &SignerCli,
     to: &Pubkey,
     lamports: u64,
     recent_blockhash: Hash,
 ) -> Transaction {
-    let from_pubkey = from_keypair.pubkey();
+    let from_pubkey = {
+        let pub_key = runtime().block_on(async {
+            signer_cli
+            .schnorr_public_key()
+            .await
+            .expect("Failed to get schnorr public key")
+            .public_key
+        });
+        let pub_key: [u8;32] = pub_key.try_into().expect("Public key has wrong length");
+        Pubkey::from(pub_key)
+    };
     let instruction = system_instruction::transfer(&from_pubkey, to, lamports);
     let message = Message::new(&[instruction], Some(&from_pubkey));
     {
         let mut tx = Transaction::new_unsigned(message);
-        let keypairs = &[from_keypair];
         {
             // try_partial_sign
-            let positions = tx
-                .get_signing_keypair_positions(&keypairs.pubkeys())
-                .unwrap();
+            let positions: Vec<Option<usize>> = vec![Some(0)]; 
             if positions.iter().any(|pos| pos.is_none()) {
                 panic!("Keypair pubkey mismatch");
             }
@@ -134,17 +159,29 @@ pub fn transfer(
 
                 let signatures: Result<Vec<Signature>, SignerError> = {
                     let message = tx.message_data();
-                    keypairs
-                        .into_iter()
-                        .map(|keypair| {
-                            keypair.try_sign_message(&message)
-                            // Try a bad signature:
-                            // Ok(Signature::from([6u8; 64]))
-                        })
-                        .collect()
+                    let signature_bytes = runtime().block_on(async {
+                        SignerCli::new(SignerCliArgs::default()).await.unwrap()
+                        .schnorr_sign(&message)
+                        .await
+                        .expect("Failed to sign")
+                    });
+                    let signature_bytes: [u8;64] = signature_bytes.try_into().expect("Signature has wrong length");
+                    Ok(vec![Signature::from(signature_bytes)])
+                    /*
+                                        keypairs
+                                            .into_iter()
+                                            .map(async |keypair| {
+                                                //keypair.try_sign_message(&message)
+                                                // Try a bad signature:
+                                                // Ok(Signature::from([6u8; 64]))
+                                                let signature_bytes = SignerCli::new(SignerCliArgs::default())
+                                                    .schnorr_sign(&message).await.expect("Failed to sign");
+                                                Ok(Signature::new(&signature_bytes))
+                                            })
+                                            .collect()
+                    */
                 };
                 let signatures = signatures.unwrap();
-
                 for i in 0..positions.len() {
                     tx.signatures[positions[i]] = signatures[i];
                 }

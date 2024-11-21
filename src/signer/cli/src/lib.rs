@@ -13,7 +13,10 @@ pub mod logger;
 use anyhow::Context;
 use ic_cdk::api::management_canister::{
     ecdsa::{EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse},
-    schnorr::{SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgument, SchnorrPublicKeyResponse, SignWithSchnorrArgument, SignWithSchnorrResponse},
+    schnorr::{
+        SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgument, SchnorrPublicKeyResponse,
+        SignWithSchnorrArgument, SignWithSchnorrResponse,
+    },
 };
 use ic_chain_fusion_signer_api::types::generic::GenericCallerEcdsaPublicKeyError;
 
@@ -28,9 +31,17 @@ impl SignerCli {
         let signer_cli = Self::new(args).await?;
         println!("ecdsa pub key {:?}", signer_cli.ecdsa_public_key().await?);
         let schnorr_pub_key = signer_cli.schnorr_public_key().await?;
-        println!("schnorr pub key ([u8;{}]): {:?}", schnorr_pub_key.public_key.len(), schnorr_pub_key.public_key);
-        let schnorr_sig = signer_cli.schnorr_sign(&vec![1,2,3]).await?;
-        println!("schnorr signature ([u8;{}]): {:?}", schnorr_sig.len(), schnorr_sig);
+        println!(
+            "schnorr pub key ([u8;{}]): {:?}",
+            schnorr_pub_key.public_key.len(),
+            schnorr_pub_key.public_key
+        );
+        let schnorr_sig = signer_cli.schnorr_sign(&vec![1, 2, 3]).await?;
+        println!(
+            "schnorr signature ([u8;{}]): {:?}",
+            schnorr_sig.len(),
+            schnorr_sig
+        );
         Ok(())
     }
     pub async fn new(config: SignerCliArgs) -> anyhow::Result<Self> {
@@ -138,7 +149,7 @@ impl SignerCli {
                     derivation_path: vec![],
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
-                        name:Self::schnorr_key_name(),
+                        name: Self::schnorr_key_name(),
                     },
                 })
                 .with_context(|| "Failed to encode argument")?,

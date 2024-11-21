@@ -1,7 +1,7 @@
 /// Manages Orbit on the Internet Computer.
 use clap::Parser;
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Default)]
 #[clap(version, about)]
 pub struct SignerCliArgs {
     /// Name of the dfx network
