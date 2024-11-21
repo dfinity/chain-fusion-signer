@@ -3,7 +3,9 @@ members = [
     "src/example_backend",
     "src/signer/api",
     "src/signer/cli",
-    "src/signer/canister"]
+    "src/signer/canister",
+    "src/solana/cli"
+]
 resolver = "2"
 
 [workspace.dependencies]
