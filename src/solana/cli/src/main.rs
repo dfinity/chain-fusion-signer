@@ -77,7 +77,7 @@ pub fn transfer(to: &Pubkey, lamports: u64, recent_blockhash: Hash) -> Transacti
     let message = Message::new(&[instruction], Some(&from_pubkey));
     {
         let mut tx = Transaction::new_unsigned(message);
-        let keypairs = &[()]; // Previously: keypairs
+        let keypairs = &[()]; // Previously: keypairs.  Could specify the derivation path and other parameters for use with the chain fusion signer.
         let pubkeys = [from_pubkey.clone()];
         {
             // try_partial_sign
@@ -104,7 +104,7 @@ pub fn transfer(to: &Pubkey, lamports: u64, recent_blockhash: Hash) -> Transacti
                     let message = tx.message_data();
                     keypairs
                         .into_iter()
-                        .map(|keypair| {
+                        .map(|_keypair| {
                             //keypair.try_sign_message(&message)
                             // Try a bad signature:
                             // Ok(Signature::from([6u8; 64]))
