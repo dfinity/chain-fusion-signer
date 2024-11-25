@@ -134,7 +134,7 @@ jobs:
             .dfx
           key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
       - name: Start dfx
-        run: cargo run --background
+        run: dfx start --background
       - name: Check that the signer is installed
         run: dfx canister id signer
       - name: Stop dfx
