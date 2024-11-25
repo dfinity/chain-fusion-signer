@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            .cache/dfinity
+            ~/.cache/dfinity
             .dfx
           key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
   solana:
@@ -126,7 +126,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            .cache/dfinity
+            ~/.cache/dfinity
             .dfx
           key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
       - name: Show cached files
