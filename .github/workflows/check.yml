@@ -117,6 +117,7 @@ jobs:
           key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
   solana:
     name: "Integration Tests"
+    needs: ["installation"]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
