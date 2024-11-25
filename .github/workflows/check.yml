@@ -116,7 +116,7 @@ jobs:
             .dfx
           key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
   solana:
-    name: "Integration Tests"
+    name: "Solana integration test"
     needs: ["installation"]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -139,7 +139,6 @@ jobs:
         run: dfx canister id signer
       - name: Stop dfx
         run: dfx stop
-
   check-pass:
     name: "Checks pass"
     needs: ["format", "rust-tests", "sh-tests", "installation", "solana"]
