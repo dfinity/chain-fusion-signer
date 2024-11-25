@@ -108,9 +108,40 @@ jobs:
         run: ./scripts/test.signer.sh
       - name: Stop dfx
         run: dfx stop
+      - name: Cache dfx
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache/dfinity
+            .dfx
+          key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
+  solana:
+    name: "Integration Tests"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dfx
+        uses: dfinity/setup-dfx@main
+      - name: Restore cached dfx state
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .cache/dfinity
+            .dfx
+          key: dfx-installation-for-${{github.workflow_ref}}-${{github.run_id}}-${{github.run_attempt}}
+      - name: Start dfx
+        run: cargo run --background
+      - name: Check that the signer is installed
+        run: dfx canister id signer
+      - name: Stop dfx
+        run: dfx stop
+
   check-pass:
     name: "Checks pass"
-    needs: ["format", "rust-tests", "sh-tests", "installation"]
+    needs: ["format", "rust-tests", "sh-tests", "installation", "solana"]
     if: ${{ always() }}
     runs-on: ubuntu-22.04
     steps:
