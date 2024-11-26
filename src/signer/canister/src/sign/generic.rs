@@ -58,6 +58,6 @@ pub async fn schnorr_sign(
     Ok(
         ic_cdk::api::management_canister::schnorr::sign_with_schnorr(arg)
             .await
-            .unwrap(),
-    ) // TODO: convert error
+            ?,
+    )
 }
