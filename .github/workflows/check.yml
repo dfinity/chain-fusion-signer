@@ -103,7 +103,9 @@ jobs:
       - name: Deploy all canisters
         run: dfx deploy
       - name: Install solana cli
-        run: ./scripts/setup solana
+        run: |
+          ./scripts/setup solana
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
       - name: Verifies that Solana is installed
         run: solana --version
       - name: Start Solana
