@@ -27,7 +27,7 @@ use ic_chain_fusion_signer_api::{
             EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
             EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
         },
-        generic::SignerSchnorrPublicKeyError,
+        schnorr::{SchnorrPublicKeyError, SchnorrSigningError},
         Arg, Config,
     },
 };
@@ -186,21 +186,21 @@ pub async fn generic_sign_with_ecdsa(
 pub async fn schnorr_public_key(
     arg: SchnorrPublicKeyArgument,
     payment: Option<PaymentType>,
-) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
+) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
             SignerMethods::GenericCallerEcdsaPublicKey.fee(),
         )
         .await?;
-    schnorr::schnorr_public_key(arg).await
+    generic::schnorr_public_key(arg).await
 }
 
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_sign(
     arg: SignWithSchnorrArgument,
     payment: Option<PaymentType>,
-) -> Result<(SignWithSchnorrResponse,), ()> {
+) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
