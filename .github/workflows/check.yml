@@ -109,7 +109,7 @@ jobs:
       - name: Verifies that Solana is installed
         run: solana --version
       - name: Start Solana
-        run: solana-test-validator
+        run: solana-test-validator &
       - name: Verify that bindings are up to date
         uses: ./.github/actions/bindings
       - name: Run integration tests
