@@ -1,6 +1,7 @@
-use super::transaction;
 use candid::{CandidType, Deserialize, Nat, Principal};
 use ic_cdk::api::call::RejectionCode;
+
+use super::transaction;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressRequest {
@@ -16,7 +17,8 @@ pub struct EthAddressResponse {
 pub enum EthAddressError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// API call.
     SigningError(RejectionCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthAddressError {
@@ -65,7 +67,8 @@ pub struct EthSignTransactionResponse {
 pub enum EthSignTransactionError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// API call.
     SigningError(RejectionCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthSignTransactionError {
@@ -91,7 +94,8 @@ pub struct EthPersonalSignResponse {
 pub enum EthPersonalSignError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// API call.
     SigningError(RejectionCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthPersonalSignError {
@@ -117,7 +121,8 @@ pub struct EthSignPrehashResponse {
 pub enum EthSignPrehashError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature API call.
+    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// API call.
     SigningError(RejectionCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthSignPrehashError {

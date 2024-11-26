@@ -1,19 +1,21 @@
 //! Common methods for interacting with a canister using `PocketIc`.
-use candid::{
-    decode_one, encode_args, encode_one, utils::ArgumentEncoder, CandidType, Deserialize, Principal,
-};
-use pocket_ic::{PocketIc, WasmResult};
 use std::{
     fs,
     path::{Path, PathBuf},
     sync::Arc,
 };
 
+use candid::{
+    decode_one, encode_args, encode_one, utils::ArgumentEncoder, CandidType, Deserialize, Principal,
+};
+use pocket_ic::{PocketIc, WasmResult};
+
 /// Common methods for interacting with a canister using `PocketIc`.
 pub trait PicCanisterTrait {
     /// A shared PocketIc instance.
     ///
-    /// Note: `PocketIc` uses interior mutability for query and update calls.  No external mut annotation or locks appear to be necessary.
+    /// Note: `PocketIc` uses interior mutability for query and update calls.  No external mut
+    /// annotation or locks appear to be necessary.
     fn pic(&self) -> Arc<PocketIc>;
 
     /// The ID of this canister.
@@ -97,7 +99,8 @@ pub fn cargo_wasm_path(name: &str) -> String {
 }
 /// The path to the wasm after `dfx deploy`.  Expects the Wasm to be gzipped.
 ///
-/// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip": true`
+/// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip":
+/// true`
 #[allow(dead_code)]
 pub fn dfx_wasm_path(name: &str) -> String {
     workspace_dir()

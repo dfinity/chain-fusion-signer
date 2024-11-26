@@ -1,3 +1,6 @@
+use candid::Principal;
+use ic_chain_fusion_signer_api::methods::SignerMethods;
+
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
@@ -14,8 +17,6 @@ use crate::{
         test_environment::{TestSetup, LEDGER_FEE},
     },
 };
-use candid::Principal;
-use ic_chain_fusion_signer_api::methods::SignerMethods;
 
 mod caller_balance {
     use super::*;
