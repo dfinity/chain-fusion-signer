@@ -150,12 +150,12 @@ pub async fn schnorr_caller_public_key(
     arg: SchnorrPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
-        PAYMENT_GUARD
-            .deduct(
-                payment.unwrap_or(PaymentType::AttachedCycles),
-                SignerMethods::GenericCallerEcdsaPublicKey.fee(),
-            )
-            .await?;
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+        )
+        .await?;
     generic::schnorr_caller_public_key(arg).await
 }
 
