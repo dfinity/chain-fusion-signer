@@ -5674,6 +5674,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "ic-agent 0.39.1",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "signer-cli",
+ "solana-client",
+ "solana-program",
+ "solana-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "solana-account"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5785,22 +5801,6 @@ checksum = "6cfbaf3130c77c18399a51fa3c4e31db15d5c7a5fa2a0a024a378db21287e209"
 dependencies = [
  "borsh 0.10.4",
  "borsh 1.5.3",
-]
-
-[[package]]
-name = "solana-cli"
-version = "0.1.0"
-dependencies = [
- "candid",
- "ic-agent 0.39.1",
- "serde",
- "serde_bytes",
- "serde_json",
- "signer-cli",
- "solana-client",
- "solana-program",
- "solana-sdk",
- "tokio",
 ]
 
 [[package]]
