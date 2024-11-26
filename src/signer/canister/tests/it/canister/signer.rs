@@ -340,6 +340,38 @@ pub(crate) struct HttpResponse {
     pub(crate) headers: Vec<(String, String)>,
     pub(crate) status_code: u16,
 }
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum SchnorrAlgorithm {
+    #[serde(rename = "ed25519")]
+    Ed25519,
+    #[serde(rename = "bip340secp256k1")]
+    Bip340Secp256K1,
+}
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) struct SchnorrKeyId {
+    pub(crate) algorithm: SchnorrAlgorithm,
+    pub(crate) name: String,
+}
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) struct SchnorrPublicKeyArgument {
+    pub(crate) key_id: SchnorrKeyId,
+    pub(crate) canister_id: Option<Principal>,
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+}
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum SignerSchnorrPublicKeyError {
+    SigningError,
+    PaymentError(PaymentError),
+}
+pub(crate) type Result8 =
+    std::result::Result<(EcdsaPublicKeyResponse,), SignerSchnorrPublicKeyError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) struct SignWithSchnorrArgument {
+    pub(crate) key_id: SchnorrKeyId,
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    pub(crate) message: serde_bytes::ByteBuf,
+}
+pub(crate) type Result9 = std::result::Result<(SignWithEcdsaResponse,), ()>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,
@@ -458,5 +490,21 @@ impl SignerPic {
         arg0: &HttpRequest,
     ) -> Result<HttpResponse, String> {
         self.update(caller, "http_request", (arg0,))
+    }
+    pub fn schnorr_caller_public_key(
+        &self,
+        caller: Principal,
+        arg0: &SchnorrPublicKeyArgument,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result8, String> {
+        self.update(caller, "schnorr_caller_public_key", (arg0, arg1))
+    }
+    pub fn schnorr_sign(
+        &self,
+        caller: Principal,
+        arg0: &Option<PaymentType>,
+        arg1: &SignWithSchnorrArgument,
+    ) -> Result<Result9, String> {
+        self.update(caller, "schnorr_sign", (arg0, arg1))
     }
 }
