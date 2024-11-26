@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+: Installation guide: https://solana.com/docs/intro/installation
+
 : "Gets the Solana version from the environment variable '$version', defaulting to 'stable'."
 version="${version:-stable}"
 
