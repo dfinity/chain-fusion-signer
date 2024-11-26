@@ -113,7 +113,8 @@ jobs:
           solana-test-validator &
           RPC_PORT=8899
           while ! echo exit | nc localhost "$RPC_PORT"; do sleep 1; done
-          solana-keygen pubkey ~/.config/solana/id.json
+          solana-keygen pubkey --no-bip39-passphrase --silent ~/.config/solana/id.json
+          solana address
       - name: Verify that bindings are up to date
         uses: ./.github/actions/bindings
       - name: Run integration tests
