@@ -37,7 +37,10 @@ pub async fn sign_with_ecdsa(
     Ok(canister_ecdsa::sign_with_ecdsa(arg).await?)
 }
 
-/// The Schnorr public key issued by the chain fusion signer to the caller or a specified canister or principal.
+/// The Schnorr public key issued by the Chain Fusion Signer to a given canister or user.
+/// 
+/// - To get your own public key, set `arg.canister_id` to `None`.
+/// - To get the public key of another canister or user, set `arg.canister_id` to the principal of the canister or user.
 pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgument,
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
@@ -49,7 +52,7 @@ pub async fn schnorr_public_key(
     Ok(ic_cdk::api::management_canister::schnorr::schnorr_public_key(arg).await?)
 }
 
-/// Sign with Schnorr.
+/// Sign with the Schnorr key issued by the Chain Fusion Signer to the caller.
 pub async fn schnorr_sign(
     mut arg: SignWithSchnorrArgument,
 ) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
