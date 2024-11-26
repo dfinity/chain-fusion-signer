@@ -10,4 +10,4 @@ if [[ "$version" = [0-9]* ]]; then
 fi
 
 : "Installs the Solana command line tools."
-sh -c "$(curl -sSfL https://release.anza.xyz/${version}/install)"
+sh -c "$(curl -sSfL "https://release.anza.xyz/${version}/install")"
