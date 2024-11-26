@@ -102,6 +102,12 @@ jobs:
         run: dfx start --clean --background
       - name: Deploy all canisters
         run: dfx deploy
+      - name: Install solana cli
+        run: ./scripts/setup solana
+      - name: Verifies that Solana is installed
+        run: solana --version
+      - name: Start Solana
+        run: solana-test-validator
       - name: Stop dfx
         run: dfx stop
       - name: Cache dfx
