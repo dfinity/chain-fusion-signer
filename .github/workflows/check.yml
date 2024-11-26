@@ -110,7 +110,7 @@ jobs:
         run: solana --version
       - name: Start Solana
         run: |
-          solana-test-validator &
+          solana-test-validator >/dev/null 2>&1 &
           RPC_PORT=8899
           while ! echo exit | nc localhost "$RPC_PORT"; do sleep 1; done
           solana config get
