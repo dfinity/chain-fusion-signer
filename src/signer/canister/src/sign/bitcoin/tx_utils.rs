@@ -1,10 +1,5 @@
-use crate::{
-    derivation_path::Schema,
-    sign::{
-        bitcoin::bitcoin_utils::transform_network,
-        ecdsa_api::{ecdsa_pubkey_of, get_ecdsa_signature},
-    },
-};
+use std::str::FromStr;
+
 use bitcoin::{
     absolute::LockTime, consensus::serialize, hashes::Hash, script::PushBytesBuf,
     sighash::SighashCache, transaction::Version, Address, AddressType, Amount, EcdsaSighashType,
@@ -13,7 +8,14 @@ use bitcoin::{
 use candid::Principal;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
 use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
-use std::str::FromStr;
+
+use crate::{
+    derivation_path::Schema,
+    sign::{
+        bitcoin::bitcoin_utils::transform_network,
+        ecdsa_api::{ecdsa_pubkey_of, get_ecdsa_signature},
+    },
+};
 
 const ECDSA_SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
 // Assume that any amount below this threshold is dust.
@@ -456,7 +458,9 @@ mod tests {
             build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
 
         match result {
-            Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {} // Success if this error is returned
+            // Expect this error:
+            Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {}
+            // Anything else is wrong:
             _ => panic!("Expected NotP2WPKHSourceAddress error"),
         }
     }
