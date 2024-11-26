@@ -37,18 +37,19 @@ pub async fn sign_with_ecdsa(
     Ok(canister_ecdsa::sign_with_ecdsa(arg).await?)
 }
 
-pub async fn schnorr_caller_public_key(
+/// The Schnorr public key issued by the chain fusion signer to the caller or a specified canister or principal.
+pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgument,
 ) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
+    // Moves the canister_id from the argument to the derivation path.
+    let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::caller);
     arg.derivation_path =
-        Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
-    Ok(
-        ic_cdk::api::management_canister::schnorr::schnorr_public_key(arg)
-            .await
-            .unwrap(),
-    ) // TODO: convert error
+        Schema::Generic.derivation_path_ending_in(&key_owner, arg.derivation_path);
+    debug_assert!(arg.canister_id.is_none());
+    Ok(ic_cdk::api::management_canister::schnorr::schnorr_public_key(arg).await?)
 }
 
+/// Sign with Schnorr.
 pub async fn schnorr_sign(
     mut arg: SignWithSchnorrArgument,
 ) -> Result<(SignWithSchnorrResponse,), ()> {

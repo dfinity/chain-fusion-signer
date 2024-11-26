@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 pub mod eth;
 pub mod generic;
+pub mod schnorr;
 
 pub type Timestamp = u64;
 

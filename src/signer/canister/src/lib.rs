@@ -145,20 +145,6 @@ pub async fn generic_caller_ecdsa_public_key(
     generic::caller_ecdsa_public_key(arg).await
 }
 
-#[update(guard = "caller_is_not_anonymous")]
-pub async fn schnorr_caller_public_key(
-    arg: SchnorrPublicKeyArgument,
-    payment: Option<PaymentType>,
-) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
-    PAYMENT_GUARD
-        .deduct(
-            payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
-        )
-        .await?;
-    generic::schnorr_caller_public_key(arg).await
-}
-
 /// Signs a message using the caller's ECDSA key.
 ///
 /// Note: This is an exact dual of the canister [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa) method.  The argument and response types are also the same.
@@ -182,17 +168,45 @@ pub async fn generic_sign_with_ecdsa(
     generic::sign_with_ecdsa(arg).await
 }
 
+/// Returns the Schnorr public key of the caller or specified principal.
+///
+/// Note: This is an exact dual of the canister [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key) method.  The argument and response types are also the same.
+///
+/// # Arguments
+/// - `owner`: The principal owning the public key.  Only this principal can sign with the key.
+/// - `arg`: The derivation path for the public key.
+///
+/// # Warnings
+/// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that derivation paths are used to namespace appropriately and to ensure that unintended sub-keys are not requested.
+/// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR APP".into_bytes()]`
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn schnorr_public_key(
+    arg: SchnorrPublicKeyArgument,
+    payment: Option<PaymentType>,
+) -> Result<(SchnorrPublicKeyResponse,), SignerSchnorrPublicKeyError> {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+        )
+        .await?;
+    schnorr::schnorr_public_key(arg).await
+}
+
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_sign(
     arg: SignWithSchnorrArgument,
     payment: Option<PaymentType>,
 ) -> Result<(SignWithSchnorrResponse,), ()> {
-    //    PAYMENT_GUARD
-    //        .deduct(
-    //            payment.unwrap_or(PaymentType::AttachedCycles),
-    //            SignerMethods::GenericSignWithEcdsa.fee(),
-    //        )
-    //        .await?;
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericSignWithEcdsa.fee(),
+        )
+        .await?;
     generic::schnorr_sign(arg).await
 }
 
