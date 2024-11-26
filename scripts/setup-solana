@@ -5,8 +5,8 @@ set -euxo pipefail
 version="${version:-stable}"
 
 : "If the version starts with a numeral, e.g. '1.2.3', prefixes with 'v', e.g. 'v1.2.3'."
-if [[ "$version" = [0-9]* ]]
-then version="v$version"
+if [[ "$version" = [0-9]* ]]; then
+  version="v$version"
 fi
 
 : "Installs the Solana command line tools."
