@@ -173,8 +173,10 @@ pub async fn generic_sign_with_ecdsa(
 /// Note: This is an exact dual of the canister [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key) method.  The argument and response types are also the same.
 ///
 /// # Arguments
-/// - `owner`: The principal owning the public key.  Only this principal can sign with the key.
-/// - `arg`: The derivation path for the public key.
+/// - `arg.canister_id`: The principal of the canister or user for which the Chain Fusion Signer has issued the public key.  If `None`, the caller's public key is returned.
+/// - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for ensuring that the derivation path is used to namespace appropriately and to ensure that unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF YOUR APP".into_bytes()]`.
+/// - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation> for details.
+/// - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have been attached.
 ///
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that derivation paths are used to namespace appropriately and to ensure that unintended sub-keys are not requested.

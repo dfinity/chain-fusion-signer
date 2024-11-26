@@ -38,7 +38,7 @@ pub async fn sign_with_ecdsa(
 }
 
 /// The Schnorr public key issued by the Chain Fusion Signer to a given canister or user.
-/// 
+///
 /// - To get your own public key, set `arg.canister_id` to `None`.
 /// - To get the public key of another canister or user, set `arg.canister_id` to the principal of the canister or user.
 pub async fn schnorr_public_key(
