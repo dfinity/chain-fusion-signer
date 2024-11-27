@@ -126,8 +126,8 @@ fn signatures_can_be_verified() {
                         subaccount: Some(principal2account(&user)),
                     },
                     Nat::from(
-                        SignerMethods::SchnorrPublicKey.fee() * 2
-                            + SignerMethods::SchnorrSign.fee() * 100
+                        SignerMethods::SchnorrPublicKey.fee()
+                            + SignerMethods::SchnorrSign.fee()
                             + 2 * LEDGER_FEE as u64,
                     ) * derivation_paths.len() as u64,
                 ),
