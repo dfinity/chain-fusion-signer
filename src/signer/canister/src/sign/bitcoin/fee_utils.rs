@@ -1,9 +1,11 @@
-use super::bitcoin_api;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+
+use super::bitcoin_api;
 
 /// Functions stolen from [ckBTC Minter](https://github.com/dfinity/ic/blob/285a5db07da50a4e350ec43bf3b488cc6fe36102/rs/bitcoin/ckbtc/minter/src/lib.rs#L1258)
 
-/// Computes an estimate for the size of transaction (in vbytes) with the given number of inputs and outputs.
+/// Computes an estimate for the size of transaction (in vbytes) with the given number of inputs and
+/// outputs.
 fn tx_vsize_estimate(input_count: u64, output_count: u64) -> u64 {
     // See
     // [Bitcoin wiki](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki)
