@@ -95,6 +95,19 @@ fn signatures_can_be_verified() {
         .into_iter()
         .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
         .collect();
+    let key_types = [
+        SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "dfx_test_key".to_string(),
+        }
+    ];
+    let cost_per_user = Nat::from({
+       let num_tests = derivation_paths.len() * key_types.len();
+       let cost_per_test = SignerMethods::SchnorrPublicKey.fee()
+            + SignerMethods::SchnorrSign.fee()
+            + 2 * LEDGER_FEE as u64;
+         num_tests as u64 * cost_per_test
+    });
 
     let message = ByteBuf::from("pokemon");
     for user in users.iter() {
@@ -107,11 +120,7 @@ fn signatures_can_be_verified() {
                         owner: test_env.signer.canister_id,
                         subaccount: Some(principal2account(&user)),
                     },
-                    Nat::from(
-                        SignerMethods::SchnorrPublicKey.fee()
-                            + SignerMethods::SchnorrSign.fee()
-                            + 2 * LEDGER_FEE as u64,
-                    ) * derivation_paths.len() as u64,
+                    cost_per_user.clone(),
                 ),
             )
             .expect("Failed to call ledger canister")
