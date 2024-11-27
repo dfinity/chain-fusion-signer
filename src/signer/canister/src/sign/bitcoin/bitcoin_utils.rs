@@ -1,11 +1,12 @@
 //! Code for signing Bitcoin transactions.
-use crate::{derivation_path::Schema, state::read_config};
 use bitcoin::{Address, CompressedPublicKey, Network};
 use candid::Principal;
 use ic_cdk::api::management_canister::{
     bitcoin::BitcoinNetwork,
     ecdsa::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument},
 };
+
+use crate::{derivation_path::Schema, state::read_config};
 
 /// Computes the public key of the specified principal.
 async fn ecdsa_pubkey_of(principal: &Principal) -> Result<Vec<u8>, String> {

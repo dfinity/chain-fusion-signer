@@ -1,4 +1,5 @@
-use crate::types::{Candid, ConfigCell};
+use std::cell::RefCell;
+
 use candid::Principal;
 use ic_chain_fusion_signer_api::types::{Config, InitArg};
 use ic_papi_guard::guards::any::{PaymentGuard, VendorPaymentConfig};
@@ -7,7 +8,8 @@ use ic_stable_structures::{
     DefaultMemoryImpl,
 };
 use lazy_static::lazy_static;
-use std::cell::RefCell;
+
+use crate::types::{Candid, ConfigCell};
 
 const CONFIG_MEMORY_ID: MemoryId = MemoryId::new(0);
 
