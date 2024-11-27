@@ -84,3 +84,86 @@ fn public_keys_are_different() {
         }
     }
 }
+
+/// Signatures should be verifiable wit hthe corresponding public key.
+#[test]
+fn signatures_can_be_verified() {
+    let test_env = TestSetup::default();
+    let users = &test_env.users;
+    let derivation_paths: Vec<Vec<ByteBuf>> = [
+        vec![],
+        vec![""],
+        vec!["", ""],
+        vec!["", "", ""],
+        vec!["foo"],
+        vec!["foo", ""],
+        vec!["", "foo"],
+        vec!["", "foo", ""],
+        vec!["f", "oo"],
+    ]
+    .into_iter()
+    .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
+    .collect();
+    let message = ByteBuf::from("pokemon");
+    for user in users.iter() {
+        test_env
+            .ledger
+            .icrc_2_approve(
+                test_env.user,
+                &ApproveArgs::new(
+                    cycles_ledger::Account {
+                        owner: test_env.signer.canister_id,
+                        subaccount: Some(principal2account(&user)),
+                    },
+                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                        * derivation_paths.len() as u64,
+                ),
+            )
+            .expect("Failed to call ledger canister")
+            .expect("Failed to approve payment");
+        for derivation_path in derivation_paths.iter() {
+            let public_key = test_env
+                .signer
+                .schnorr_public_key(
+                    *user,
+                    &SchnorrPublicKeyArgument {
+                        key_id: SchnorrKeyId {
+                            algorithm: SchnorrAlgorithm::Ed25519,
+                            name: "dfx_test_key".to_string(),
+                        },
+                        canister_id: None,
+                        derivation_path: derivation_path.clone(),
+                    },
+                    &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                        owner: test_env.user,
+                        subaccount: None,
+                    })),
+                )
+                .unwrap()
+                .unwrap()
+                .0
+                .public_key;
+            let signature = test_env
+                .signer
+                .schnorr_sign(
+                    *user,
+                    &signer::SignWithSchnorrArgument {
+                        key_id: SchnorrKeyId {
+                            algorithm: SchnorrAlgorithm::Ed25519,
+                            name: "dfx_test_key".to_string(),
+                        },
+                        derivation_path: derivation_path.clone(),
+                        message: message.clone(),
+                    },
+                    &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                        owner: test_env.user,
+                        subaccount: None,
+                    })),
+                )
+                .unwrap()
+                .unwrap()
+                .0
+                .signature;
+            }
+        }
+    }
