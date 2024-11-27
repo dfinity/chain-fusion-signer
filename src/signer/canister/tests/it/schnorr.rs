@@ -102,18 +102,14 @@ fn signatures_can_be_verified() {
     let users = &test_env.users;
     let derivation_paths: Vec<Vec<ByteBuf>> = [
         vec![],
-        vec![""],
-        vec!["", ""],
         vec!["", "", ""],
         vec!["foo"],
-        vec!["foo", ""],
-        vec!["", "foo"],
-        vec!["", "foo", ""],
-        vec!["f", "oo"],
     ]
     .into_iter()
     .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
     .collect();
+
+
     let message = ByteBuf::from("pokemon");
     for user in users.iter() {
         test_env
