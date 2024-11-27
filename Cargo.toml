@@ -29,6 +29,7 @@ ic-chain-fusion-signer-api = { path = "src/signer/api" }
 ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 ed25519-dalek = "2.1.1"
+signature = "2.2"
 
 # START papi dependencies
 ic-ledger-types = "0.13.0"

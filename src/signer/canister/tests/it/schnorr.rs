@@ -175,28 +175,42 @@ fn signatures_can_be_verified() {
                     .into_vec();
 
                 // Verify the signature
-                match &key_type.algorithm {
-                    SchnorrAlgorithm::Bip340Secp256K1 => {
-                        verify_schnorr_bip340_secp256k1_signature(
+                let verification = 
+                        verify_schnorr_signature(
                             &signature,
                             &public_key,
                             &message,
+                            key_type.algorithm.clone(),
                         );
-                    }
-                    SchnorrAlgorithm::Ed25519 => {
-                        verify_schnorr_ed25519_signature(&signature, &public_key, &message);
-                    }
-                }
+                assert!(verification.is_ok(), "Failed to verify signature: {verification:?}\nalgorithm: {:?}", key_type.algorithm);
             }
         }
     }
+}
+
+fn verify_schnorr_signature(
+    signature_bytes: &[u8],
+    public_key_bytes: &[u8],
+    message_bytes: &[u8],
+    algorithm: SchnorrAlgorithm) -> signature::Result<()> {
+    let method = match algorithm {
+        SchnorrAlgorithm::Bip340Secp256K1 =>
+            verify_schnorr_bip340_secp256k1_signature,
+        SchnorrAlgorithm::Ed25519 =>
+            verify_schnorr_ed25519_signature,
+    };
+    method(
+        &signature_bytes,
+        &public_key_bytes,
+        &message_bytes,
+    )
 }
 
 fn verify_schnorr_ed25519_signature(
     signature_bytes: &[u8],
     public_key_bytes: &[u8],
     message_bytes: &[u8],
-) {
+) -> signature::Result<()> {
     let signature = ed25519_dalek::Signature::try_from(signature_bytes)
         .expect("failed to deserialize signature");
     let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
@@ -205,20 +219,18 @@ fn verify_schnorr_ed25519_signature(
     .expect("failed to sec1 deserialize public key");
 
     use ed25519_dalek::Verifier;
-    let verification = verifying_key.verify(message_bytes, &signature);
-    assert!(verification.is_ok(), "Ed25519 signature not verified: {:?}", verification);
+    verifying_key.verify(message_bytes, &signature)
 }
 
 fn verify_schnorr_bip340_secp256k1_signature(
     signature_bytes: &[u8],
     public_key_bytes: &[u8],
     message_bytes: &[u8],
-) {
+) -> signature::Result<()> {
     let signature = k256::schnorr::Signature::try_from(signature_bytes)
         .expect("failed to deserialize signature");
     let verifying_key = k256::schnorr::VerifyingKey::from_bytes(&public_key_bytes)
         .expect("failed to deserialize public key");
 
-    let verification = verifying_key.verify_raw(&message_bytes, &signature);
-    assert!(verification.is_ok(), "Schnorr bip340 secp256k1 signature not verified: {:?}", verification);
+    verifying_key.verify_raw(&message_bytes, &signature)
 }
