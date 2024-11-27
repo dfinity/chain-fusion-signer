@@ -5,10 +5,12 @@ use ic_chain_fusion_signer_api::methods::SignerMethods;
 use serde_bytes::ByteBuf;
 use candid::Nat;
 
-use crate::canister::signer::{SchnorrKeyId, SchnorrPublicKeyArgument, SchnorrAlgorithm, PaymentType};
+use crate::canister::signer::{self,SchnorrKeyId, SchnorrPublicKeyArgument, SchnorrAlgorithm, PaymentType};
 use crate::canister::cycles_ledger::{self, ApproveArgs};
 use crate::utils::test_environment::TestSetup;
 use crate::utils::test_environment::LEDGER_FEE;
+
+use ic_papi_api::principal2account;
 
 
 /// Users should have distinct public keys.  Similaryy, different derivation paths should have different public keys.
@@ -33,7 +35,7 @@ fn public_keys_are_different() {
         .ledger
         .icrc_2_approve(test_env.user, &ApproveArgs::new(cycles_ledger::Account {
             owner: test_env.signer.canister_id,
-            subaccount: None,
+            subaccount: Some(principal2account(&user)),
         }, Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)* derivation_paths.len() as u64))
         .expect("Failed to call ledger canister")
         .expect("Failed to approve payment");
@@ -43,11 +45,14 @@ fn public_keys_are_different() {
                 .schnorr_public_key(*user, &SchnorrPublicKeyArgument {
                     key_id: SchnorrKeyId{
                         algorithm: SchnorrAlgorithm::Ed25519,
-                        name: "test_key_1".to_string(),
+                        name: "dfx_test_key".to_string(),
                     },
                     canister_id: None,
                     derivation_path: derivation_path.clone(),
-                }, &Some(PaymentType::AttachedCycles))
+                }, &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                    owner: test_env.user,
+                    subaccount: None,
+                })))
                 .unwrap()
                 .unwrap()
                 .0
