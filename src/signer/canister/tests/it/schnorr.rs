@@ -100,10 +100,10 @@ fn signatures_can_be_verified() {
             algorithm: SchnorrAlgorithm::Ed25519,
             name: "dfx_test_key".to_string(),
         },
-        //SchnorrKeyId {
-        //    algorithm: SchnorrAlgorithm::Bip340Secp256K1,
-        //    name: "dfx_test_key".to_string(),
-        //},
+        SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            name: "dfx_test_key".to_string(),
+        },
     ];
     let cost_per_user = Nat::from({
         let num_tests = derivation_paths.len() * key_types.len();
@@ -136,10 +136,7 @@ fn signatures_can_be_verified() {
                     .schnorr_public_key(
                         *user,
                         &SchnorrPublicKeyArgument {
-                            key_id: SchnorrKeyId {
-                                algorithm: SchnorrAlgorithm::Ed25519,
-                                name: "dfx_test_key".to_string(),
-                            },
+                            key_id: key_type.clone(),
                             canister_id: None,
                             derivation_path: derivation_path.clone(),
                         },
@@ -229,7 +226,7 @@ fn verify_schnorr_bip340_secp256k1_signature(
 ) -> signature::Result<()> {
     let signature = k256::schnorr::Signature::try_from(signature_bytes)
         .expect("failed to deserialize signature");
-    let verifying_key = k256::schnorr::VerifyingKey::from_bytes(&public_key_bytes)
+    let verifying_key = k256::schnorr::VerifyingKey::from_bytes(&public_key_bytes[1..])
         .expect("failed to deserialize public key");
 
     verifying_key.verify_raw(&message_bytes, &signature)
