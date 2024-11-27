@@ -377,7 +377,6 @@ pub async fn eth_sign_prehash(
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_address(
     params: GetAddressRequest,
     payment: Option<PaymentType>, /* Note: Do NOT use underscore, please, so that the underscore
@@ -406,7 +405,6 @@ pub async fn btc_caller_address(
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_balance(
     params: GetBalanceRequest,
     payment: Option<PaymentType>, /* Note: Do NOT use underscore, please, so that the underscore
@@ -440,7 +438,6 @@ pub async fn btc_caller_balance(
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
-#[allow(unused_variables)] // TODO: Remove this once the payment guard is used.
 pub async fn btc_caller_send(
     params: SendBtcRequest,
     payment: Option<PaymentType>,

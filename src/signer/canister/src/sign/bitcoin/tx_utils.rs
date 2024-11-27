@@ -458,8 +458,9 @@ mod tests {
             build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
 
         match result {
-            Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {} /* Success if this error is
-                                                                    * returned */
+            // Expect this error:
+            Err(BuildP2wpkhTxError::NotP2WPKHSourceAddress) => {}
+            // Anything else is wrong:
             _ => panic!("Expected NotP2WPKHSourceAddress error"),
         }
     }

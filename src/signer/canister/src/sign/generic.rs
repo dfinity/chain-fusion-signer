@@ -16,6 +16,8 @@ use ic_chain_fusion_signer_api::types::schnorr::{SchnorrPublicKeyError, SchnorrS
 
 use crate::derivation_path::Schema;
 
+use crate::derivation_path::Schema;
+
 /// A generic ECDSA public key for the user.
 ///
 /// Warning: The user supplied derivation path is used as-is.  The caller is responsible for
