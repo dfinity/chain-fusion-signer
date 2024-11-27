@@ -172,11 +172,9 @@ fn signatures_can_be_verified() {
                 .signature
                 .into_vec();
 
-            // Sanity check
-            assert_eq!(public_key.len(), 32, "Unexpected public key length");
-            assert_eq!(signature.len(), 64, "Unexpected signature length");
             // Verify the signature
             {
+                assert_eq!(signature.len(), 64, "Unexpected signature length");
                 let signature = ed25519_dalek::Signature::try_from(signature.as_slice())
                     .expect("failed to deserialize signature");
                 let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
