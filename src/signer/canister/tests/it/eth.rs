@@ -74,7 +74,7 @@ mod sign_transaction {
 
         assert_eq!(
         response,
-        EthSignPrehashResponse{ signature: "0x02f86783aa36a7808203158201c87b94dfb554b25a5fc2f44aec0fcd8b541f065ac33c0a0180c001a0e3ad6b0aa1c424d92654ae10133a2b32aedc36c30bb51807c3ced27097f208dea00f95ed904d376e384cd5144c0109ffa3b5051d7f86273f9212f3b0d6e6071603".to_string()}
+        EthSignPrehashResponse{ signature: "0x02f86783aa36a7808203158201c87b94dfb554b25a5fc2f44aec0fcd8b541f065ac33c0a0180c001a0a31dc737936860aa954f677e540bea59892d1090b07f415b2402e5f3be842b7aa0169a0652a40f997f5c1e3b5f72cfd25d3d56de555452634cd15f3230f727daf6".to_string()}
     );
     }
 
@@ -145,7 +145,7 @@ mod personal_sign {
         assert_eq!(
             response,
             EthPersonalSignResponse {
-                signature: "0x91f0caeca09d8520c905be5287e3fd13fcd355f17fdec41d72430b5bd6c5274266a2840f693377c853f36bc7b82f9e353d8da53e2c8530250f85adf5551268e800".to_string()
+                signature: "0xd7a6d8259a2c2c64838c425751d9555c7ab4c12bafc266e5a436ddff69f8deff49ef842852b4154c0d32aa7d719ce0e87bba70904121b0ef214f5faf1963c62400".to_string()
             }
         );
     }
@@ -222,7 +222,7 @@ mod eth_address {
         assert_eq!(
             response,
             EthAddressResponse {
-                address: "0xDFB554B25A5fC2F44aEc0fCd8b541F065Ac33C0a".to_string()
+                address: "0x9f826268a4a9F25033b777ADE2F377244c5ec530".to_string()
             }
         );
     }
