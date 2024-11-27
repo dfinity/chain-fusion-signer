@@ -86,7 +86,7 @@ fn public_keys_are_different() {
     }
 }
 
-/// Signatures should be verifiable wit hthe corresponding public key.
+/// Signatures should be verifiable with the corresponding public key.
 #[test]
 fn signatures_can_be_verified() {
     let test_env = TestSetup::default();
