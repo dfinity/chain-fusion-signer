@@ -29,5 +29,5 @@ serde_bytes = { workspace = true }
 [dev-dependencies]
 lazy_static = { workspace = true }
 pocket-ic = { workspace = true }
-schnorr_fun = { workspace = true }
+ed25519-dalek = { workspace = true }
 sha2 = { workspace = true }

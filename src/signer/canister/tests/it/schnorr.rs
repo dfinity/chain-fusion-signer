@@ -6,13 +6,6 @@ use std::collections::HashMap;
 use candid::Nat;
 use ic_chain_fusion_signer_api::methods::SignerMethods;
 use ic_papi_api::principal2account;
-use schnorr_fun::{
-    fun::{
-        marker::{EvenY, Public, Secret},
-        Point,
-    },
-    Message, Schnorr, Signature,
-};
 use serde_bytes::ByteBuf;
 use sha2::Sha256;
 
@@ -100,15 +93,10 @@ fn public_keys_are_different() {
 fn signatures_can_be_verified() {
     let test_env = TestSetup::default();
     let users = &test_env.users;
-    let derivation_paths: Vec<Vec<ByteBuf>> = [
-        vec![],
-        vec!["", "", ""],
-        vec!["foo"],
-    ]
-    .into_iter()
-    .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
-    .collect();
-
+    let derivation_paths: Vec<Vec<ByteBuf>> = [vec![], vec!["", "", ""], vec!["foo"]]
+        .into_iter()
+        .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
+        .collect();
 
     let message = ByteBuf::from("pokemon");
     for user in users.iter() {
@@ -151,7 +139,8 @@ fn signatures_can_be_verified() {
                 .unwrap()
                 .unwrap()
                 .0
-                .public_key.into_vec();
+                .public_key
+                .into_vec();
 
             let signature = test_env
                 .signer
@@ -173,24 +162,12 @@ fn signatures_can_be_verified() {
                 .unwrap()
                 .unwrap()
                 .0
-                .signature.into_vec();
+                .signature
+                .into_vec();
 
             // Sanity check
             assert_eq!(public_key.len(), 32, "Unexpected public key length");
             assert_eq!(signature.len(), 64, "Unexpected signature length");
-
-/*
-
-
-            let signature_hex = hex::encode(&signature);
-            let verifier = Schnorr::<Sha256>::verify_only();
-            let public_key = Point::<EvenY, Public>::from_str(&public_key_hex)
-                .expect("Failed to parse public key");
-            let signature =
-                Signature::<Public>::from_str(&signature_hex).expect("Failed to parse signature");
-            let message = message.as_slice();
-            assert!(verifier.verify(&public_key, Message::<Secret>::raw(&message), &signature));
-*/
-            }
+        }
     }
 }
