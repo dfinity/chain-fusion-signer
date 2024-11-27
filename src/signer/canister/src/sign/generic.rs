@@ -1,5 +1,4 @@
 //! A generic signing API equivalent to that provided by the canister API.
-use crate::derivation_path::Schema;
 use ic_cdk::api::management_canister::{
     ecdsa::{
         self as canister_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
@@ -15,9 +14,12 @@ pub use ic_chain_fusion_signer_api::types::generic::{
 };
 use ic_chain_fusion_signer_api::types::schnorr::{SchnorrPublicKeyError, SchnorrSigningError};
 
+use crate::derivation_path::Schema;
+
 /// A generic ECDSA public key for the user.
 ///
-/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for
+/// ensuring that unintended sub-keys are not requested.
 pub async fn caller_ecdsa_public_key(
     mut arg: EcdsaPublicKeyArgument,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
@@ -28,7 +30,8 @@ pub async fn caller_ecdsa_public_key(
 
 /// Signs a message with a generic ECDSA key for the user.
 ///
-/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for ensuring that unintended sub-keys are not requested.
+/// Warning: The user supplied derivation path is used as-is.  The caller is responsible for
+/// ensuring that unintended sub-keys are not requested.
 pub async fn sign_with_ecdsa(
     mut arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
@@ -40,7 +43,8 @@ pub async fn sign_with_ecdsa(
 /// The Schnorr public key issued by the Chain Fusion Signer to a given canister or user.
 ///
 /// - To get your own public key, set `arg.canister_id` to `None`.
-/// - To get the public key of another canister or user, set `arg.canister_id` to the principal of the canister or user.
+/// - To get the public key of another canister or user, set `arg.canister_id` to the principal of
+///   the canister or user.
 pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgument,
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {

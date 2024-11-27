@@ -1,9 +1,10 @@
+use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
+use ic_papi_api::PaymentError;
+
 use crate::types::{
     bitcoin::{GetAddressError, GetBalanceError, SendBtcError},
     Config, InitArg,
 };
-use ic_canister_sig_creation::{extract_raw_root_pk_from_der, IC_ROOT_PK_DER};
-use ic_papi_api::PaymentError;
 
 impl From<InitArg> for Config {
     /// Creates a new `Config` from the provided `InitArg`.

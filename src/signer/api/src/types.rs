@@ -1,5 +1,6 @@
-use candid::{CandidType, Deserialize, Principal};
 use std::fmt::Debug;
+
+use candid::{CandidType, Deserialize, Principal};
 
 pub mod eth;
 pub mod generic;

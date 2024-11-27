@@ -1,8 +1,5 @@
-use crate::{
-    convert::{decode_hex, nat_to_u256, nat_to_u64},
-    derivation_path::Schema,
-    state::read_config,
-};
+use std::str::FromStr;
+
 use candid::Principal;
 use ethers_core::{
     abi::ethereum_types::{Address, U256},
@@ -13,13 +10,17 @@ use ic_cdk::api::management_canister::ecdsa::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
     SignWithEcdsaArgument,
 };
+pub use ic_chain_fusion_signer_api::types::eth::{
+    EthAddressError, EthAddressRequest, EthAddressResponse,
+};
 use ic_chain_fusion_signer_api::types::{eth::EthSignTransactionError, transaction::SignRequest};
 use k256::PublicKey;
 use pretty_assertions::assert_eq;
-use std::str::FromStr;
 
-pub use ic_chain_fusion_signer_api::types::eth::{
-    EthAddressError, EthAddressRequest, EthAddressResponse,
+use crate::{
+    convert::{decode_hex, nat_to_u256, nat_to_u64},
+    derivation_path::Schema,
+    state::read_config,
 };
 
 /// Converts the public key bytes to an Ethereum address with a checksum.
