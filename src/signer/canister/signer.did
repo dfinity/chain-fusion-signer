@@ -151,9 +151,12 @@ type Result_7 = variant {
 };
 type Result_8 = variant {
   Ok : record { EcdsaPublicKeyResponse };
-  Err : SignerSchnorrPublicKeyError;
+  Err : EthAddressError;
 };
-type Result_9 = variant { Ok : record { SignWithEcdsaResponse }; Err };
+type Result_9 = variant {
+  Ok : record { SignWithEcdsaResponse };
+  Err : EthAddressError;
+};
 type SchnorrAlgorithm = variant { ed25519; bip340secp256k1 };
 type SchnorrKeyId = record { algorithm : SchnorrAlgorithm; name : text };
 type SchnorrPublicKeyArgument = record {
@@ -184,10 +187,6 @@ type SignWithSchnorrArgument = record {
   key_id : SchnorrKeyId;
   derivation_path : vec blob;
   message : blob;
-};
-type SignerSchnorrPublicKeyError = variant {
-  SigningError;
-  PaymentError : PaymentError;
 };
 type TransferFromError = variant {
   GenericError : record { message : text; error_code : nat };
@@ -239,7 +238,7 @@ service : (Arg) -> {
     );
   get_canister_status : () -> (CanisterStatusResultV2);
   http_request : (HttpRequest) -> (HttpResponse) query;
-  schnorr_caller_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
+  schnorr_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
       Result_8,
     );
   schnorr_sign : (SignWithSchnorrArgument, opt PaymentType) -> (Result_9);
