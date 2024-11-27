@@ -209,13 +209,10 @@ fn verify_schnorr_ed25519_signature(
     message_bytes: &[u8],
 ) -> signature::Result<()> {
     // Source: https://github.com/dfinity/chainkey-testing-canister/blob/ed37234d41d4c528b86bbe158c80c9277f4fd17c/tests/tests.rs#L104
-    let signature = ed25519_dalek::Signature::try_from(signature_bytes)
-        .expect("failed to deserialize signature");
+    let signature = ed25519_dalek::Signature::try_from(signature_bytes)?;
     let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
         &<[u8; 32]>::try_from(public_key_bytes).expect("ed25519 public key should be 32 bytes"),
-    )
-    .expect("failed to sec1 deserialize public key");
-
+    )?;
     use ed25519_dalek::Verifier;
     verifying_key.verify(message_bytes, &signature)
 }
@@ -226,10 +223,7 @@ fn verify_schnorr_bip340_secp256k1_signature(
     message_bytes: &[u8],
 ) -> signature::Result<()> {
     // Source: https://github.com/dfinity/chainkey-testing-canister/blob/ed37234d41d4c528b86bbe158c80c9277f4fd17c/tests/tests.rs#L69
-    let signature = k256::schnorr::Signature::try_from(signature_bytes)
-        .expect("failed to deserialize signature");
-    let verifying_key = k256::schnorr::VerifyingKey::from_bytes(&public_key_bytes[1..])
-        .expect("failed to deserialize public key");
-
+    let signature = k256::schnorr::Signature::try_from(signature_bytes)?;
+    let verifying_key = k256::schnorr::VerifyingKey::from_bytes(&public_key_bytes[1..])?;
     verifying_key.verify_raw(&message_bytes, &signature)
 }
