@@ -1,10 +1,14 @@
 //! Tests the Schnorr signing API.
 
 use std::collections::HashMap;
+use ic_chain_fusion_signer_api::methods::SignerMethods;
 use serde_bytes::ByteBuf;
+use candid::Nat;
 
 use crate::canister::signer::{SchnorrKeyId, SchnorrPublicKeyArgument, SchnorrAlgorithm, PaymentType};
+use crate::canister::cycles_ledger::{self, ApproveArgs};
 use crate::utils::test_environment::TestSetup;
+use crate::utils::test_environment::LEDGER_FEE;
 
 
 /// Users should have distinct public keys.  Similaryy, different derivation paths should have different public keys.
@@ -25,6 +29,14 @@ fn public_keys_are_different() {
     ].into_iter().map(|paths| paths.into_iter().map(ByteBuf::from).collect()).collect();
     let mut public_keys = HashMap::new();
     for user in users.iter() {
+        test_env
+        .ledger
+        .icrc_2_approve(test_env.user, &ApproveArgs::new(cycles_ledger::Account {
+            owner: test_env.signer.canister_id,
+            subaccount: None,
+        }, Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)* derivation_paths.len() as u64))
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
         for derivation_path in derivation_paths.iter() {
             let public_key = test_env
                 .signer
