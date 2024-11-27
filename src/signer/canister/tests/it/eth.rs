@@ -1,4 +1,8 @@
 //! Tests for ethereum methods on the signer canister.
+use candid::{Nat, Principal};
+use ic_chain_fusion_signer_api::methods::SignerMethods;
+use lazy_static::lazy_static;
+
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
@@ -14,9 +18,6 @@ use crate::{
         test_environment::{TestSetup, LEDGER_FEE},
     },
 };
-use candid::{Nat, Principal};
-use ic_chain_fusion_signer_api::methods::SignerMethods;
-use lazy_static::lazy_static;
 
 lazy_static! {
     static ref GOOD_SIGN_TRANSACTION_REQUEST: EthSignTransactionRequest =
@@ -37,9 +38,8 @@ lazy_static! {
 
 /// Tests for `eth_sign_transaction()`
 mod sign_transaction {
-    use crate::canister::signer::EthAddressError;
-
     use super::*;
+    use crate::canister::signer::EthAddressError;
 
     /// A standard sign_transaction call, including payment.
     fn paid_sign_transaction(
@@ -154,7 +154,8 @@ mod personal_sign {
     fn cannot_personal_sign_if_message_is_not_hex_string() {
         let test_env = TestSetup::default();
         let request = EthPersonalSignRequest {
-            message: "test message".to_string(), // Note: This should be a hex string.  Let' stest what happens when it's not.
+            message: "test message".to_string(), /* Note: This should be a hex string.  Let'
+                                                  * stest what happens when it's not. */
         };
         let response = paid_personal_sign(&test_env, test_env.user, &request);
         assert!(response.is_err());

@@ -1,3 +1,9 @@
+use std::sync::Arc;
+
+use candid::{encode_one, Nat, Principal};
+use ic_papi_api::cycles::cycles_ledger_canister_id;
+use pocket_ic::{PocketIc, PocketIcBuilder};
+
 use super::mock::CALLER;
 use crate::{
     canister::{
@@ -10,10 +16,6 @@ use crate::{
     },
     utils::pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
 };
-use candid::{encode_one, Nat, Principal};
-use ic_papi_api::cycles::cycles_ledger_canister_id;
-use pocket_ic::{PocketIc, PocketIcBuilder};
-use std::sync::Arc;
 
 pub const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
 pub const LEDGER_FEE: u128 = 100_000_000; // The documented fee: https://internetcomputer.org/docs/current/developer-docs/defi/cycles/cycles-ledger#fees
@@ -34,7 +36,8 @@ pub struct TestSetup {
     pub user2: Principal,
     /// A crowd
     pub users: [Principal; 5],
-    /// Unauthorized user, used in tests to ensure that random third parties cannot use resources they are not entitled to.
+    /// Unauthorized user, used in tests to ensure that random third parties cannot use resources
+    /// they are not entitled to.
     pub unauthorized_user: Principal,
     /// A canister used to deposit cycles into the ledger.
     pub cycles_depositor: CyclesDepositorPic,
@@ -56,7 +59,8 @@ impl Default for TestSetup {
             .create_canister_with_id(None, None, cycles_ledger_canister_id())
             .unwrap();
 
-        // Would like to create this with the cycles ledger canister ID but currently this yields an error.
+        // Would like to create this with the cycles ledger canister ID but currently this yields an
+        // error.
         let ledger = CyclesLedgerPic::from(
             PicCanisterBuilder::default()
                 .with_canister(cycles_ledger_canister_id)
