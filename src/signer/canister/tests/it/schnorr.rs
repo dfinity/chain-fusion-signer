@@ -172,11 +172,10 @@ fn signatures_can_be_verified() {
                     .into_vec();
 
                 // Verify the signature
-                let verification = verify_schnorr_signature(
+                let verification = schnorr_signature_verifier(&key_type.algorithm)(
                     &signature,
                     &public_key,
                     &message,
-                    key_type.algorithm.clone(),
                 );
                 assert!(
                     verification.is_ok(),
@@ -188,17 +187,12 @@ fn signatures_can_be_verified() {
     }
 }
 
-fn verify_schnorr_signature(
-    signature_bytes: &[u8],
-    public_key_bytes: &[u8],
-    message_bytes: &[u8],
-    algorithm: SchnorrAlgorithm,
-) -> signature::Result<()> {
-    let method = match algorithm {
+/// The verification function for a given type of Schnorr key.
+fn schnorr_signature_verifier(algorithm: &SchnorrAlgorithm) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
+    match algorithm {
         SchnorrAlgorithm::Bip340Secp256K1 => verify_schnorr_bip340_secp256k1_signature,
         SchnorrAlgorithm::Ed25519 => verify_schnorr_ed25519_signature,
-    };
-    method(&signature_bytes, &public_key_bytes, &message_bytes)
+    }
 }
 
 fn verify_schnorr_ed25519_signature(
