@@ -188,7 +188,9 @@ fn signatures_can_be_verified() {
 }
 
 /// The verification function for a given type of Schnorr key.
-fn schnorr_signature_verifier(algorithm: &SchnorrAlgorithm) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
+fn schnorr_signature_verifier(
+    algorithm: &SchnorrAlgorithm,
+) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
     match algorithm {
         SchnorrAlgorithm::Bip340Secp256K1 => verify_schnorr_bip340_secp256k1_signature,
         SchnorrAlgorithm::Ed25519 => verify_schnorr_ed25519_signature,
