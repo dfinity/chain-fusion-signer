@@ -174,19 +174,23 @@ fn signatures_can_be_verified() {
 
             // Verify the signature
             {
-                assert_eq!(signature.len(), 64, "Unexpected signature length");
-                let signature = ed25519_dalek::Signature::try_from(signature.as_slice())
-                    .expect("failed to deserialize signature");
-                let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
-                    &<[u8; 32]>::try_from(public_key)
-                        .expect("ed25519 public key should be 32 bytes"),
-                )
-                .expect("failed to sec1 deserialize public key");
-
-                use ed25519_dalek::Verifier;
-                let verification = verifying_key.verify(&message, &signature);
-                assert!(verification.is_ok(), "Not verified: {:?}", verification);
+                verify_schnorr_ed25519_signature(&signature, &public_key, &message);
             }
         }
     }
+}
+
+
+fn verify_schnorr_ed25519_signature(signature_bytes: &[u8], public_key_bytes: &[u8], message_bytes: &[u8]) {
+    let signature = ed25519_dalek::Signature::try_from(signature_bytes)
+        .expect("failed to deserialize signature");
+    let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
+        &<[u8; 32]>::try_from(public_key_bytes)
+            .expect("ed25519 public key should be 32 bytes"),
+    )
+    .expect("failed to sec1 deserialize public key");
+
+    use ed25519_dalek::Verifier;
+    let verification = verifying_key.verify(message_bytes, &signature);
+    assert!(verification.is_ok(), "Not verified: {:?}", verification);
 }
