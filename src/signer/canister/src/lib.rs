@@ -208,7 +208,7 @@ pub async fn schnorr_public_key(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+            SignerMethods::SchnorrPublicKey.fee(),
         )
         .await?;
     generic::schnorr_public_key(arg).await
@@ -250,7 +250,7 @@ pub async fn schnorr_sign(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::GenericSignWithEcdsa.fee(),
+            SignerMethods::SchnorrSign.fee(),
         )
         .await?;
     generic::schnorr_sign(arg).await
