@@ -5,9 +5,10 @@ use std::collections::HashMap;
 use candid::Nat;
 use ic_chain_fusion_signer_api::methods::SignerMethods;
 use ic_papi_api::principal2account;
-use schnorr_fun::Schnorr;
+use schnorr_fun::{Schnorr, fun::{Point, marker::{EvenY, Public, Secret}}, Message, Signature};
 use sha2::Sha256;
 use serde_bytes::ByteBuf;
+use core::str::FromStr;
 
 use crate::{
     canister::{
@@ -117,7 +118,7 @@ fn signatures_can_be_verified() {
                         owner: test_env.signer.canister_id,
                         subaccount: Some(principal2account(&user)),
                     },
-                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + SignerMethods::SchnorrSign.fee() + 2 * LEDGER_FEE as u64)
                         * derivation_paths.len() as u64,
                 ),
             )
@@ -145,6 +146,7 @@ fn signatures_can_be_verified() {
                 .unwrap()
                 .0
                 .public_key;
+            let public_key_hex = hex::encode(&public_key);
             let signature = test_env
                 .signer
                 .schnorr_sign(
@@ -166,8 +168,13 @@ fn signatures_can_be_verified() {
                 .unwrap()
                 .0
                 .signature;
-            }
-            let verifier = Schnorr::<Sha256>::verify_only();
 
+                let signature_hex = hex::encode(&signature);
+                let verifier = Schnorr::<Sha256>::verify_only();
+                let public_key = Point::<EvenY, Public>::from_str(&public_key_hex).expect("Failed to parse public key");
+                let signature = Signature::<Public>::from_str(&signature_hex).expect("Failed to parse signature");
+                let message = message.as_slice();
+                assert!(verifier.verify(&public_key, Message::<Secret>::raw(&message), &signature));
+            }
         }
     }
