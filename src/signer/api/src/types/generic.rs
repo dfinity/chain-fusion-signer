@@ -5,7 +5,7 @@ use ic_cdk::api::call::RejectionCode;
 pub enum GenericSigningError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -20,7 +20,7 @@ impl From<ic_papi_api::PaymentError> for GenericSigningError {
 pub enum GenericCallerEcdsaPublicKeyError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -39,7 +39,7 @@ impl From<(RejectionCode, String)> for GenericCallerEcdsaPublicKeyError {
 pub enum GenericSignWithEcdsaError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
