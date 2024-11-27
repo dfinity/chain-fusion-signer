@@ -61,6 +61,6 @@ pub async fn schnorr_sign(
     mut arg: SignWithSchnorrArgument,
 ) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
     arg.derivation_path =
-        Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
+        Schema::Schnorr.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
     Ok(ic_cdk::api::management_canister::schnorr::sign_with_schnorr(arg).await?)
 }
