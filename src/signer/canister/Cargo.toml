@@ -30,4 +30,3 @@ serde_bytes = { workspace = true }
 lazy_static = { workspace = true }
 pocket-ic = { workspace = true }
 ed25519-dalek = { workspace = true }
-sha2 = { workspace = true }

@@ -2501,7 +2501,6 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde_bytes",
- "sha2",
 ]
 
 [[package]]

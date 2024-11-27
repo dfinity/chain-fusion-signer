@@ -1,13 +1,11 @@
 //! Tests the Schnorr signing API.
 
-use core::str::FromStr;
 use std::collections::HashMap;
 
 use candid::Nat;
 use ic_chain_fusion_signer_api::methods::SignerMethods;
 use ic_papi_api::principal2account;
 use serde_bytes::ByteBuf;
-use sha2::Sha256;
 
 use crate::{
     canister::{
