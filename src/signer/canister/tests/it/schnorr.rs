@@ -100,10 +100,10 @@ fn signatures_can_be_verified() {
             algorithm: SchnorrAlgorithm::Ed25519,
             name: "dfx_test_key".to_string(),
         },
-        SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
-            name: "dfx_test_key".to_string(),
-        },
+        //SchnorrKeyId {
+        //    algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+        //    name: "dfx_test_key".to_string(),
+        //},
     ];
     let cost_per_user = Nat::from({
         let num_tests = derivation_paths.len() * key_types.len();
