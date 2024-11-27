@@ -172,14 +172,17 @@ fn signatures_can_be_verified() {
                     .into_vec();
 
                 // Verify the signature
-                let verification = 
-                        verify_schnorr_signature(
-                            &signature,
-                            &public_key,
-                            &message,
-                            key_type.algorithm.clone(),
-                        );
-                assert!(verification.is_ok(), "Failed to verify signature: {verification:?}\nalgorithm: {:?}", key_type.algorithm);
+                let verification = verify_schnorr_signature(
+                    &signature,
+                    &public_key,
+                    &message,
+                    key_type.algorithm.clone(),
+                );
+                assert!(
+                    verification.is_ok(),
+                    "Failed to verify signature: {verification:?}\nalgorithm: {:?}",
+                    key_type.algorithm
+                );
             }
         }
     }
@@ -189,18 +192,13 @@ fn verify_schnorr_signature(
     signature_bytes: &[u8],
     public_key_bytes: &[u8],
     message_bytes: &[u8],
-    algorithm: SchnorrAlgorithm) -> signature::Result<()> {
+    algorithm: SchnorrAlgorithm,
+) -> signature::Result<()> {
     let method = match algorithm {
-        SchnorrAlgorithm::Bip340Secp256K1 =>
-            verify_schnorr_bip340_secp256k1_signature,
-        SchnorrAlgorithm::Ed25519 =>
-            verify_schnorr_ed25519_signature,
+        SchnorrAlgorithm::Bip340Secp256K1 => verify_schnorr_bip340_secp256k1_signature,
+        SchnorrAlgorithm::Ed25519 => verify_schnorr_ed25519_signature,
     };
-    method(
-        &signature_bytes,
-        &public_key_bytes,
-        &message_bytes,
-    )
+    method(&signature_bytes, &public_key_bytes, &message_bytes)
 }
 
 fn verify_schnorr_ed25519_signature(
@@ -211,7 +209,7 @@ fn verify_schnorr_ed25519_signature(
     // Source: https://github.com/dfinity/chainkey-testing-canister/blob/ed37234d41d4c528b86bbe158c80c9277f4fd17c/tests/tests.rs#L104
     let signature = ed25519_dalek::Signature::try_from(signature_bytes)?;
     let verifying_key = ed25519_dalek::VerifyingKey::from_bytes(
-        &<[u8; 32]>::try_from(public_key_bytes).expect("ed25519 public key should be 32 bytes"),
+        &<[u8; 32]>::try_from(public_key_bytes).map_err(|_| signature::Error::new())?,
     )?;
     use ed25519_dalek::Verifier;
     verifying_key.verify(message_bytes, &signature)
