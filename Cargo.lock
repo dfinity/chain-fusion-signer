@@ -2519,6 +2519,7 @@ dependencies = [
  "schnorr_fun",
  "serde",
  "serde_bytes",
+ "sha2",
 ]
 
 [[package]]

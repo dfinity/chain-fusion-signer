@@ -24,6 +24,7 @@ pocket-ic = "6.0.0"
 pretty_assertions = "1.4.1"
 bitcoin = "0.32.4"
 schnorr_fun = "0.10.0"
+sha2 = "0.10.8"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }

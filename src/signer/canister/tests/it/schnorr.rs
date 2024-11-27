@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use candid::Nat;
 use ic_chain_fusion_signer_api::methods::SignerMethods;
 use ic_papi_api::principal2account;
+use schnorr_fun::Schnorr;
+use sha2::Sha256;
 use serde_bytes::ByteBuf;
 
 use crate::{
@@ -165,5 +167,7 @@ fn signatures_can_be_verified() {
                 .0
                 .signature;
             }
+            let verifier = Schnorr::<Sha256>::verify_only();
+
         }
     }
