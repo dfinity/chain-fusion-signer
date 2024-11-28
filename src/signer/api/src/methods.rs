@@ -9,6 +9,8 @@ pub enum SignerMethods {
     BtcCallerAddress,
     BtcCallerBalance,
     BtcCallerSend,
+    SchnorrPublicKey,
+    SchnorrSign,
 }
 
 impl SignerMethods {
@@ -18,9 +20,11 @@ impl SignerMethods {
         // Note: Fees are determined with the aid of scripts/check-pricing
         match self {
             SignerMethods::GenericCallerEcdsaPublicKey
+            | SignerMethods::SchnorrPublicKey
             | SignerMethods::EthAddress
             | SignerMethods::EthAddressOfCaller => 1_000_000_000,
             SignerMethods::GenericSignWithEcdsa
+            | SignerMethods::SchnorrSign
             | SignerMethods::EthSignTransaction
             | SignerMethods::EthPersonalSign
             | SignerMethods::EthSignPrehash => 40_000_000_000,

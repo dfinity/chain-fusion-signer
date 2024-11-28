@@ -1,6 +1,13 @@
 use candid::Principal;
-use ic_cdk::api::management_canister::ecdsa::{
-    EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse,
+use ic_cdk::api::management_canister::{
+    ecdsa::{
+        EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument,
+        SignWithEcdsaResponse,
+    },
+    schnorr::{
+        SchnorrPublicKeyArgument, SchnorrPublicKeyResponse, SignWithSchnorrArgument,
+        SignWithSchnorrResponse,
+    },
 };
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
@@ -19,6 +26,7 @@ use ic_chain_fusion_signer_api::{
             EthSignPrehashError, EthSignPrehashRequest, EthSignPrehashResponse,
             EthSignTransactionError, EthSignTransactionRequest, EthSignTransactionResponse,
         },
+        schnorr::{SchnorrPublicKeyError, SchnorrSigningError},
         Arg, Config,
     },
 };
@@ -162,6 +170,90 @@ pub async fn generic_sign_with_ecdsa(
         )
         .await?;
     generic::sign_with_ecdsa(arg).await
+}
+
+/// Returns the Schnorr public key of the caller or specified principal.
+///
+/// Note: This is an exact dual of the canister [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key) method.  The argument and response types are also the same.
+///
+/// # Arguments
+/// - `arg`: The same `SchnorrPublicKeyArgument` as the management canister argument.  The semantics
+///   are identical but the meaning of the fields in the new context deserve some explanation.
+///   - `arg.canister_id`: The principal of the canister or user for which the Chain Fusion Signer
+///     has issued the public key.  If `None`, the caller's public key is returned.
+///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
+///     ensuring that the derivation path is used to namespace appropriately and to ensure that
+///     unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
+///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
+///     calling the management canister.
+///   - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
+///     for details.
+/// - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
+///   been attached.
+///
+/// # Warnings
+/// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
+///   derivation paths are used to namespace appropriately and to ensure that unintended sub-keys
+///   are not requested.
+/// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
+///   APP".into_bytes()]`
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn schnorr_public_key(
+    arg: SchnorrPublicKeyArgument,
+    payment: Option<PaymentType>,
+) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::SchnorrPublicKey.fee(),
+        )
+        .await?;
+    generic::schnorr_public_key(arg).await
+}
+
+/// Signs a message using the caller's Schnorr key.
+///
+/// Note: This is an exact dual of the canister [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr) method.  The argument and response types are also the same.
+///
+/// # Arguments
+/// - `arg`: The same `SignWithSchnorrArgument` as the management canister argument.  The semantics
+///   are identical but the meaning of the fields in the new context deserve some explanation.
+///   - `arg.message`: The data to sign.  Note that if you have a large amount of data, you are
+///     probably better off hashing the data and then signing the hash.
+///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
+///     ensuring that the derivation path is used to namespace appropriately and to ensure that
+///     unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
+///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
+///     calling the management canister.
+///   - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
+///     for details.
+/// - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
+///   been attached.
+///
+/// # Warnings
+/// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
+///   derivation paths are used to namespace appropriately and to ensure that unintended sub-keys
+///   are not requested.
+/// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
+///   APP".into_bytes()]`
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn schnorr_sign(
+    arg: SignWithSchnorrArgument,
+    payment: Option<PaymentType>,
+) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::SchnorrSign.fee(),
+        )
+        .await?;
+    generic::schnorr_sign(arg).await
 }
 
 // ////////////////////

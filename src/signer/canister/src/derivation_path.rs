@@ -12,6 +12,8 @@ pub enum Schema {
     ///
     /// Please see `from_principal` for details.
     Eth = 1,
+    /// A generic Schnorr key.  The caller is responsible for managing derivation paths.
+    Schnorr = 0xfe,
     /// A generic ECDSA key.  The caller is responsible for managing derivation paths.
     Generic = 0xff,
 }
