@@ -111,7 +111,90 @@ fn can_get_public_key_of_onymous_users_only() {
         );
     }
 }
-// TODO: Verify that signing fails if not paid for, or if the payment is insufficient.
+
+/// Getting apublic key requires payment.
+#[test]
+fn getting_public_key_requires_payment() {
+    let test_env = TestSetup::default();
+    let user = test_env.user;
+    struct TestVector {
+        approved_sum: Option<Nat>,
+        can_get_public_key: bool,
+    }
+    let test_vectors = [
+        TestVector {
+            approved_sum: None,
+            can_get_public_key: false,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64,
+            )),
+            can_get_public_key: true,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 - 1,
+            )),
+            can_get_public_key: false,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 - 1,
+            )),
+            can_get_public_key: true,
+        },
+    ];
+    for TestVector {
+        approved_sum,
+        can_get_public_key,
+    } in test_vectors.iter()
+    {
+        // Approve payment for the API calls with ICRC-2.
+        if let Some(approved_sum) = approved_sum {
+            test_env
+                .ledger
+                .icrc_2_approve(
+                    test_env.user,
+                    &ApproveArgs::new(
+                        cycles_ledger::Account {
+                            owner: test_env.signer.canister_id,
+                            subaccount: Some(principal2account(&user)),
+                        },
+                        approved_sum.clone(),
+                    ),
+                )
+                .expect("Failed to call ledger canister")
+                .expect("Failed to approve payment");
+        }
+        // Get the public key.
+        let public_key = test_env.signer.schnorr_public_key(
+            user,
+            &SchnorrPublicKeyArgument {
+                key_id: SchnorrKeyId {
+                    algorithm: SchnorrAlgorithm::Ed25519,
+                    name: "dfx_test_key".to_string(),
+                },
+                canister_id: None,
+                derivation_path: vec![],
+            },
+            &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                owner: test_env.user,
+                subaccount: None,
+            })),
+        );
+        assert_eq!(
+            public_key.is_ok(),
+            *can_get_public_key,
+            "Should {} get the public key with payment {approved_sum:?}.",
+            if *can_get_public_key {
+                "be able to"
+            } else {
+                "not be able to"
+            }
+        );
+    }
+}
 
 /// Users should have distinct public keys.  Similary, different derivation paths should have
 /// different public keys.
