@@ -44,20 +44,39 @@ fn anonymous_user_cannot_sign() {
 fn can_get_public_key_of_onymous_users_only() {
     let test_env = TestSetup::default();
     struct TestVector {
-        user: Principal,
+        caller: Principal,
+        key_owner: Option<Principal>, // Default: Caller
         can_get_public_key: bool,
     }
     let test_vectors = [
         TestVector {
-            user: test_env.user,
+            caller: test_env.user,
+            key_owner: None,
             can_get_public_key: true,
         },
         TestVector {
-            user: test_env.user2,
+            caller: test_env.user2,
+            key_owner: None,
             can_get_public_key: true,
         },
         TestVector {
-            user: Principal::anonymous(),
+            caller: Principal::anonymous(),
+            key_owner: None,
+            can_get_public_key: false,
+        },
+        TestVector {
+            caller: test_env.user,
+            key_owner: Some(test_env.user),
+            can_get_public_key: true,
+        },
+        TestVector {
+            caller: test_env.user,
+            key_owner: Some(test_env.user2),
+            can_get_public_key: true,
+        },
+        TestVector {
+            caller: test_env.user,
+            key_owner: Some(Principal::anonymous()),
             can_get_public_key: false,
         },
     ];
@@ -83,7 +102,8 @@ fn can_get_public_key_of_onymous_users_only() {
     }));
     // Check that only the expected public keys are available.
     for TestVector {
-        user,
+        caller: user,
+        key_owner,
         can_get_public_key,
     } in test_vectors.iter()
     {
@@ -94,7 +114,7 @@ fn can_get_public_key_of_onymous_users_only() {
                     algorithm: SchnorrAlgorithm::Ed25519,
                     name: "dfx_test_key".to_string(),
                 },
-                canister_id: None,
+                canister_id: key_owner.clone(),
                 derivation_path: vec![],
             },
             &payment_type,

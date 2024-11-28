@@ -221,7 +221,8 @@ pub async fn schnorr_public_key(
 /// # Arguments
 /// - `arg`: The same `SignWithSchnorrArgument` as the management canister argument.  The semantics
 ///   are identical but the meaning of the fields in the new context deserve some explanation.
-///   - `arg.message`: The data to sign.  Note that if you have a large amount of data, you are probably better off hashing the data and then signing the hash.
+///   - `arg.message`: The data to sign.  Note that if you have a large amount of data, you are
+///     probably better off hashing the data and then signing the hash.
 ///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
 ///     ensuring that the derivation path is used to namespace appropriately and to ensure that
 ///     unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF

@@ -1,4 +1,5 @@
 //! A generic signing API equivalent to that provided by the canister API.
+use candid::Principal;
 use ic_cdk::api::management_canister::{
     ecdsa::{
         self as canister_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
@@ -50,6 +51,9 @@ pub async fn schnorr_public_key(
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
     // Moves the canister_id from the argument to the derivation path.
     let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::caller);
+    if key_owner == Principal::anonymous() {
+        ic_cdk::trap("Anonymous principal has no key.");
+    }
     arg.derivation_path =
         Schema::Schnorr.derivation_path_ending_in(&key_owner, arg.derivation_path);
     debug_assert!(arg.canister_id.is_none());
