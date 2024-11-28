@@ -6,7 +6,7 @@ use ic_cdk::api::call::RejectionCode;
 pub enum SchnorrSigningError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -25,7 +25,7 @@ impl From<(RejectionCode, String)> for SchnorrSigningError {
 pub enum SchnorrPublicKeyError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -44,7 +44,7 @@ impl From<(RejectionCode, String)> for SchnorrPublicKeyError {
 pub enum SchnorrSignWithEcdsaError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
