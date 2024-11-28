@@ -77,7 +77,8 @@ pub fn transfer(to: &Pubkey, lamports: u64, recent_blockhash: Hash) -> Transacti
     let message = Message::new(&[instruction], Some(&from_pubkey));
     {
         let mut tx = Transaction::new_unsigned(message);
-        let keypairs = &[()]; // Previously: keypairs.  Could specify the derivation path and other parameters for use with the chain fusion signer.
+        let keypairs = &[()]; // Previously: keypairs.  Could specify the derivation path and other parameters for use
+                              // with the chain fusion signer.
         let pubkeys = [from_pubkey.clone()];
         {
             // try_partial_sign
@@ -91,7 +92,7 @@ pub fn transfer(to: &Pubkey, lamports: u64, recent_blockhash: Hash) -> Transacti
                 // Try partial sign unchecked
                 // if you change the blockhash, you're re-signing...
                 // In our case we haven't started yet, so this initializes all the signatures.
-                /*if recent_blockhash != tx.message.recent_blockhash*/
+                /* if recent_blockhash != tx.message.recent_blockhash */
                 {
                     println!("Re-signing");
                     tx.message.recent_blockhash = recent_blockhash;

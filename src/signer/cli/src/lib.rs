@@ -22,7 +22,8 @@ use ic_chain_fusion_signer_api::types::generic::GenericCallerEcdsaPublicKeyError
 
 pub struct SignerCli {
     dfx_interface: DfxInterface,
-    /// A logger; some public `sdk` repository methods require a specific type of logger so this is a compatible logger.
+    /// A logger; some public `sdk` repository methods require a specific type of logger so this is
+    /// a compatible logger.
     logger: Logger,
 }
 
@@ -156,7 +157,7 @@ impl SignerCli {
         let response_bytes = self
             .dfx_interface
             .agent()
-            .update(&signer_canister_id, "schnorr_caller_public_key")
+            .update(&signer_canister_id, "schnorr_public_key")
             .with_arg(
                 candid::encode_one(SchnorrPublicKeyArgument {
                     canister_id: None,
@@ -222,8 +223,9 @@ impl SignerCli {
 }
 
 pub mod sync {
-    use super::*;
     use tokio::runtime::{Builder, Runtime};
+
+    use super::*;
 
     fn runtime() -> Runtime {
         // The IC client

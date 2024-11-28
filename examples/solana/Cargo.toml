@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-candid = "0.10.10"
-ic-agent = "0.39.1"
-serde = "1.0.215"
-serde_bytes = "0.11.15"
-serde_json = "1.0.133"
+candid = { workspace = true }
+ic-agent = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_json = { workspace = true }
 solana-client = "2.0.16"
 solana-program = "2.0.16"
 solana-sdk = "2.0.16"
-tokio = "1.41.1"
+tokio = { workspace = true }
 signer-cli = { workspace = true }

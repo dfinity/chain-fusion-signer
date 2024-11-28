@@ -6,15 +6,17 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-clap = { version = "4.5.7", features = ["derive"] }
 anyhow = "1.0.75"
 bitcoin = "0.32.4"
 candid = "0.10.10"
+clap = { version = "4.5.7", features = ["derive"] }
+dfx-core = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
 ed25519-dalek = "2.1.1"
 ethers-core = "= 2.0.11"
 futures = "0.3"
 getrandom = { version = "0.2", features = ["custom"] }
 hex = "0.4"
+ic-agent = "0.39.1"
 ic-canister-sig-creation = "1.1.0"
 ic-cdk = "0.17.0"
 ic-cdk-macros = "0.17.0"
@@ -29,15 +31,15 @@ pocket-ic = "6.0.0"
 pretty_assertions = "1.4.1"
 serde = "1"
 serde_bytes = "0.11"
+serde_json = "1.0.133"
 signature = "2.2"
 signer-cli = { path = "src/signer/cli" }
-solana-cli = { path = "src/solana/cli" }
-strum = "0.26.3"
-strum_macros = "0.26.4"
-dfx-core = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
 slog = "2.5.2"
 slog-async = "2.4.0"
 slog-term = "2.9.0"
+solana-cli = { path = "src/solana/cli" }
+strum = "0.26.3"
+strum_macros = "0.26.4"
 tokio = { version = "1.33.0" }
 
 
