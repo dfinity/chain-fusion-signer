@@ -120,6 +120,8 @@ jobs:
         uses: ./.github/actions/bindings
       - name: Run integration tests
         run: ./scripts/test.signer.sh
+      - name: Run examples
+        run: cargo run --example solana
       - name: Stop dfx
         run: dfx stop
   check-pass:
