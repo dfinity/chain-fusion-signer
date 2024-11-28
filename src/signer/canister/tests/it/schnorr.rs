@@ -293,7 +293,9 @@ fn signing_requires_payment() {
 fn public_keys_are_different() {
     let test_env = TestSetup::default();
     // Variants to test:
+    // .. Different users should have different public keys.
     let users = &test_env.users;
+    // .. Different derivation paths should have different public keys.
     let derivation_paths: Vec<Vec<ByteBuf>> = [
         vec![],
         vec![""],
@@ -309,6 +311,7 @@ fn public_keys_are_different() {
     .into_iter()
     .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
     .collect();
+    // .. Different key types should have different public keys.
     let key_types = [
         SchnorrKeyId {
             algorithm: SchnorrAlgorithm::Ed25519,
