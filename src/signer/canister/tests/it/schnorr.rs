@@ -112,7 +112,7 @@ fn can_get_public_key_of_onymous_users_only() {
     }
 }
 
-/// Getting apublic key requires payment.
+/// Getting a public key requires payment.
 #[test]
 fn getting_public_key_requires_payment() {
     let test_env = TestSetup::default();
@@ -140,7 +140,7 @@ fn getting_public_key_requires_payment() {
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 - 1,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 + 1,
             )),
             can_get_public_key: true,
         },
@@ -168,26 +168,117 @@ fn getting_public_key_requires_payment() {
                 .expect("Failed to approve payment");
         }
         // Get the public key.
-        let public_key = test_env.signer.schnorr_public_key(
-            user,
-            &SchnorrPublicKeyArgument {
-                key_id: SchnorrKeyId {
-                    algorithm: SchnorrAlgorithm::Ed25519,
-                    name: "dfx_test_key".to_string(),
+        let public_key = test_env
+            .signer
+            .schnorr_public_key(
+                user,
+                &SchnorrPublicKeyArgument {
+                    key_id: SchnorrKeyId {
+                        algorithm: SchnorrAlgorithm::Ed25519,
+                        name: "dfx_test_key".to_string(),
+                    },
+                    canister_id: None,
+                    derivation_path: vec![],
                 },
-                canister_id: None,
-                derivation_path: vec![],
-            },
-            &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
-                owner: test_env.user,
-                subaccount: None,
-            })),
-        );
+                &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                    owner: test_env.user,
+                    subaccount: None,
+                })),
+            )
+            .expect("Making the call to get the public key panicked.");
         assert_eq!(
             public_key.is_ok(),
             *can_get_public_key,
             "Should {} get the public key with payment {approved_sum:?}.",
             if *can_get_public_key {
+                "be able to"
+            } else {
+                "not be able to"
+            }
+        );
+    }
+}
+
+/// Signing requires payment.
+#[test]
+fn signing_requires_payment() {
+    let test_env = TestSetup::default();
+    let user = test_env.user;
+    struct TestVector {
+        approved_sum: Option<Nat>,
+        can_sign: bool,
+    }
+    let test_vectors = [
+        TestVector {
+            approved_sum: None,
+            can_sign: false,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64,
+            )),
+            can_sign: true,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 - 1,
+            )),
+            can_sign: false,
+        },
+        TestVector {
+            approved_sum: Some(Nat::from(
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 + 1,
+            )),
+            can_sign: true,
+        },
+    ];
+    let message = ByteBuf::from("pokemon");
+    for TestVector {
+        approved_sum,
+        can_sign,
+    } in test_vectors.iter()
+    {
+        // Approve payment for the API calls with ICRC-2.
+        if let Some(approved_sum) = approved_sum {
+            test_env
+                .ledger
+                .icrc_2_approve(
+                    test_env.user,
+                    &ApproveArgs::new(
+                        cycles_ledger::Account {
+                            owner: test_env.signer.canister_id,
+                            subaccount: Some(principal2account(&user)),
+                        },
+                        approved_sum.clone(),
+                    ),
+                )
+                .expect("Failed to call ledger canister")
+                .expect("Failed to approve payment");
+        }
+        // Sign the message.
+        let signature = test_env
+            .signer
+            .schnorr_sign(
+                user,
+                &signer::SignWithSchnorrArgument {
+                    key_id: SchnorrKeyId {
+                        algorithm: SchnorrAlgorithm::Ed25519,
+                        name: "dfx_test_key".to_string(),
+                    },
+                    derivation_path: vec![],
+                    message: message.clone(),
+                },
+                &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                    owner: test_env.user,
+                    subaccount: None,
+                })),
+            )
+            .expect("Making the call to sign panicked.");
+        assert_eq!(
+            signature.is_ok(),
+            *can_sign,
+            "Should {} sign with payment {approved_sum:?}.",
+            if *can_sign {
                 "be able to"
             } else {
                 "not be able to"
