@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use candid::Nat;
+use candid::{Nat, Principal};
 use ic_chain_fusion_signer_api::methods::SignerMethods;
 use ic_papi_api::principal2account;
 use serde_bytes::ByteBuf;
@@ -15,7 +15,28 @@ use crate::{
     utils::test_environment::{TestSetup, LEDGER_FEE},
 };
 
-// TODO: Verify that the anonymous user cannot sign.
+/// The anonymous user should not be able to sign.
+#[test]
+fn anonymous_user_cannot_sign() {
+    let test_env = TestSetup::default();
+    let message = ByteBuf::from("pokemon");
+    let signature = test_env
+        .signer
+        .schnorr_sign(
+            Principal::anonymous(),
+            &signer::SignWithSchnorrArgument {
+                key_id: SchnorrKeyId {
+                    algorithm: SchnorrAlgorithm::Ed25519,
+                    name: "dfx_test_key".to_string(),
+                },
+                derivation_path: vec![],
+                message: message.clone(),
+            },
+            &None,
+        );
+    assert_eq!(signature, Err("Anonymous caller not authorized.".to_string()), "The anonymous user should not be allowed to sign.");
+}
+
 // TODO: Verify that it is not possible to get a public key for the anonymous user.
 // TODO: Verify that signing fails if not paid for, or if the payment is insufficient.
 
