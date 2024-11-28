@@ -20,24 +20,97 @@ use crate::{
 fn anonymous_user_cannot_sign() {
     let test_env = TestSetup::default();
     let message = ByteBuf::from("pokemon");
-    let signature = test_env
-        .signer
-        .schnorr_sign(
-            Principal::anonymous(),
-            &signer::SignWithSchnorrArgument {
+    let signature = test_env.signer.schnorr_sign(
+        Principal::anonymous(),
+        &signer::SignWithSchnorrArgument {
+            key_id: SchnorrKeyId {
+                algorithm: SchnorrAlgorithm::Ed25519,
+                name: "dfx_test_key".to_string(),
+            },
+            derivation_path: vec![],
+            message: message.clone(),
+        },
+        &None,
+    );
+    assert_eq!(
+        signature,
+        Err("Anonymous caller not authorized.".to_string()),
+        "The anonymous user should not be allowed to sign."
+    );
+}
+
+/// It should not be possible to get the public key of the anonymous user.
+#[test]
+fn can_get_public_key_of_onymous_users_only() {
+    let test_env = TestSetup::default();
+    struct TestVector {
+        user: Principal,
+        can_get_public_key: bool,
+    }
+    let test_vectors = [
+        TestVector {
+            user: test_env.user,
+            can_get_public_key: true,
+        },
+        TestVector {
+            user: test_env.user2,
+            can_get_public_key: true,
+        },
+        TestVector {
+            user: Principal::anonymous(),
+            can_get_public_key: false,
+        },
+    ];
+    // Approve payment for the API calls with ICRC-2.
+    test_env
+        .ledger
+        .icrc_2_approve(
+            test_env.user,
+            &ApproveArgs::new(
+                cycles_ledger::Account {
+                    owner: test_env.signer.canister_id,
+                    subaccount: Some(principal2account(&test_env.user)),
+                },
+                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                    * test_vectors.len(),
+            ),
+        )
+        .expect("Failed to call ledger canister")
+        .expect("Failed to approve payment");
+    let payment_type = Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+        owner: test_env.user,
+        subaccount: None,
+    }));
+    // Check that only the expected public keys are available.
+    for TestVector {
+        user,
+        can_get_public_key,
+    } in test_vectors.iter()
+    {
+        let public_key = test_env.signer.schnorr_public_key(
+            *user,
+            &SchnorrPublicKeyArgument {
                 key_id: SchnorrKeyId {
                     algorithm: SchnorrAlgorithm::Ed25519,
                     name: "dfx_test_key".to_string(),
                 },
+                canister_id: None,
                 derivation_path: vec![],
-                message: message.clone(),
             },
-            &None,
+            &payment_type,
         );
-    assert_eq!(signature, Err("Anonymous caller not authorized.".to_string()), "The anonymous user should not be allowed to sign.");
+        assert_eq!(
+            public_key.is_ok(),
+            *can_get_public_key,
+            "Should {} get the public key of '{user}'.",
+            if *can_get_public_key {
+                "be able to"
+            } else {
+                "not be able to"
+            }
+        );
+    }
 }
-
-// TODO: Verify that it is not possible to get a public key for the anonymous user.
 // TODO: Verify that signing fails if not paid for, or if the payment is insufficient.
 
 /// Users should have distinct public keys.  Similary, different derivation paths should have
