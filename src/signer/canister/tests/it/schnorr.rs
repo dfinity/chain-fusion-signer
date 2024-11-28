@@ -309,9 +309,18 @@ fn public_keys_are_different() {
     .into_iter()
     .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
     .collect();
-    // TODO: Iterate over key types as well.
+    let key_types = [
+        SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "dfx_test_key".to_string(),
+        },
+        SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            name: "dfx_test_key".to_string(),
+        },
+    ];
 
-    // Each public key, together with the user and derivation path that produced it.
+    // Each public key, together with the user, key type and derivation path that produced it.
     // We will verify that no two user & derivation path pairs produce the same key.
     let mut public_keys = HashMap::new();
     // Loop over users and derivation paths...
@@ -333,41 +342,41 @@ fn public_keys_are_different() {
                         subaccount: Some(principal2account(&user)),
                     },
                     Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
-                        * derivation_paths.len() as u64,
+                        * derivation_paths.len()
+                        * key_types.len(),
                 ),
             )
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
-        for derivation_path in derivation_paths.iter() {
-            // Verify that the public key is unique.
-            let public_key = test_env
-                .signer
-                .schnorr_public_key(
-                    *user,
-                    &SchnorrPublicKeyArgument {
-                        key_id: SchnorrKeyId {
-                            algorithm: SchnorrAlgorithm::Ed25519,
-                            name: "dfx_test_key".to_string(),
+        for key_id in key_types.iter() {
+            for derivation_path in derivation_paths.iter() {
+                // Verify that the public key is unique.
+                let public_key = test_env
+                    .signer
+                    .schnorr_public_key(
+                        *user,
+                        &SchnorrPublicKeyArgument {
+                            key_id: key_id.clone(),
+                            canister_id: None,
+                            derivation_path: derivation_path.clone(),
                         },
-                        canister_id: None,
-                        derivation_path: derivation_path.clone(),
-                    },
-                    &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
-                        owner: test_env.user,
-                        subaccount: None,
-                    })),
-                )
-                .unwrap()
-                .unwrap()
-                .0
-                .public_key;
-            assert!(
-                !public_keys.contains_key(&public_key),
-                "These have the same public key: {:?} and {:?}",
-                public_keys.get(&public_key),
-                (user, derivation_path)
-            );
-            public_keys.insert(public_key, (*user, derivation_path.clone()));
+                        &Some(PaymentType::PatronPaysIcrc2Cycles(signer::Account {
+                            owner: test_env.user,
+                            subaccount: None,
+                        })),
+                    )
+                    .unwrap()
+                    .unwrap()
+                    .0
+                    .public_key;
+                assert!(
+                    !public_keys.contains_key(&public_key),
+                    "These have the same public key: {:?} and {:?}",
+                    public_keys.get(&public_key),
+                    (user, derivation_path, key_id)
+                );
+                public_keys.insert(public_key, (*user, derivation_path.clone(), key_id.clone()));
+            }
         }
     }
 }
