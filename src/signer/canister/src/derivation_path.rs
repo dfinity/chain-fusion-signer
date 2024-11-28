@@ -4,11 +4,11 @@ use candid::Principal;
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Schema {
-    /// A principal's default Btc address.
+    /// A principal's default Bitcoin address.
     ///
     /// Please see `from_principal` for details.
     Btc = 0,
-    /// A principal's default Eth address.
+    /// A principal's default Ethereum address.
     ///
     /// Please see `from_principal` for details.
     Eth = 1,
