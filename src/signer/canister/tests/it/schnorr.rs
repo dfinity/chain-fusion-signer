@@ -15,7 +15,11 @@ use crate::{
     utils::test_environment::{TestSetup, LEDGER_FEE},
 };
 
-/// Users should have distinct public keys.  Similaryy, different derivation paths should have
+// TODO: Verify that the anonymous user cannot sign.
+
+// TODO: Verify that it is not possible to get a public key for gthe anonymous user.
+
+/// Users should have distinct public keys.  Similary, different derivation paths should have
 /// different public keys.
 #[test]
 fn public_keys_are_different() {
