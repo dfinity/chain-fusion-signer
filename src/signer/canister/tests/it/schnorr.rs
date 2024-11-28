@@ -16,14 +16,15 @@ use crate::{
 };
 
 // TODO: Verify that the anonymous user cannot sign.
-
-// TODO: Verify that it is not possible to get a public key for gthe anonymous user.
+// TODO: Verify that it is not possible to get a public key for the anonymous user.
+// TODO: Verify that signing fails if not paid for, or if the payment is insufficient.
 
 /// Users should have distinct public keys.  Similary, different derivation paths should have
 /// different public keys.
 #[test]
 fn public_keys_are_different() {
     let test_env = TestSetup::default();
+    // Variants to test:
     let users = &test_env.users;
     let derivation_paths: Vec<Vec<ByteBuf>> = [
         vec![],
@@ -40,8 +41,20 @@ fn public_keys_are_different() {
     .into_iter()
     .map(|paths| paths.into_iter().map(ByteBuf::from).collect())
     .collect();
+    // TODO: Iterate over key types as well.
+
+    // Each public key, together with the user and derivation path that produced it.
+    // We will verify that no two user & derivation path pairs produce the same key.
     let mut public_keys = HashMap::new();
+    // Loop over users and derivation paths...
     for user in users.iter() {
+        // The `test_env.user` has funds and will act as patron for this user.
+        // TODO: Add a method to `TestSetup` to allow:
+        // ```
+        // let payment_type = test_env.approve_payment_for_signer(test_env.user, amount);
+        // ```
+        // This would remove most of the payment code from tests like this for which payment isn't
+        // the focus.
         test_env
             .ledger
             .icrc_2_approve(
@@ -58,6 +71,7 @@ fn public_keys_are_different() {
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
         for derivation_path in derivation_paths.iter() {
+            // Verify that the public key is unique.
             let public_key = test_env
                 .signer
                 .schnorr_public_key(
@@ -94,6 +108,7 @@ fn public_keys_are_different() {
 #[test]
 fn signatures_can_be_verified() {
     let test_env = TestSetup::default();
+    // Variants to test:
     let users = &test_env.users;
     let derivation_paths: Vec<Vec<ByteBuf>> = [vec![], vec!["", "", ""], vec!["foo"]]
         .into_iter()
@@ -109,6 +124,8 @@ fn signatures_can_be_verified() {
             name: "dfx_test_key".to_string(),
         },
     ];
+    // Each user will get a public key and sign a message with it.  Payment is via ICRC-2 so each
+    // trasaction also needs to pay the ledger fee.  This is how much that will cost:
     let cost_per_user = Nat::from({
         let num_tests = derivation_paths.len() * key_types.len();
         let cost_per_test = SignerMethods::SchnorrPublicKey.fee()
@@ -119,6 +136,7 @@ fn signatures_can_be_verified() {
 
     let message = ByteBuf::from("pokemon");
     for user in users.iter() {
+        // Approve funds for the user.  `test_env.user` will act as patron.
         test_env
             .ledger
             .icrc_2_approve(
@@ -133,6 +151,7 @@ fn signatures_can_be_verified() {
             )
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
+        // Test all variants for that user.
         for key_type in key_types.iter() {
             for derivation_path in derivation_paths.iter() {
                 let public_key = test_env
@@ -192,6 +211,8 @@ fn signatures_can_be_verified() {
 }
 
 /// The verification function for a given type of Schnorr key.
+///
+/// The function signature is `(signature, public_key, message) -> Result<(), signature::Error>`.
 fn schnorr_signature_verifier(
     algorithm: &SchnorrAlgorithm,
 ) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
@@ -201,6 +222,7 @@ fn schnorr_signature_verifier(
     }
 }
 
+/// Verifies that a Schnorr Ed25519 signature is valid.
 fn verify_schnorr_ed25519_signature(
     signature_bytes: &[u8],
     public_key_bytes: &[u8],
@@ -215,6 +237,7 @@ fn verify_schnorr_ed25519_signature(
     verifying_key.verify(message_bytes, &signature)
 }
 
+/// Verifies that a Schnorr secp256k1 signature is valid.
 fn verify_schnorr_bip340_secp256k1_signature(
     signature_bytes: &[u8],
     public_key_bytes: &[u8],
