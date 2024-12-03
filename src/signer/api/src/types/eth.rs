@@ -5,19 +5,19 @@ use super::transaction;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressRequest {
-    /// The principal owning the eth address.  Default: The caller.
+    /// The principal owning the Ethereum address.  Default: The caller.
     pub principal: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressResponse {
-    /// The eth address.
+    /// The Ethereum address.
     pub address: String,
 }
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum EthAddressError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -67,7 +67,7 @@ pub struct EthSignTransactionResponse {
 pub enum EthSignTransactionError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -94,7 +94,7 @@ pub struct EthPersonalSignResponse {
 pub enum EthPersonalSignError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }
@@ -121,7 +121,7 @@ pub struct EthSignPrehashResponse {
 pub enum EthSignPrehashError {
     /// Payment failed.
     PaymentError(ic_papi_api::PaymentError),
-    /// An `ic_cdk::call::CallResult` error received when making the canister thereshold signature
+    /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
     SigningError(RejectionCode, String),
 }

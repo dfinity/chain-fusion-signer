@@ -4,6 +4,7 @@ use candid::{CandidType, Deserialize, Principal};
 
 pub mod eth;
 pub mod generic;
+pub mod schnorr;
 
 pub type Timestamp = u64;
 

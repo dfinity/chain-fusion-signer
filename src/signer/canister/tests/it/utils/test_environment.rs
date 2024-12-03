@@ -164,7 +164,7 @@ impl Default for TestSetup {
 }
 impl TestSetup {
     /// The user's initial balance.
-    pub const USER_INITIAL_BALANCE: u128 = 100_000_000_000;
+    pub const USER_INITIAL_BALANCE: u128 = 10_000_000_000_000;
     /// Deposit cycles in `self.user`'s cycles ledger account.
     pub fn fund_user(&self, cycles: u128) {
         let initial_balance = self.user_balance();

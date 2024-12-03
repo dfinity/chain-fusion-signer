@@ -1,6 +1,6 @@
 [package]
 name = "signer"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -27,5 +27,8 @@ serde = { workspace = true }
 serde_bytes = { workspace = true }
 
 [dev-dependencies]
+ed25519-dalek = { workspace = true }
+k256 = { workspace = true }
 lazy_static = { workspace = true }
 pocket-ic = { workspace = true }
+signature = { workspace = true }
