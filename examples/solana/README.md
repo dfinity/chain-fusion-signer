@@ -2,6 +2,7 @@
 
 
 ## Test environment
+* Prerequisites: Standard development tools as specified in `dev-tools.json`
 * Install [the Solana CLI](https://solana.com/docs/intro/installation).
 * Start both dfx and Solana:
   * `dfx start --clean`
