@@ -1,0 +1,16 @@
+[package]
+name = "solana"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+candid = { workspace = true }
+ic-agent = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_json = { workspace = true }
+solana-client = "2.0.16"
+solana-program = "2.0.16"
+solana-sdk = "2.0.16"
+tokio = { workspace = true }
+signer-cli = { workspace = true }

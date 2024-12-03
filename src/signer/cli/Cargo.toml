@@ -1,0 +1,17 @@
+[package]
+name = "signer-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { workspace = true }
+tokio = { workspace = true, features = ['rt'] }
+dfx-core = {workspace = true}
+slog = {workspace = true}
+slog-term = {workspace = true}
+slog-async = {workspace = true}
+anyhow = {workspace = true}
+candid = {workspace = true}
+ic-cdk = {workspace = true}
+ic-chain-fusion-signer-api = {workspace = true}
+hex = {workspace = true}
