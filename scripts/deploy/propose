@@ -80,11 +80,11 @@ else
 fi
 
 # Gets the chain-fusion-signer canister ID
-CANISTER_ID="$(dfx canister id nns-dapp --network "$DFX_NETWORK")"
+CANISTER_ID="$(dfx canister id signer --network "$DFX_NETWORK")"
 # ... just checking...
 if [[ "${DFX_NETWORK:-}" =~ mainnet|ic ]]; then
-  [[ "${CANISTER_ID:-}" == "qoctq-giaaa-aaaaa-aaaea-cai" ]] || {
-    echo "ERROR: Has the mainnet nns-dapp canister ID really changed?"
+  [[ "${CANISTER_ID:-}" == "grghe-syaaa-aaaar-qabyq-cai" ]] || {
+    echo "ERROR: Has the mainnet signer canister ID really changed?"
     echo "       If so, please update this script: '${BASH_SOURCE[0]}'"
     exit 1
   } >&2
