@@ -1,4 +1,9 @@
 {
+	"clap-sh": {
+		"method": "curl",
+		"version": "main",
+		"url": "https://raw.githubusercontent.com/bitdivine/clap-sh/refs/heads/main/clap.bash"
+	},
 	"rustup": {
 		"method": "curl",
 		"version": "1.25.2",
