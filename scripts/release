@@ -11,3 +11,6 @@ version="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name
 tag="v$version"
 git tag "$tag"
 git push origin "refs/tags/$tag"
+echo "Waiting for GitHub release action..."
+sleep 5
+gh run watch "$(gh run list --workflow Release --branch "$tag" --json databaseId -q '.[0].databaseId')"
