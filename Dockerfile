@@ -88,12 +88,13 @@ COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/
 COPY target/commit target/commit
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
-RUN cp out/signer.wasm.gz out/signer.args.did out/signer.did /
+RUN cp out/signer.wasm.gz out/signer.args.did out/signer.args.bin out/signer.did /
 RUN cp target/commit commit
-RUN sha256sum /signer.wasm.gz /signer.args.did signer.did
+RUN sha256sum /signer.wasm.gz /signer.args.did /signer.args.bin signer.did
 
 FROM scratch AS signer
 COPY --from=build-signer /signer.wasm.gz /
 COPY --from=build-signer /signer.args.did /
+COPY --from=build-signer /signer.args.bin /
 COPY --from=build-signer /signer.did /
 COPY --from=build-signer /commit /
