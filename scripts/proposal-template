@@ -20,21 +20,39 @@ OUTPUT_ROLLBACK="release/ROLLBACK.md"
 
 WASM="release/ci/signer.wasm.gz"
 if test -f "$WASM"; then
-  SHA="$(sha256sum "$WASM" | awk '{print $1}')"
+  WASM_SHA="$(sha256sum "$WASM" | awk '{print $1}')"
 else
   echo "Please populate ${WASM} and run this again."
   exit 0
 fi
+ARGS_DID="release/ci/signer.args.did"
+if test -f "$ARGS_DID"; then
+  ARGS_DID_SHA="$(sha256sum "$ARGS_DID" | awk '{print $1}')"
+else
+  echo "Please populate ${ARGS_DID} and run this again."
+  exit 0
+fi
+ARGS_BIN="release/ci/signer.args.bin"
+if test -f "$ARGS_BIN"; then
+  ARGS_BIN_SHA="$(sha256sum "$ARGS_BIN" | awk '{print $1}')"
+else
+  echo "Please populate ${ARGS_BIN} and run this again."
+  exit 0
+fi
 
 cat <<EOF >"$OUTPUT_PROPOSAL"
-# Upgrade Chain Fusion Signer canister to commit \`$(git rev-parse "tags/$RELEASE_CANDIDATE_TAG")\`
-Wasm sha256 hash: \`${SHA}\` (\`${RELEASE_GITHUB_URL}\`)
+# Upgrade Chain Fusion Signer canister to $RELEASE_CANDIDATE_TAG
+Commit: \`$(git rev-parse "tags/$RELEASE_CANDIDATE_TAG")\`
+Release: \`${RELEASE_GITHUB_URL}\`
+Wasm sha256 hash:     \`${WASM_SHA}\`
+Candid argument hash: \`${ARGS_DID_SHA}\`
+Binary argument hash: \`${ARGS_BIN_SHA}\`
 
 The chain fusion signer is a canister that makes the internet computer threshold signing API available to web applications, off-chain clients and other-chain applications.
 
 ## Change Log
 
-$(gh release view "$RELEASE_CANDIDATE_TAG" --json body -q .body | sed -E 's/^#/##/g')
+$(gh release view "$RELEASE_CANDIDATE_TAG" --json body -q .body | tr -d "\r" | sed -E 's/^#/##/g')
 
 ## Commit Log
 
@@ -45,7 +63,7 @@ $(bash  -c "git log --format='%C(auto) %h %s' $(git rev-parse --short "$PROD_REF
 
 ## Wasm Verification
 
-To build the wasm module yourself and verify its hash, run the following commands from the root of the [nns-dapp repo](https://github.com/dfinity/nns-dapp):
+To build the wasm module yourself and verify its hash, run the following commands from the root of the [Chain Fusion Signer repo](https://github.com/dfinity/chain-fusion-signer):
 
 \`\`\`
 git fetch  # to ensure you have the latest changes.
@@ -62,7 +80,7 @@ EOF
 
 cat <<EOF >"$OUTPUT_ROLLBACK"
 # Downgrade frontend NNS Dapp canister to commit \`$(git rev-parse "$RELEASE_CANDIDATE_TAG")\`
-Wasm sha256 hash: \`${SHA}\` (\`${WASM}\`)
+Wasm sha256 hash: \`${WASM_SHA}\` (\`${WASM}\`)
 
 ## Wasm Verification
 
