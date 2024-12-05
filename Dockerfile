@@ -16,6 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
     clang \
     cmake \
     jq \
+    xxd \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -35,7 +36,7 @@ SHELL ["bash", "-c"]
 # Install dfx
 # Note: dfx is installed in `$HOME/.local/share/dfx/bin` but we can't reference `$HOME` here so we hardcode `/root`.
 COPY --from=tool_versions /config/*_version config/
-ENV PATH="/root/.local/share/dfx/bin:${PATH}"
+ENV PATH="/root/.local/share/dfx/bin:/root/.local/bin:${PATH}"
 RUN DFXVM_INIT_YES=true DFX_VERSION="$(cat config/dfx_version)" sh -c "$(curl -fsSL https://sdk.dfinity.org/install.sh)" && dfx --version
 # Install Rust
 COPY ./rust-toolchain.toml .
@@ -48,6 +49,7 @@ RUN scripts/setup rust
 RUN scripts/setup cargo-binstall
 RUN scripts/setup candid-extractor
 RUN scripts/setup ic-wasm
+RUN scripts/setup didc
 # Optional: Pre-build dependencies
 COPY Cargo.lock .
 COPY Cargo.toml .
