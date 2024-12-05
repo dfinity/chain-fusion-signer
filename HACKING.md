@@ -63,3 +63,17 @@ dfx canister install signer --mode upgrade --upgrade-unchanged --network staging
 ```
 
 If you are not a controller, you may request a canister upgrade via Orbit. Please contact Leon Tan for the latest Orbit deployment instructions.
+
+## Deploy to Production
+
+- Create a GitHub release
+- Create `release/ci` & populate it with the GitHub release artefacts.  E.g.
+  ```
+  (
+    mkdir -p release/ci
+    cd release/ci
+    gh release download v0.2.8
+  )
+  ```
+- Apply the tag `release-candidate`.
+- Ensure that the tag `prod` points at current production.  (You can get the production commit and apply the tag, if you wish).

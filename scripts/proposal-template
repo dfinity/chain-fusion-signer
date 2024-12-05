@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SOURCE_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+PATH="$SOURCE_DIR:$PATH"
+
+# Source the clap.bash file ---------------------------------------------------
+source "$SOURCE_DIR/clap.bash"
+# Define options
+clap.define short=n long=network desc="The dfx network to use" variable=DFX_NETWORK default="mainnet"
+clap.define short=t long=tag desc="The release candidate tag" variable=RELEASE_CANDIDATE_TAG
+clap.define short=p long=prod desc="The production ref" variable=PROD_REF
+# Source the output file ----------------------------------------------------------
+source "$(clap.build)"
+cd "$SOURCE_DIR/.."
+export DFX_NETWORK
+
+RELEASE_GITHUB_URL="$(gh release view "$RELEASE_CANDIDATE_TAG" --json url -q .url)"
+OUTPUT_PROPOSAL="release/PROPOSAL.md"
+OUTPUT_ROLLBACK="release/ROLLBACK.md"
+
+WASM="release/ci/signer.wasm.gz"
+if test -f "$WASM"; then
+  SHA="$(sha256sum "$WASM" | awk '{print $1}')"
+else
+  echo "Please populate ${WASM} and run this again."
+  exit 0
+fi
+
+cat <<EOF >"$OUTPUT_PROPOSAL"
+# Upgrade Chain Fusion Signer canister to commit \`$(git rev-parse "tags/$RELEASE_CANDIDATE_TAG")\`
+Wasm sha256 hash: \`${SHA}\` (\`${RELEASE_GITHUB_URL}\`)
+
+The chain fusion signer is a canister that makes the internet computer threshold signing API available to web applications, off-chain clients and other-chain applications.
+
+## Change Log
+
+$(gh release view "$RELEASE_CANDIDATE_TAG" --json body -q .body | sed -E 's/^#/##/g')
+
+## Commit Log
+
+\`\`\`
++ bash -xc "git log --format='%C(auto) %h %s' $(git rev-parse --short "$PROD_REF")..$(git rev-parse --short "$RELEASE_CANDIDATE_TAG")"
+$(bash  -c "git log --format='%C(auto) %h %s' $(git rev-parse --short "$PROD_REF")..$(git rev-parse --short "$RELEASE_CANDIDATE_TAG")")
+\`\`\`
+
+## Wasm Verification
+
+To build the wasm module yourself and verify its hash, run the following commands from the root of the [nns-dapp repo](https://github.com/dfinity/nns-dapp):
+
+\`\`\`
+git fetch  # to ensure you have the latest changes.
+git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
+./scripts/docker-build
+\`\`\`
+
+This will generate these files:
+* out/signer.wasm.gz
+* out/signer.args.did
+* out/signer.args.bin
+
+EOF
+
+cat <<EOF >"$OUTPUT_ROLLBACK"
+# Downgrade frontend NNS Dapp canister to commit \`$(git rev-parse "$RELEASE_CANDIDATE_TAG")\`
+Wasm sha256 hash: \`${SHA}\` (\`${WASM}\`)
+
+## Wasm Verification
+
+To build the wasm module yourself and verify its hash, run the following commands from the root of the nns-dapp repo:
+
+\`\`\`
+git fetch  # to ensure you have the latest changes.
+git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
+./scripts/docker-build
+\`\`\`
+
+This will generate these files:
+* out/signer.wasm.gz
+* out/signer.args.did
+* out/signer.args.bin
+
+EOF
+
+echo Outputs:
+for VAR in OUTPUT_PROPOSAL OUTPUT_ROLLBACK ; do
+	echo "$VAR: ${!VAR}"
+done
