@@ -97,7 +97,7 @@ jobs:
       - name: Install dfx
         uses: dfinity/setup-dfx@main
       - name: Install build tools
-        run: scripts/setup cargo-binstall candid-extractor ic-wasm
+        run: scripts/setup cargo-binstall candid-extractor ic-wasm didc
       - name: Start dfx
         run: dfx start --clean --background
       - name: Deploy all canisters
