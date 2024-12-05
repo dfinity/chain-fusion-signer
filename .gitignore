@@ -16,6 +16,9 @@
 # Build artefacts
 *.wasm.gz
 
+# Release artefacts
+release/
+
 # rust
 target/
 
