@@ -67,7 +67,7 @@ If you are not a controller, you may request a canister upgrade via Orbit. Pleas
 ## Deploy to Production
 
 - Create a GitHub release
-- Create `release/ci` & populate it with the GitHub release artefacts.  E.g.
+- Create `release/ci` & populate it with the GitHub release artefacts. E.g.
   ```
   (
     mkdir -p release/ci
@@ -76,4 +76,4 @@ If you are not a controller, you may request a canister upgrade via Orbit. Pleas
   )
   ```
 - Apply the tag `release-candidate`.
-- Ensure that the tag `prod` points at current production.  (You can get the production commit and apply the tag, if you wish).
+- Ensure that the tag `prod` points at current production. (You can get the production commit and apply the tag, if you wish).
