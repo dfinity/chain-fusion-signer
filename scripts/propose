@@ -112,20 +112,14 @@ WASM="$(jq -r .canisters.signer.wasm dfx.json)"
 SHA="$(sha256sum <"$WASM" | awk '{print $1}')"
 
 # Gets the canister arguments
-ARG_DID="$(jq -r .canisters.signer.init_arg_file dfx.json)"
-ARG_PATH="${ARG_DID%.did}.bin"
-test -e "$ARG_DID" || {
-  echo "ERROR: Arguments need to be provided in $ARG_DID"
-  exit 1
-} >&2
-didc encode "$(cat "$ARG_DID")" | xxd -r -p >"$ARG_PATH"
+ARG_PATH=release/signer.args.bin
 test -e "$ARG_PATH" || {
-  echo "ERROR: Failed to create arguments in $ARG_PATH"
+  echo "ERROR: Arguments need to be provided in $ARG_PATH"
   exit 1
 } >&2
 
 # Gets the proposal text
-SUMMARY_FILE=./PROPOSAL.md
+SUMMARY_FILE=release/PROPOSAL.md
 test -e "${SUMMARY_FILE:-}" || {
   echo "ERROR: Proposal text not found at: ${SUMMARY_FILE}"
   exit 1
