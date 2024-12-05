@@ -16,6 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
     clang \
     cmake \
     jq \
+    xxd \
     && rm -rf /var/lib/apt/lists/*
 
 
