@@ -125,7 +125,7 @@ test -e "$ARG_PATH" || {
 } >&2
 
 # Gets the proposal text
-SUMMARY_FILE=./release/PROPOSAL.md
+SUMMARY_FILE=./PROPOSAL.md
 test -e "${SUMMARY_FILE:-}" || {
   echo "ERROR: Proposal text not found at: ${SUMMARY_FILE}"
   exit 1
