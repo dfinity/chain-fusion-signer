@@ -44,7 +44,10 @@ ENV RUSTUP_HOME=/opt/rustup \
     PATH=/cargo/bin:$PATH
 COPY dev-tools.json dev-tools.json
 COPY scripts/setup scripts/setup-cargo-binstall scripts/setup-rust scripts/
-RUN scripts/setup rust cargo-binstall candid-extractor ic-wasm
+RUN scripts/setup rust
+RUN scripts/setup cargo-binstall
+RUN scripts/setup candid-extractor
+RUN scripts/setup ic-wasm
 # Optional: Pre-build dependencies
 COPY Cargo.lock .
 COPY Cargo.toml .
