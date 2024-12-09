@@ -66,14 +66,16 @@ If you are not a controller, you may request a canister upgrade via Orbit. Pleas
 
 ## Deploy to Production
 
-- Create a GitHub release
-- Create `release/ci` & populate it with the GitHub release artefacts. E.g.
-  ```
-  (
-    mkdir -p release/ci
-    cd release/ci
-    gh release download v0.2.8
-  )
-  ```
-- Apply the tag `release-candidate`.
-- Ensure that the tag `prod` points at current production. (You can get the production commit and apply the tag, if you wish).
+- Create a GitHub release with a tag such as `v0.1.2`
+  - Update the GitHub release text.  It is recommended to ask the team to review the text.
+  - Ensure that the release has been published.
+- Check out the release commit
+- Delete any old release directory.
+- Run: `./scripts/proposal-assets -t $TAG`
+  - Verify that `release/ci` contains teh release wasm and arguments.
+  - Run a docker build locally and verify that the Wasm and argument file hashes match.
+- Run: `./scripts/proposal-template -t $TAG`
+  - Verify that `release/PROPOSAL.md` has been created.
+- Run: `./scripts/propose`
+  - Verify the proposal very carefully, then submit the proposal.
+- Create an appointment with trusted neurons to vote on the proposal.
