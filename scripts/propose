@@ -109,7 +109,7 @@ fi
 # Note: If the wasm is not provided, the SHA will fail.
 # Note: Also, the template creation script will fail if the wasm is not provided.
 WASM="release/ci/signer.wasm.gz"
-SHA="$(sha256sum <"$WASM" | awk '{print $1}')"
+WASM_SHA="$(sha256sum <"$WASM" | awk '{print $1}')"
 
 # Gets the canister arguments
 ARG_PATH=release/ci/signer.args.bin
@@ -126,7 +126,7 @@ test -e "${SUMMARY_FILE:-}" || {
 } >&2
 
 # Prepares the command
-set ic-admin "${AUTH_ARGS[@]}" --nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$SHA" --arg "$ARG_PATH"
+set ic-admin "${AUTH_ARGS[@]}" --nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$WASM_SHA" --arg "$ARG_PATH"
 # ... just checking...
 echo
 echo PLEASE REVIEW THIS COMMAND:
