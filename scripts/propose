@@ -108,11 +108,11 @@ fi
 # Gets the wasm
 # Note: If the wasm is not provided, the SHA will fail.
 # Note: Also, the template creation script will fail if the wasm is not provided.
-WASM="$(jq -r .canisters.signer.wasm dfx.json)"
+WASM="release/ci/signer.wasm.gz"
 SHA="$(sha256sum <"$WASM" | awk '{print $1}')"
 
 # Gets the canister arguments
-ARG_PATH=release/signer.args.bin
+ARG_PATH=release/ci/signer.args.bin
 test -e "$ARG_PATH" || {
   echo "ERROR: Arguments need to be provided in $ARG_PATH"
   exit 1
