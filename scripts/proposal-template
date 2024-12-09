@@ -3,6 +3,16 @@ set -euo pipefail
 SOURCE_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PATH="$SOURCE_DIR:$PATH"
 
+print_help() {
+	cat <<-EOF
+	Creates the default proposal text.
+
+	# Prerequisites
+	- The desired release has been created and published.
+	- Release notes have been written in GitHub
+	EOF
+}
+
 # Source the clap.bash file ---------------------------------------------------
 source "$SOURCE_DIR/clap.bash"
 # Define options
