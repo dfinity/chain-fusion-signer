@@ -24,6 +24,9 @@ source "$(clap.build)"
 cd "$SOURCE_DIR/.."
 export DFX_NETWORK
 
+# If the currently deployed git ref is not specified, get it from the canister metadata.
+test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git_commit_id --network "$DFX_NETWORK" | awk '{print $1}')"
+
 RELEASE_GITHUB_URL="$(gh release view "$RELEASE_CANDIDATE_TAG" --json url -q .url)"
 OUTPUT_PROPOSAL="release/PROPOSAL.md"
 OUTPUT_ROLLBACK="release/ROLLBACK.md"
