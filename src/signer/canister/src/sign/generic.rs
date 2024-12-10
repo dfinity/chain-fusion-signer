@@ -10,12 +10,15 @@ use ic_cdk::api::management_canister::{
         SignWithSchnorrResponse,
     },
 };
+use ic_cdk::api::management_canister::schnorr::{SchnorrKeyId};
+use ic_cdk::api::management_canister::schnorr::SchnorrAlgorithm::Ed25519;
 pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,
 };
 use ic_chain_fusion_signer_api::types::schnorr::{SchnorrPublicKeyError, SchnorrSigningError};
 
 use crate::derivation_path::Schema;
+use crate::state::read_config;
 
 /// A generic ECDSA public key for the user.
 ///
@@ -49,6 +52,10 @@ pub async fn sign_with_ecdsa(
 pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgument,
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
+    arg.key_id = SchnorrKeyId {
+        algorithm: Ed25519,
+        name: read_config(|s| s.ecdsa_key_name.clone()),
+    };
     // Moves the canister_id from the argument to the derivation path.
     let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::caller);
     if key_owner == Principal::anonymous() {
@@ -64,6 +71,10 @@ pub async fn schnorr_public_key(
 pub async fn schnorr_sign(
     mut arg: SignWithSchnorrArgument,
 ) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
+    arg.key_id = SchnorrKeyId {
+        algorithm: Ed25519,
+        name: read_config(|s| s.ecdsa_key_name.clone()),
+    };
     arg.derivation_path =
         Schema::Schnorr.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
     Ok(ic_cdk::api::management_canister::schnorr::sign_with_schnorr(arg).await?)
