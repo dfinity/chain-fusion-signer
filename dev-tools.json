@@ -12,7 +12,7 @@
 	"n": {
 		"method": "curl",
 		"version": "v9.0.1",
-		"url": "https://github.com/tj/n/blob/v9.0.1/bin/n"
+		"url": "https://raw.githubusercontent.com/tj/n/refs/tags/v9.0.1/bin/n"
 	},
 	"didc": {
 		"method": "curl",
