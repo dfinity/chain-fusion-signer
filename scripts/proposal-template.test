@@ -6,11 +6,11 @@ set -euxo pipefail
 test -e "release/PROPOSAL.md"
 test -e "release/ROLLBACK.md"
 
-diff release/PROPOSAL.md scripts/proposal-template.test.proposal.md || {
+diff release/PROPOSAL.md scripts/proposal-template.test.proposal.txt || {
   echo "ERROR: Differences found in proposal."
   exit 1
 }
-diff release/ROLLBACK.md scripts/proposal-template.test.rollback.md || {
+diff release/ROLLBACK.md scripts/proposal-template.test.rollback.txt || {
   echo "ERROR: Differences found in rollback."
   exit 1
 }
