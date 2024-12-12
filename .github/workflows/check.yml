@@ -46,7 +46,6 @@ jobs:
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   rust-tests:
     name: "Rust tests"
     runs-on: ${{ matrix.os }}
