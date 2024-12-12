@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+(
+  echo Should print help
+  scripts/proposal-assets --help
+)
+
+(
+  echo Should download assets
+  scripts/proposal-assets --tag v0.2.8
+  expected_hashes="43c15c894b37508d22e9413767feee5cafec719b5769db0a48e3d34ba8bffe36  ./release/ci/commit
+d581ea33ba8b72cf515a9b2467a08ba3c561da1407da1d50709353309ba4c9d7  ./release/ci/commit.txt
+643cb97c16a1234fbd7b0d966571a3a07753347d578cbf0392ec605e4d9ccd03  ./release/ci/filelist.txt
+97f675cfa2929913d60205278b4a6ff29d84ab0c3c7a3633ac8eeb43bad1f4af  ./release/ci/provenance.json
+367a11245d7e97692843c69e9582dd8ad08eef1ff3392dfd0c944d5f1bd74a41  ./release/ci/signer.args.bin
+a99d4a8355c86d2367955d833df83302b5748e6e34898e280e359f9c57541e1f  ./release/ci/signer.args.did
+ccd50eecb32c38fe8db74c5a84207322ca6dc4ad4c7948579a0300078c074457  ./release/ci/signer.did
+9d76ee4646df62d1a4bddbdfb4fa78e43166c19a94595ba9e1f5f27b823c8192  ./release/ci/signer.wasm.gz"
+  actual_hashes="$(sha256sum ./release/ci/*)"
+  [[ "$expected_hashes" == "$actual_hashes" ]] || {
+    echo "Unexpected values in CI:"
+    diff <(echo "$expected_hashes") <(echo "$actual_hashes")
+    exit 1
+  }
+)
+
+echo "PASSED $0"
