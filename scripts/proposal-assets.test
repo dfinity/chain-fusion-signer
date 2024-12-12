@@ -25,4 +25,4 @@ ccd50eecb32c38fe8db74c5a84207322ca6dc4ad4c7948579a0300078c074457  ./release/ci/s
   }
 )
 
-echo PASSED $0
+echo "PASSED $0"
