@@ -85,9 +85,9 @@ git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
 \`\`\`
 
 This will generate these files:
-* out/signer.wasm.gz
-* out/signer.args.did
-* out/signer.args.bin
+- out/signer.wasm.gz
+- out/signer.args.did
+- out/signer.args.bin
 
 EOF
 
