@@ -67,7 +67,7 @@ If you are not a controller, you may request a canister upgrade via Orbit. Pleas
 ## Deploy to Production
 
 - Create a GitHub release with a tag such as `v0.1.2`
-  - Update the GitHub release text.  It is recommended to ask the team to review the text.
+  - Update the GitHub release text. It is recommended to ask the team to review the text.
   - Ensure that the release has been published.
 - Check out the release commit
 - Delete any old release directory.
