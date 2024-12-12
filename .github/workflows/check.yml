@@ -38,6 +38,12 @@ jobs:
         run: sudo apt-get install -yy shellcheck
       - name: Lint shell
         run: ./scripts/lint-sh
+      - name: Shell commands work
+        run: |
+          for test in scripts/*.test ; do
+                echo "\nTesting: $test"
+                "$test"
+          done
   rust-tests:
     name: "Rust tests"
     runs-on: ${{ matrix.os }}
