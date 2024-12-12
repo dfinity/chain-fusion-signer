@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 ./scripts/proposal-assets --tag v0.2.8
-./scripts/proposal-template --tag v0.2.8
+./scripts/proposal-template --tag v0.2.8 --prod v0.2.7
 
 test -e "release/PROPOSAL.md"
 test -e "release/ROLLBACK.md"
