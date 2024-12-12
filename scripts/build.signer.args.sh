@@ -62,9 +62,14 @@ cat <<EOF >"$ARG_FILE"
   })
 EOF
 
+# ... Also create the binary file, for use in proposals
+ARG_BIN="${ARG_FILE%.did}.bin"
+didc encode "$(cat "$ARG_FILE")" | xxd -r -p >"$ARG_BIN"
+
 ####
 # Success
 cat <<EOF
 SUCCESS: The signer argument file has been created:
-signer install args: $(sha256sum "$ARG_FILE")
+signer install args as candid: $(sha256sum "$ARG_FILE")
+signer install args as binary: $(sha256sum "$ARG_BIN")
 EOF
