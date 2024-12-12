@@ -6,6 +6,7 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
+assert_matches = "1.5.0"
 ic-cdk = "0.17.0"
 ic-cdk-macros = "0.17.0"
 ic-stable-structures = "0.6.6"
