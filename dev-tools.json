@@ -2,7 +2,7 @@
 	"rustup": {
 		"method": "curl",
 		"version": "1.25.2",
-		"url": "https://raw.githubusercontent.com/rust-lang/rustup/1.25.2/rustup-init.sh",
+		"url": "https://raw.githubusercontent.com/rust-lang/rustup/${VERSION}/rustup-init.sh",
 		"pipe": [["sh"]]
 	},
 	"rust": {
@@ -12,7 +12,7 @@
 	"n": {
 		"method": "curl",
 		"version": "v9.0.1",
-		"url": "https://raw.githubusercontent.com/tj/n/refs/tags/v9.0.1/bin/n"
+		"url": "https://raw.githubusercontent.com/tj/n/refs/tags/${VERSION}/bin/n"
 	},
 	"didc": {
 		"method": "curl",
