@@ -32,7 +32,7 @@ print_docker_help() {
   cat <<-"EOF"
 	Note: If the docker build fails, it may help to build from a clean cache:
 
-	  ./scripts/docker-build -- --no-cache
+	  ./scripts/docker-build --no-cache
 
 	EOF
 }
