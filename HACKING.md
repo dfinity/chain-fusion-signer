@@ -72,7 +72,7 @@ If you are not a controller, you may request a canister upgrade via Orbit. Pleas
 - Check out the release commit
 - Delete any old release directory.
 - Run: `./scripts/proposal-assets -t $TAG`
-  - Verify that `release/ci` contains teh release wasm and arguments.
+  - Verify that `release/ci` contains the release Wasm and arguments.
   - Run a docker build locally and verify that the Wasm and argument file hashes match.
 - Run: `./scripts/proposal-template -t $TAG`
   - Verify that `release/PROPOSAL.md` has been created.
