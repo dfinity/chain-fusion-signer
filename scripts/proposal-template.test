@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+./scripts/proposal-assets --tag v0.2.8
+./scripts/proposal-template --tag v0.2.8 --prod v0.2.7
+
+test -e "release/PROPOSAL.md"
+test -e "release/ROLLBACK.md"
+
+diff release/PROPOSAL.md scripts/proposal-template.test.proposal.txt || {
+  echo "ERROR: Differences found in proposal."
+  exit 1
+}
+diff release/ROLLBACK.md scripts/proposal-template.test.rollback.txt || {
+  echo "ERROR: Differences found in rollback."
+  exit 1
+}
+echo FIN

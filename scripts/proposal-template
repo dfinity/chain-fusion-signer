@@ -57,7 +57,7 @@ cat <<EOF >"$OUTPUT_PROPOSAL"
 # Upgrade Chain Fusion Signer canister to $RELEASE_CANDIDATE_TAG
 Commit: \`$(git rev-parse "tags/$RELEASE_CANDIDATE_TAG")\`
 Release: \`${RELEASE_GITHUB_URL}\`
-Wasm sha256 hash:     \`${WASM_SHA}\`
+Wasm sha256 hash: \`${WASM_SHA}\`
 Candid argument hash: \`${ARGS_DID_SHA}\`
 Binary argument hash: \`${ARGS_BIN_SHA}\`
 
@@ -85,9 +85,9 @@ git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
 \`\`\`
 
 This will generate these files:
-* out/signer.wasm.gz
-* out/signer.args.did
-* out/signer.args.bin
+- out/signer.wasm.gz
+- out/signer.args.did
+- out/signer.args.bin
 
 EOF
 
@@ -106,9 +106,9 @@ git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
 \`\`\`
 
 This will generate these files:
-* out/signer.wasm.gz
-* out/signer.args.did
-* out/signer.args.bin
+- out/signer.wasm.gz
+- out/signer.args.did
+- out/signer.args.bin
 
 EOF
 
