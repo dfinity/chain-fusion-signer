@@ -25,18 +25,22 @@ WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
 ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 BUILD_DIR="target/wasm32-unknown-unknown/release"
 COMMIT_FILE="target/commit"
+TAGS_FILE="target/tags"
+
+####
+# Gets commit and tag information, if available.
+mkdir -p target
+if test -d .git; then
+  scripts/commit-metadata
+else
+  touch "$COMMIT_FILE" "$TAGS_FILE"
+fi
+# Keep just the tags with semantic versions
+sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;s/^ //g;p}' "$TAGS_FILE" > "${TAGS_FILE}.semver"
 
 ####
 # Builds the Wasm without metadata
 cargo build --locked --target wasm32-unknown-unknown --release -p signer
-
-####
-# Gets commit and tag information, if available.
-if test -d .git; then
-  scripts/commit-metadata >"$COMMIT_FILE"
-else
-  touch "$COMMIT_FILE"
-fi
 
 ####
 # Builds the candid file
@@ -52,7 +56,8 @@ ic-wasm \
 
 # adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
 ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.candid.wasm" metadata candid:service -f "$CANDID_FILE" -v public
-ic-wasm "$BUILD_DIR/signer.candid.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git_commit_id -f "$COMMIT_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.candid.wasm" -o "$BUILD_DIR/signer.commit.wasm" metadata git_commit_id -f "$COMMIT_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.commit.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git_tags -f "$TAGS_FILE" -v public
 
 gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 

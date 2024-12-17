@@ -3,4 +3,5 @@
 
 # The $ in the single quotes is intentional; it matches the end of the file.
 # shellcheck disable=SC2016
-echo "$(git rev-parse HEAD)$(git tag -l --contains HEAD | sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;p}')"
+git rev-parse HEAD > target/commit
+git tag -l --contains HEAD > target/tags
