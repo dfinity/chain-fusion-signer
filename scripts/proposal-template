@@ -25,7 +25,7 @@ cd "$SOURCE_DIR/.."
 export DFX_NETWORK
 
 # If the currently deployed git ref is not specified, get it from the canister metadata.
-test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git_commit_id --network "$DFX_NETWORK" | awk '{print $1}')"
+test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git:commit --network "$DFX_NETWORK")"
 
 RELEASE_GITHUB_URL="$(gh release view "$RELEASE_CANDIDATE_TAG" --json url -q .url)"
 OUTPUT_PROPOSAL="release/PROPOSAL.md"
@@ -79,8 +79,8 @@ $(bash -c "git log --format='%C(auto) %h %s' $(git rev-parse --short "$PROD_REF"
 To build the wasm module yourself and verify its hash, run the following commands from the root of the [Chain Fusion Signer repo](https://github.com/dfinity/chain-fusion-signer):
 
 \`\`\`
-git fetch  # to ensure you have the latest changes.
-git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
+git fetch --tags # to ensure you have the latest changes.
+git checkout tags/$RELEASE_CANDIDATE_TAG
 ./scripts/docker-build
 \`\`\`
 

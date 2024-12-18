@@ -11,8 +11,15 @@
 					"name": "candid:service"
 				},
 				{
-					"name": "git_commit_id",
+					"name": "candid:args"
+				},
+				{
+					"name": "git:commit",
 					"path": "target/commit"
+				},
+				{
+					"name": "git:tags",
+					"path": "target/tags.semver"
 				}
 			],
 			"specified_id": "grghe-syaaa-aaaar-qabyq-cai",

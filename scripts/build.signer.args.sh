@@ -63,8 +63,9 @@ cat <<EOF >"$ARG_FILE"
 EOF
 
 # ... Also create the binary file, for use in proposals
+ARG_HEX="${ARG_FILE%.did}.hex"
 ARG_BIN="${ARG_FILE%.did}.bin"
-didc encode "$(cat "$ARG_FILE")" | xxd -r -p >"$ARG_BIN"
+didc encode "$(cat "$ARG_FILE")" | tee "$ARG_HEX" | xxd -r -p >"$ARG_BIN"
 
 ####
 # Success

@@ -5,4 +5,4 @@
 
 set -euxo pipefail
 mkdir -p target
-scripts/commit-metadata >target/commit
+scripts/commit-metadata

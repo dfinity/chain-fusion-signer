@@ -12,7 +12,10 @@ set -euo pipefail
 }
 
 report_git_ref() {
-  dfx canister metadata signer git_commit_id --network "$DFX_NETWORK"
+  dfx canister metadata signer git:commit --network "$DFX_NETWORK"
+}
+report_git_tag() {
+  dfx canister metadata signer git:tags --network "$DFX_NETWORK"
 }
 report_args() {
   dfx canister call signer config --network "$DFX_NETWORK"
@@ -24,6 +27,7 @@ report() {
   hrule
   echo "network: $DFX_NETWORK"
   echo "git ref: $(report_git_ref)"
+  echo "git tag: $(report_git_tag)"
   echo "args:"
   report_args
   echo
