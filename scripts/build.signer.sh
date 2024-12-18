@@ -36,7 +36,7 @@ else
   touch "$COMMIT_FILE" "$TAGS_FILE"
 fi
 # Keep just the tags with semantic versions
-sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;s/^ //g;p}' "$TAGS_FILE" > "${TAGS_FILE}.semver"
+sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;s/^ //g;p}' "$TAGS_FILE" >"${TAGS_FILE}.semver"
 
 ####
 # Builds the Wasm without metadata
