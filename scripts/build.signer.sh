@@ -21,10 +21,19 @@ print_help() {
 DFX_NETWORK="${DFX_NETWORK:-local}"
 
 CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
+ARGS_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
 BUILD_DIR="target/wasm32-unknown-unknown/release"
 COMMIT_FILE="target/commit"
 TAGS_FILE="target/tags"
+
+####
+# Computes the install args, overwriting any existing args file.
+./scripts/build.signer.args.sh
+
+####
+# Adds the candid file to the output directory
+cp src/signer/canister/signer.did out/
 
 ####
 # Gets commit and tag information, if available.
@@ -54,22 +63,15 @@ ic-wasm \
   shrink
 
 # adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
-ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.candid.wasm" metadata candid:service -f "$CANDID_FILE" -v public
-ic-wasm "$BUILD_DIR/signer.candid.wasm" -o "$BUILD_DIR/signer.commit.wasm" metadata git_commit_id -f "$COMMIT_FILE" -v public
-ic-wasm "$BUILD_DIR/signer.commit.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git_tags -f "${TAGS_FILE}.semver" -v public
+ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.service.wasm" metadata candid:service -f "$CANDID_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.service.wasm" -o "$BUILD_DIR/signer.args.wasm" metadata candid:args -f "$ARGS_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.args.wasm" -o "$BUILD_DIR/signer.commit.wasm" metadata git:commit -f "$COMMIT_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.commit.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git:tags -f "${TAGS_FILE}.semver" -v public
 
 gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 
 mkdir -p "$(dirname "$WASM_FILE")"
 mv "$BUILD_DIR/signer.metadata.wasm.gz" "$WASM_FILE"
-
-####
-# Computes the install args, overwriting any existing args file.
-./scripts/build.signer.args.sh
-
-####
-# Adds the candid file to the output directory
-cp src/signer/canister/signer.did out/
 
 ####
 # Success

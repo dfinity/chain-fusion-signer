@@ -12,10 +12,10 @@ set -euo pipefail
 }
 
 report_git_ref() {
-  dfx canister metadata signer git_commit_id --network "$DFX_NETWORK"
+  dfx canister metadata signer git:commit --network "$DFX_NETWORK"
 }
 report_git_tag() {
-  dfx canister metadata signer git_tags --network "$DFX_NETWORK"
+  dfx canister metadata signer git:tags --network "$DFX_NETWORK"
 }
 report_args() {
   dfx canister call signer config --network "$DFX_NETWORK"

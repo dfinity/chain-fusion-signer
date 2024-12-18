@@ -5,16 +5,11 @@ set -euo pipefail
 sha256sum out/signer* >out/filelist.txt
 # Get the metadata keys:
 ic-wasm <(gunzip <./out/signer.wasm.gz) metadata >out/metadata_keys.txt
-# Get particularly interesting metadata:
-rm -fr target/metadata
-mkdir -p target/metadata
-for key in git_commit_id git_tags; do ic-wasm <(gunzip <./out/signer.wasm.gz) metadata "$key" >"target/metadata/metadata__${key}.txt"; done
-cp target/metadata/* out
 # Write a report
 {
   printf "\nAssets:\n"
   cat out/filelist.txt
   printf "\nMetadata keys:\n"
   cat out/metadata_keys.txt
-  printf "%s\n" "" "To see metadata, use ic-wasm.  For example, to see the git tags:" " ic-wasm <(gunzip < ./out/signer.wasm.gz) metadata git_tags" ""
+  printf "%s\n" "" "To see metadata, use ic-wasm.  For example, to see the git tags:" " ic-wasm <(gunzip < ./out/signer.wasm.gz) metadata git:tags" ""
 } | tee out/report.txt
