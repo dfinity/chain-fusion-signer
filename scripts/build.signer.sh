@@ -74,9 +74,4 @@ cp src/signer/canister/signer.did out/
 
 ####
 # Success
-cat <<EOF
-SUCCESS: The signer installation files have been created:
-signer candid:       $(sha256sum "$CANDID_FILE")
-signer Wasm:         $(sha256sum "$WASM_FILE")
-signer install args: $(sha256sum "$ARG_FILE")
-EOF
+scripts/build.signer.report.sh

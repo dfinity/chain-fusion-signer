@@ -84,14 +84,10 @@ FROM builder AS build-signer
 COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
-COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/
+COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/build.signer.report.sh scripts/
 COPY target/commit target/tags target/
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
-# Data for sanity checking:
-COPY scripts/docker-build.report scripts/
-RUN scripts/docker-build.report
 
 FROM scratch AS signer
-COPY --from=build-signer target/metadata/ /
 COPY --from=build-signer out/ /

@@ -17,4 +17,4 @@ cp target/metadata/* out
   printf "\nMetadata keys:\n"
   cat out/metadata_keys.txt
   printf "%s\n" "" "To see metadata, use ic-wasm.  For example, to see the git tags:" " ic-wasm <(gunzip < ./out/signer.wasm.gz) metadata git_tags" ""
-} >out/report.txt
+} | tee out/report.txt
