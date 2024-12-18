@@ -84,8 +84,8 @@ The chain fusion signer is a canister that makes the internet computer threshold
 To build the wasm module yourself and verify its hash, run the following commands from the root of the [Chain Fusion Signer repo](https://github.com/dfinity/chain-fusion-signer):
 
 ```
-git fetch  # to ensure you have the latest changes.
-git checkout "e1c36f468c7b78e851332cc7dae0bfce6bc8f886"
+git fetch --tags # to ensure you have the latest changes.
+git checkout tags/v0.2.8
 ./scripts/docker-build
 ```
 
