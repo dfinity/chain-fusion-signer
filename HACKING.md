@@ -63,3 +63,20 @@ dfx canister install signer --mode upgrade --upgrade-unchanged --network staging
 ```
 
 If you are not a controller, you may request a canister upgrade via Orbit. Please contact Leon Tan for the latest Orbit deployment instructions.
+
+## Deploy to Production
+
+- Create a GitHub release with a tag such as `v0.1.2`
+  - Update the GitHub release text. It is recommended to ask the team to review the text.
+  - Ensure that the release has been published.
+- Check out the release commit
+- Delete any old release directory.
+- Install the corresponding `ic-admin`: `./scripts/setup ic-admin`
+- Run: `./scripts/proposal-assets -t $TAG`
+  - Verify that `release/ci` contains the release Wasm and arguments.
+  - Run a docker build locally and verify that the Wasm and argument file hashes match.
+- Run: `./scripts/proposal-template -t $TAG`
+  - Verify that `release/PROPOSAL.md` has been created.
+- Run: `./scripts/propose`
+  - Verify the proposal very carefully, then submit the proposal.
+- Create an appointment with trusted neurons to vote on the proposal.

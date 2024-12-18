@@ -1,5 +1,7 @@
 # clap - a BASH argument parser
 # This parser aims to have similar parsing semantics as Rust's clap parser; if it doesn't look anything like clap it's not just you.
+#
+# Minimum supported bash version: 5
 
 clap_usage=""
 clap_flag_match=""
