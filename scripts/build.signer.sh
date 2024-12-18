@@ -22,7 +22,6 @@ DFX_NETWORK="${DFX_NETWORK:-local}"
 
 CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
 WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
-ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
 BUILD_DIR="target/wasm32-unknown-unknown/release"
 COMMIT_FILE="target/commit"
 TAGS_FILE="target/tags"
