@@ -85,16 +85,21 @@ COPY src src
 COPY dfx.json dfx.json
 COPY canister_ids.json canister_ids.json
 COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/
-COPY target/commit target/commit
+COPY target/commit target/tags target/
 RUN touch src/*/src/*.rs
 RUN dfx build --ic signer
-RUN cp out/signer.wasm.gz out/signer.args.did out/signer.args.bin out/signer.did /
-RUN cp target/commit commit
-RUN sha256sum /signer.wasm.gz /signer.args.did /signer.args.bin signer.did
+# Data for sanity checking:
+COPY scripts/docker-hashes scripts/
+RUN scripts/docker-hashes > hashes.txt
+RUN ic-wasm <(gunzip < ./out/signer.wasm.gz) metadata > metadata_keys.txt
+# .. Get particularly interesting metadata:
+RUN mkdir target/metadata && for key in git_commit_id git_tags ; do ic-wasm <(gunzip < ./out/signer.wasm.gz) metadata "$key" > "target/metadata/metadata__${key}.txt" ; done
 
 FROM scratch AS signer
-COPY --from=build-signer /signer.wasm.gz /
-COPY --from=build-signer /signer.args.did /
-COPY --from=build-signer /signer.args.bin /
-COPY --from=build-signer /signer.did /
-COPY --from=build-signer /commit /
+COPY --from=build-signer target/metadata/ /
+COPY --from=build-signer out/signer.wasm.gz /
+COPY --from=build-signer out/signer.args.did /
+COPY --from=build-signer out/signer.args.bin /
+COPY --from=build-signer out/signer.did /
+COPY --from=build-signer hashes.txt /
+COPY --from=build-signer metadata_keys.txt /

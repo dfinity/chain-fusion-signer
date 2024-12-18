@@ -36,8 +36,7 @@ else
   touch "$COMMIT_FILE" "$TAGS_FILE"
 fi
 # Keep just the tags with semantic versions
-# Note: The regex is from the semver specification: https://semver.org/spec/v2.0.0.html#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-grep -E '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$' "$TAGS_FILE" >"${TAGS_FILE}.semver" || true # No match is fine.
+grep -E '^v[0-9]' "$TAGS_FILE" >"${TAGS_FILE}.semver" || true # No match is fine.
 
 ####
 # Builds the Wasm without metadata
@@ -58,7 +57,7 @@ ic-wasm \
 # adds the content of $canister.did to the `icp:public candid:service` custom section of the public metadata in the wasm
 ic-wasm "$BUILD_DIR/signer.optimized.wasm" -o "$BUILD_DIR/signer.candid.wasm" metadata candid:service -f "$CANDID_FILE" -v public
 ic-wasm "$BUILD_DIR/signer.candid.wasm" -o "$BUILD_DIR/signer.commit.wasm" metadata git_commit_id -f "$COMMIT_FILE" -v public
-ic-wasm "$BUILD_DIR/signer.commit.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git_tags -f "$TAGS_FILE" -v public
+ic-wasm "$BUILD_DIR/signer.commit.wasm" -o "$BUILD_DIR/signer.metadata.wasm" metadata git_tags -f "${TAGS_FILE}.semver" -v public
 
 gzip -fn "$BUILD_DIR/signer.metadata.wasm"
 
