@@ -36,7 +36,8 @@ else
   touch "$COMMIT_FILE" "$TAGS_FILE"
 fi
 # Keep just the tags with semantic versions
-sed -nE '/^v[0-9]/{s/^/ /g;H};${x;s/\n//g;s/^ //g;p}' "$TAGS_FILE" >"${TAGS_FILE}.semver"
+# Note: The regex is from the semver specification: https://semver.org/spec/v2.0.0.html#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+grep -E '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$' "$TAGS_FILE" >"${TAGS_FILE}.semver"
 
 ####
 # Builds the Wasm without metadata
