@@ -29,7 +29,8 @@ A front end web developer can now develop a multi-chain web app using the follow
 
 Users can now hold keys on-chain and sign with the command line with a simple `dfx canister call`, without having to deploy or maintain their own signing canister.
 
-Example: Sign an Ethereum transaction hash.  The same calls may be used when signing in a web page.
+Example: Sign an Ethereum transaction hash. The same calls may be used when signing in a web page.
+
 ```
 CHAIN_FUSION_SIGNER="grghe-syaaa-aaaar-qabyq-cai"
 CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
