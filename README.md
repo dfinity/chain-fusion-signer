@@ -29,12 +29,12 @@ A front end web developer can now develop a multi-chain web app using the follow
 
 Users can now hold keys on-chain and sign with the command line with a simple `dfx canister call`, without having to deploy or maintain their own signing canister.
 
-Example: Use with ICRC2 prepayment.  This pattern can be replicated for websites and similar environments.
+Example: Sign an Ethereum transaction hash.  The same calls may be used when signing in a web page.
 ```
 CHAIN_FUSION_SIGNER="grghe-syaaa-aaaar-qabyq-cai"
 CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
 
-# Approve payment; I typically make a few large approvals rather than a separate approval for each API call.
+# Approve payment; I typically make a few large approvals rather than a separate approval for each API call:
 dfx canister call "$CYCLES_LEDGER" icrc2_approve --ic "
   record {
     amount = 1_000_000_000_000;
@@ -43,7 +43,7 @@ dfx canister call "$CYCLES_LEDGER" icrc2_approve --ic "
     };
   }" >/dev/null
 
-# Make some calls
+# Make some calls, e.g. sign a transaction hash:
 dfx canister call "$CHAIN_FUSION_SIGNER" generic_sign_with_ecdsa --ic '
 (
   opt variant { CallerPaysIcrc2Cycles },
