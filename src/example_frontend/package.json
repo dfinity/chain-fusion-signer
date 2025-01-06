@@ -14,7 +14,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"cross-fetch": "^4.1.0",
 		"dotenv": "^16.4.7",
-		"sass": "^1.83.0",
+		"sass": "^1.83.1",
 		"typescript": "^5.7.2",
 		"vite": "^6.0.7",
 		"vite-plugin-environment": "^1.1.3",
