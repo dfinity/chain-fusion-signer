@@ -360,8 +360,9 @@ pub async fn eth_personal_sign(
 /// Computes an Ethereum signature for a precomputed hash.
 ///
 ///  # Details
-///  Note: This is the same as `eth_personal_sign` but with a precomputed hash, so ingress message size is small regardless of the message length.
-/// 
+///  Note: This is the same as `eth_personal_sign` but with a precomputed hash, so ingress message
+/// size is small regardless of the message length.
+///
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
 ///   - Costs: Canister cycles.
 /// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
@@ -391,6 +392,12 @@ pub async fn eth_sign_prehash(
 // ///////////////////
 
 /// Returns the Bitcoin address of the caller.
+///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: Canister cycles.
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
