@@ -329,6 +329,14 @@ pub async fn eth_sign_transaction(
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 ///
+/// # Details
+/// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
+///   - Costs: Canister cycles.
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Signs with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
