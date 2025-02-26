@@ -332,6 +332,8 @@ pub async fn eth_sign_transaction(
 /// # Details
 /// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
 ///   - Costs: Canister cycles.
+/// - Hashes the message.
+///   - Costs: Canister cycles.
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
 ///   - Costs: Canister cycles.
 /// - Signs with `management_canister::ecdsa::sign_with_ecdsa(..)`
