@@ -156,6 +156,10 @@ pub async fn generic_caller_ecdsa_public_key(
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
 ///
+/// # Details
+/// - Calls `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -197,6 +201,10 @@ pub async fn generic_sign_with_ecdsa(
 ///   are not requested.
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
+///
+/// # Details
+/// - Calls `management_canister::schnorr::schnorr_public_key(..)`
+///   - Costs: Canister cycles.
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
