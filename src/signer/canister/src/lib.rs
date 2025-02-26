@@ -426,6 +426,15 @@ pub async fn btc_caller_address(
 }
 
 /// Returns the Bitcoin balance of the caller's address.
+/// 
+/// > This method is DEPRECATED. Canister developers are advised to call `bitcoin_get_balance()` on the Bitcoin (mainnet or testnet) canister.
+/// 
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: Canister cycles.
+/// - Gets the Bitcoin balance from [the deprecated system Bitcoin API](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_balance)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
