@@ -309,6 +309,16 @@ pub async fn eth_address_of_caller(
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 ///
+/// # Details
+/// - Formats the transaction as an `Eip1559TransactionRequest`.
+///   - Costs: Canister cycles.
+/// - Hashes the transaction.
+///   - Costs: Canister cycles.
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Signs the transaction with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
