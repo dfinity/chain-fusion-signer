@@ -435,6 +435,7 @@ pub async fn btc_caller_address(
 /// - Converts the public key to a P2WPKH address.
 ///   - Costs: Canister cycles.
 /// - Gets the Bitcoin balance from [the deprecated system Bitcoin API](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_balance)
+///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
