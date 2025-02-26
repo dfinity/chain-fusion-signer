@@ -132,6 +132,10 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
 ///
+/// # Details
+/// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
