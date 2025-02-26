@@ -240,6 +240,10 @@ pub async fn schnorr_public_key(
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
 ///
+///  # Details
+/// - Calls `management_canister::schnorr::sign_with_schnorr(..)`
+///   - Costs: See [Fees for the t-Schnorr production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-schnorr-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
