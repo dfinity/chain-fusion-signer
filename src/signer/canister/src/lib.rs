@@ -336,7 +336,7 @@ pub async fn eth_sign_transaction(
 ///   - Costs: Canister cycles.
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
 ///   - Costs: Canister cycles.
-/// - Signs with `management_canister::ecdsa::sign_with_ecdsa(..)`
+/// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
 ///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
 /// # Panics
@@ -358,6 +358,14 @@ pub async fn eth_personal_sign(
 }
 
 /// Computes an Ethereum signature for a precomputed hash.
+///
+///  # Details
+///  Note: This is the same as `eth_personal_sign` but with a precomputed hash, so ingress message size is small regardless of the message length.
+/// 
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
