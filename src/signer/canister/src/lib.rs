@@ -470,6 +470,17 @@ pub async fn btc_caller_balance(
 
 /// Creates, signs and sends a BTC transaction from the caller's address.
 ///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: Canister cycles.
+/// - For every transaction input:
+///   - Calls `sign_with_ecdsa(..)` on that input.
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+/// - Sends the transaction with `bitcoin_api::send_transaction(..)`
+///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
