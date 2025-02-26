@@ -264,6 +264,12 @@ pub async fn schnorr_sign(
 ///
 /// If no user is specified, the caller's address is returned.
 ///
+/// # Details
+/// - Gets the specified user's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: Canister cycles.
+/// - Converts the public key to an Ethereum address.
+///   - Costs: Canister cycles.
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
