@@ -134,7 +134,7 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 ///
 /// # Details
 /// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -208,7 +208,7 @@ pub async fn generic_sign_with_ecdsa(
 ///
 /// # Details
 /// - Calls `management_canister::schnorr::schnorr_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -282,9 +282,9 @@ pub async fn schnorr_sign(
 ///
 /// # Details
 /// - Gets the specified user's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Converts the public key to an Ethereum address.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -311,9 +311,9 @@ pub async fn eth_address(
 ///
 /// # Details
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Converts the public key to an Ethereum address.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -339,11 +339,11 @@ pub async fn eth_address_of_caller(
 ///
 /// # Details
 /// - Formats the transaction as an `Eip1559TransactionRequest`.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Hashes the transaction.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Signs the transaction with `management_canister::ecdsa::sign_with_ecdsa(..)`
 ///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
@@ -369,11 +369,11 @@ pub async fn eth_sign_transaction(
 ///
 /// # Details
 /// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Hashes the message.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
 ///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
@@ -402,7 +402,7 @@ pub async fn eth_personal_sign(
 /// size is small regardless of the message length.
 ///
 /// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
 ///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
@@ -433,9 +433,9 @@ pub async fn eth_sign_prehash(
 ///
 /// # Details
 /// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Converts the public key to a P2WPKH address.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -470,9 +470,9 @@ pub async fn btc_caller_address(
 ///
 /// # Details
 /// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Converts the public key to a P2WPKH address.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Gets the Bitcoin balance from [the deprecated system Bitcoin API](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_balance)
 ///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
 ///
@@ -511,9 +511,9 @@ pub async fn btc_caller_balance(
 ///
 /// # Details
 /// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - Converts the public key to a P2WPKH address.
-///   - Costs: Canister cycles.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 /// - For every transaction input:
 ///   - Calls `sign_with_ecdsa(..)` on that input.
 ///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
