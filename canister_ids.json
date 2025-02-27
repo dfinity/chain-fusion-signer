@@ -1,10 +1,10 @@
 {
-  "example_backend": {
-    "ic": "2vxsx-fae"
-  },
-  "signer": {
-    "beta": "uhxml-hyaaa-aaaar-qaoxq-cai",
-    "ic": "grghe-syaaa-aaaar-qabyq-cai",
-    "staging": "tdxud-2yaaa-aaaad-aadiq-cai"
-  }
+	"example_backend": {
+		"ic": "2vxsx-fae"
+	},
+	"signer": {
+		"beta": "uhxml-hyaaa-aaaar-qaoxq-cai",
+		"ic": "grghe-syaaa-aaaar-qabyq-cai",
+		"staging": "tdxud-2yaaa-aaaad-aadiq-cai"
+	}
 }
