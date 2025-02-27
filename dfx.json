@@ -1,5 +1,5 @@
 {
-	"dfx": "0.23.0",
+	"dfx": "0.25.0",
 	"canisters": {
 		"signer": {
 			"type": "custom",
@@ -33,6 +33,7 @@
 			"init_arg_file": "init/bitcoin",
 			"remote": {
 				"id": {
+					"beta": "g4xu7-jiaaa-aaaan-aaaaq-cai",
 					"ic": "g4xu7-jiaaa-aaaan-aaaaq-cai"
 				}
 			}
@@ -60,6 +61,7 @@
 			"remote": {
 				"id": {
 					"staging": "um5iw-rqaaa-aaaaq-qaaba-cai",
+					"beta": "um5iw-rqaaa-aaaaq-qaaba-cai",
 					"ic": "um5iw-rqaaa-aaaaq-qaaba-cai"
 				}
 			}
@@ -80,6 +82,7 @@
 			"remote": {
 				"id": {
 					"staging": "rdmx6-jaaaa-aaaaa-aaadq-cai",
+					"beta": "rdmx6-jaaaa-aaaaa-aaadq-cai",
 					"ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
 				}
 			},
@@ -96,6 +99,10 @@
 	"version": 1,
 	"networks": {
 		"staging": {
+			"providers": ["https://icp0.io"],
+			"type": "persistent"
+		},
+		"beta": {
 			"providers": ["https://icp0.io"],
 			"type": "persistent"
 		}
