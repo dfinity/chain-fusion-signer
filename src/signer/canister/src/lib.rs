@@ -132,6 +132,10 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
 ///
+/// # Details
+/// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -155,6 +159,10 @@ pub async fn generic_caller_ecdsa_public_key(
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
+///
+/// # Details
+/// - Calls `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -198,6 +206,10 @@ pub async fn generic_sign_with_ecdsa(
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
 ///
+/// # Details
+/// - Calls `management_canister::schnorr::schnorr_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -240,6 +252,10 @@ pub async fn schnorr_public_key(
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
 ///
+///  # Details
+/// - Calls `management_canister::schnorr::sign_with_schnorr(..)`
+///   - Costs: See [Fees for the t-Schnorr production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-schnorr-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -264,6 +280,12 @@ pub async fn schnorr_sign(
 ///
 /// If no user is specified, the caller's address is returned.
 ///
+/// # Details
+/// - Gets the specified user's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to an Ethereum address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -287,6 +309,12 @@ pub async fn eth_address(
 
 /// Returns the Ethereum address of the caller.
 ///
+/// # Details
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to an Ethereum address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -309,6 +337,16 @@ pub async fn eth_address_of_caller(
 
 /// Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
 ///
+/// # Details
+/// - Formats the transaction as an `Eip1559TransactionRequest`.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Hashes the transaction.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Signs the transaction with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -329,6 +367,16 @@ pub async fn eth_sign_transaction(
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 ///
+/// # Details
+/// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Hashes the message.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
 /// # Panics
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
@@ -348,6 +396,15 @@ pub async fn eth_personal_sign(
 }
 
 /// Computes an Ethereum signature for a precomputed hash.
+///
+///  # Details
+///  Note: This is the same as `eth_personal_sign` but with a precomputed hash, so ingress message
+/// size is small regardless of the message length.
+///
+/// - Gets the caller's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -373,6 +430,12 @@ pub async fn eth_sign_prehash(
 // ///////////////////
 
 /// Returns the Bitcoin address of the caller.
+///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -401,6 +464,17 @@ pub async fn btc_caller_address(
 }
 
 /// Returns the Bitcoin balance of the caller's address.
+///
+/// > This method is DEPRECATED. Canister developers are advised to call `bitcoin_get_balance()` on
+/// > the Bitcoin (mainnet or testnet) canister.
+///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Gets the Bitcoin balance from [the deprecated system Bitcoin API](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_balance)
+///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
@@ -434,6 +508,17 @@ pub async fn btc_caller_balance(
 }
 
 /// Creates, signs and sends a BTC transaction from the caller's address.
+///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - For every transaction input:
+///   - Calls `sign_with_ecdsa(..)` on that input.
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+/// - Sends the transaction with `bitcoin_api::send_transaction(..)`
+///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
 ///
 /// # Panics
 /// - If the caller is the anonymous user.
