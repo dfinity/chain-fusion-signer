@@ -29,6 +29,34 @@ A front end web developer can now develop a multi-chain web app using the follow
 
 Users can now hold keys on-chain and sign with the command line with a simple `dfx canister call`, without having to deploy or maintain their own signing canister.
 
+Example: Sign an Ethereum transaction hash. The same calls may be used when signing in a web page.
+
+```
+CHAIN_FUSION_SIGNER="grghe-syaaa-aaaar-qabyq-cai"
+CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
+
+# Approve payment; I typically make a few large approvals rather than a separate approval for each API call:
+dfx canister call "$CYCLES_LEDGER" icrc2_approve --ic "
+  record {
+    amount = 1_000_000_000_000;
+    spender = record {
+      owner = principal \"${CHAIN_FUSION_SIGNER}\";
+    };
+  }" >/dev/null
+
+# Make some calls, e.g. sign a transaction hash:
+dfx canister call "$CHAIN_FUSION_SIGNER" generic_sign_with_ecdsa --ic '
+(
+  opt variant { CallerPaysIcrc2Cycles },
+  record {
+    key_id = record { name = "key_1"; curve = variant { secp256k1 } };
+    derivation_path = vec { blob "my_eth_keys"; blob "my_first_key" };
+    message_hash = blob "\41\40\f0\a8\8b\3e\ea\41\5c\d2\77\4f\c2\70\f1\6b\51\2c\7c\63\7e\9b\54\2a\31\35\96\8b\ac\b1\47\ae";
+  },
+)
+'
+```
+
 # Governance
 
 ### Ownership
