@@ -72,7 +72,7 @@ check_call_pricing() {
       cycles_balance_before: ($ENV.before | gsub("_";"") | tonumber),
       cycles_balance_after: ($ENV.after | gsub("_";"") | tonumber),
       diff: ($ENV.diff | gsub("_";"") | tonumber)
-    }' >> "$LOG_FILE"
+    }' >>"$LOG_FILE"
   )
 }
 

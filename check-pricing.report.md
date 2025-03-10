@@ -3,6 +3,7 @@
 **Date: March 2025**
 
 ## Motivation
+
 The cost of operating a canister has increased and some prices no longer cover the cost of a typical API call:
 
 ```
@@ -20,7 +21,9 @@ OK: Signer balance rose by 13_791_161_094 for: generic_sign_with_ecdsa
 ```
 
 ## Current pricing
+
 The cost in cycles for each method is:
+
 ```
             SignerMethods::GenericCallerEcdsaPublicKey
             | SignerMethods::SchnorrPublicKey
@@ -37,19 +40,20 @@ The cost in cycles for each method is:
 ```
 
 ## Pricing policy
+
 Some costs are not paid by PAPI, such as the cost of failed API calls.
 
 API calls are therefore charged at cost plus a margin to cover otherwise unpaid expenditures, that would otherwise cause the canister to eventually run out of cycles.
 
-The margin is currently set at 40% over a typical API call for each method.  Note that the most expensive call possible for each method is higher than the typical call.
+The margin is currently set at 40% over a typical API call for each method. Note that the most expensive call possible for each method is higher than the typical call.
 
 Fees are rounded, to make them simpler to use and remember.
 
 ## Pricing calculation
+
 Prices for typical calls are determined by running `scripts/check-pricing` against the `beta` canister.
 
 Adding the current prices to the output JSON we get:
-
 
 ```
 jq -s '. | map({key: .method_name, value: .}) | from_entries' fees.jsonl > fees.json
@@ -218,4 +222,5 @@ $ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost
 ```
 
 ### Conclusion
-Ethereum signing prices can be reduced slightly.  `btc_caller_address` and `btc_caller_balance` prices need to be increased.
+
+Ethereum signing prices can be reduced slightly. `btc_caller_address` and `btc_caller_balance` prices need to be increased.
