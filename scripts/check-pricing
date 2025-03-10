@@ -89,6 +89,28 @@ dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
 
 : Check that each method is making a profit
 
+check_call_pricing schnorr_public_key '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    canister_id = null;
+    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
+check_call_pricing schnorr_sign '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
+    message = blob "Your cycles or your knife!";
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
 check_call_pricing btc_caller_address '
 (
   record { network = variant { mainnet }; address_type = variant { P2WPKH } },
