@@ -34,6 +34,7 @@ print_help() {
 DFX_NETWORK="${1:-ic}"
 METHOD_NAME_PATTERN="${2:-.}"
 SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
+LOG_FILE="check-pricing.${DFX_NETWORK}.$(date --iso-8601=second).jsonl"
 
 to_number() {
   : Converts symbols such as 1K to 1_000
@@ -49,11 +50,12 @@ remove_underscores() {
   tr -d _
 }
 check_call_pricing() {
-  local before after
+  local before after method_name
   echo "$1" | grep -qE "$METHOD_NAME_PATTERN" || {
     echo "Skipping $1..."
     return
   }
+  method_name="$1"
   before="$(signer_balance)"
   dfx canister call --network "$DFX_NETWORK" signer "${@}" >/dev/null
   after="$(signer_balance)"
@@ -63,6 +65,15 @@ check_call_pricing() {
   else
     echo "OK: Signer balance rose by $diff for: $1"
   fi
+  (
+    export before after diff method_name
+    jq --null-input '{
+      method_name: $ENV.method_name,
+      cycles_balance_before: ($ENV.before | gsub("_";"") | tonumber),
+      cycles_balance_after: ($ENV.after | gsub("_";"") | tonumber),
+      diff: ($ENV.diff | gsub("_";"") | tonumber)
+    }' >>"$LOG_FILE"
+  )
 }
 
 APPROVAL="1P"
@@ -77,6 +88,28 @@ dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
   }" >/dev/null
 
 : Check that each method is making a profit
+
+check_call_pricing schnorr_public_key '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    canister_id = null;
+    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
+check_call_pricing schnorr_sign '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
+    message = blob "Your cycles or your knife!";
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
 
 check_call_pricing btc_caller_address '
 (
