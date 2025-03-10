@@ -59,7 +59,8 @@ jq -s '.[0] * .[1] | to_entries | .[].value' fees.json check-pricing.beta.2025-0
 
 ```
 $ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost = .fee - .diff | .cost_plus = .typical_cost * 1.4 | .rounding = if .cost_plus <1000000000 then 1000000 else 1000000000 end | .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) | .recommended_change = (.recommended_fee - .fee) | .fee_usd = .fee / 1000000000000 * 1.336610 | .recommended_fee_usd = .recommended_fee /
->  1000000000000 * 1.336610'
+  1000000000000 * 1.336610'
+
 {
   "method_name": "schnorr_public_key",
   "fee": 1000000000,
