@@ -22,7 +22,7 @@ OK: Signer balance rose by 13_791_161_094 for: generic_sign_with_ecdsa
 
 ## Current pricing
 
-The cost in cycles for each method is:
+The fee in cycles charged for each method is:
 
 ```
             SignerMethods::GenericCallerEcdsaPublicKey
