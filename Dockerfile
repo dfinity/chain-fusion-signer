@@ -2,7 +2,7 @@
 # Reproducible Builds
 #
 
-FROM ubuntu:22.04 AS base
+FROM ubuntu:24.04 AS base
 ENV TZ=UTC
 # Install basic tools
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
