@@ -58,7 +58,7 @@ jobs:
           name: hashes_${{ matrix.os }}
           path: hashes/*.txt
   compare_hashes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build]
     if: ${{ always() }}
     steps:
@@ -80,7 +80,7 @@ jobs:
   reproducible_build_passes:
     needs: ["build", "compare_hashes"]
     if: ${{ always() }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/needs_success
