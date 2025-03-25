@@ -1,0 +1,56 @@
+name: Security audit
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+    paths:
+      # Run if this action changes.
+      - '.github/workflows/security-audit.yaml'
+      # Run if the list of packages changes
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '**/package.json'
+      - '**/package-lock.json'
+      # Run if the configuration changes
+      - '**/audit.toml'
+  schedule:
+    # Run periodically to detect new vulnerabilities
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  rs_audit:
+    name: Rust package audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ github.head_ref || github.ref }}"
+      - name: Install cargo audit
+        run: scripts/setup cargo-audit
+      - name: Cargo Audit
+        run: cargo audit
+  js_audit:
+    name: Javascript Package Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ github.head_ref || github.ref }}"
+      - name: Audit packages
+        run: npm audit
+  audit_pass:
+    needs:
+      - rs_audit
+      - js_audit
+    if: ${{ always() }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checks workflow passes
+        run: |
+          if echo '${{ toJson(needs) }}' | jq 'to_entries[] | select(.value.result != "success")' | grep .
+          then echo "You shall not pass:  Some required tests did not succeed"
+               exit 1
+          else echo "Congratulations, young Frodo."
+          fi
