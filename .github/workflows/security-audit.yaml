@@ -28,7 +28,7 @@ jobs:
         with:
           ref: "${{ github.head_ref || github.ref }}"
       - name: Install cargo audit
-        run: scripts/setup cargo-audit
+        run: scripts/setup cargo-binstall cargo-audit
       - name: Cargo Audit
         run: cargo audit
   js_audit:
