@@ -57,7 +57,7 @@
 	},
 	"cargo-edit": {
 		"method": "cargo-binstall",
-		"version": "0.13.0"
+		"version": "0.13.2"
 	},
 	"cargo-sort": {
 		"method": "cargo-binstall",
@@ -65,7 +65,7 @@
 	},
 	"candid-extractor": {
 		"method": "cargo-binstall",
-		"version": "0.1.4"
+		"version": "0.1.6"
 	},
 	"cargo-tarpaulin": {
 		"method": "cargo-binstall",
