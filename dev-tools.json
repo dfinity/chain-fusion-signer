@@ -20,7 +20,7 @@
 		"url": "https://github.com/dfinity/candid/releases/download/2024-07-29/didc-linux64"
 	},
 	"ic-admin": {
-		"version": "release-2024-12-06_03-16-base",
+		"version": "release-2025-03-20_03-11-base",
 		"method": "curl",
 		"pipe": "gunzip",
 		"url": "https://github.com/dfinity/ic/releases/download/${VERSION}/ic-admin-x86_64-linux.gz"
@@ -57,7 +57,7 @@
 	},
 	"cargo-edit": {
 		"method": "cargo-binstall",
-		"version": "0.13.0"
+		"version": "0.13.2"
 	},
 	"cargo-sort": {
 		"method": "cargo-binstall",
@@ -65,10 +65,10 @@
 	},
 	"candid-extractor": {
 		"method": "cargo-binstall",
-		"version": "0.1.4"
+		"version": "0.1.6"
 	},
 	"cargo-tarpaulin": {
 		"method": "cargo-binstall",
-		"version": "0.26.1"
+		"version": "0.32.3"
 	}
 }
