@@ -120,9 +120,28 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
     std_canister_status::get_canister_status_v2().await
 }
 
+/// Whether to require payment.
+pub const REQUIRE_PAYMENT: bool = false;
+
 // ////////////////////////
 // // GENERIC SIGNATURES //
 // ////////////////////////
+
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn ecdsa_public_key(
+    arg: EcdsaPublicKeyArgument,
+    payment: Option<PaymentType>,
+) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
+    if REQUIRE_PAYMENT {
+        PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::GenericCallerEcdsaPublicKey.fee(),
+        )
+        .await?;
+    }
+    generic::ecdsa_public_key(arg).await
+}
 
 /// Returns the generic ECDSA public key of the caller.
 ///
@@ -142,13 +161,15 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 pub async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgument,
     payment: Option<PaymentType>,
-) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
+) -> Result<(EcdsaPublicKeyResponse, EcdsaPublicKeyArgument), GenericCallerEcdsaPublicKeyError> {
+    if REQUIRE_PAYMENT {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
             SignerMethods::GenericCallerEcdsaPublicKey.fee(),
         )
         .await?;
+    }
     generic::caller_ecdsa_public_key(arg).await
 }
 

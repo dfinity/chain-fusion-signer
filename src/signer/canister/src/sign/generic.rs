@@ -2,8 +2,7 @@
 use candid::Principal;
 use ic_cdk::api::management_canister::{
     ecdsa::{
-        self as canister_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse,
-        SignWithEcdsaArgument, SignWithEcdsaResponse,
+        self as canister_ecdsa, EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument, SignWithEcdsaResponse
     },
     schnorr::{
         SchnorrPublicKeyArgument, SchnorrPublicKeyResponse, SignWithSchnorrArgument,
@@ -17,16 +16,21 @@ use ic_chain_fusion_signer_api::types::schnorr::{SchnorrPublicKeyError, SchnorrS
 
 use crate::derivation_path::Schema;
 
+/// The canister ecdsa public key.
+pub async fn ecdsa_public_key(arg: EcdsaPublicKeyArgument) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
+    Ok(canister_ecdsa::ecdsa_public_key(arg).await?)
+}
+
 /// A generic ECDSA public key for the user.
 ///
 /// Warning: The user supplied derivation path is used as-is.  The caller is responsible for
 /// ensuring that unintended sub-keys are not requested.
 pub async fn caller_ecdsa_public_key(
     mut arg: EcdsaPublicKeyArgument,
-) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
+) -> Result<(EcdsaPublicKeyResponse, EcdsaPublicKeyArgument), GenericCallerEcdsaPublicKeyError> {
     arg.derivation_path =
         Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
-    Ok(canister_ecdsa::ecdsa_public_key(arg).await?)
+    Ok((canister_ecdsa::ecdsa_public_key(arg.clone()).await?.0, arg))
 }
 
 /// Signs a message with a generic ECDSA key for the user.
