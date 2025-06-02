@@ -249,6 +249,7 @@ pub async fn schnorr_public_key(
     generic::schnorr_public_key(arg).await
 }
 
+#[update(guard = "caller_is_not_anonymous")]
 pub async fn canister_schnorr_public_key(
     arg: SchnorrPublicKeyArgument,
     payment: Option<PaymentType>,
