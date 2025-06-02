@@ -238,14 +238,33 @@ pub async fn schnorr_public_key(
     arg: SchnorrPublicKeyArgument,
     payment: Option<PaymentType>,
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
+    if REQUIRE_PAYMENT {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
             SignerMethods::SchnorrPublicKey.fee(),
         )
         .await?;
+    }
     generic::schnorr_public_key(arg).await
 }
+
+pub async fn canister_schnorr_public_key(
+    arg: SchnorrPublicKeyArgument,
+    payment: Option<PaymentType>,
+) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
+    if REQUIRE_PAYMENT {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::SchnorrPublicKey.fee(),
+        )
+        .await?;
+    }
+    Ok(ic_cdk::api::management_canister::schnorr::schnorr_public_key(arg).await?)
+}
+
+
 
 /// Signs a message using the caller's Schnorr key.
 ///
