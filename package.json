@@ -19,7 +19,7 @@
 	"devDependencies": {
 		"@dfinity/auth-client": "^2.4.1",
 		"@dfinity/identity": "^2.4.1",
-		"prettier": "^3.5.3",
+		"prettier": "^3.6.2",
 		"prettier-plugin-organize-imports": "^4.2.0",
 		"prettier-plugin-svelte": "^3.4.0"
 	}
