@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Nat, Principal};
-use ic_cdk::api::call::RejectionCode;
 
 use super::transaction;
+use crate::types::RejectionCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressRequest {

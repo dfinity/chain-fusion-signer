@@ -6,9 +6,10 @@ use ethers_core::{
     types::transaction::eip2930::AccessList,
     utils::keccak256,
 };
-use ic_cdk::api::management_canister::ecdsa::{
-    ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
-    SignWithEcdsaArgument,
+
+use ic_cdk::management_canister::{
+    ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs,
+    SignWithEcdsaArgs,
 };
 pub use ic_chain_fusion_signer_api::types::eth::{
     EthAddressError, EthAddressRequest, EthAddressResponse,
@@ -42,20 +43,21 @@ pub fn pubkey_bytes_to_address(pubkey_bytes: &[u8]) -> String {
 /// Returns the public key and a message signature for the specified principal.
 pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
     // Fetch the pubkey and the signature concurrently to reduce latency.
+    let sign_args = SignWithEcdsaArgs {
+        message_hash,
+        derivation_path: Schema::Eth.derivation_path(caller),
+        key_id: EcdsaKeyId {
+            curve: EcdsaCurve::Secp256k1,
+            name: read_config(|s| s.ecdsa_key_name.clone()),
+        },
+    };
     let (pubkey, response) = futures::join!(
         ecdsa_pubkey_of(caller),
-        sign_with_ecdsa(SignWithEcdsaArgument {
-            message_hash,
-            derivation_path: Schema::Eth.derivation_path(caller),
-            key_id: EcdsaKeyId {
-                curve: EcdsaCurve::Secp256k1,
-                name: read_config(|s| s.ecdsa_key_name.clone()),
-            },
-        })
+        sign_with_ecdsa(&sign_args)
     );
     (
         pubkey,
-        response.expect("failed to sign the message").0.signature,
+        response.expect("failed to sign the message").signature,
     )
 }
 
@@ -63,14 +65,15 @@ pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> 
 // TODO: Return a Result instead of panicking.
 pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
-    let (key,) = ecdsa_public_key(EcdsaPublicKeyArgument {
+    let args = EcdsaPublicKeyArgs {
         canister_id: None,
         derivation_path: Schema::Eth.derivation_path(principal),
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
             name,
         },
-    })
+    };
+    let key = ecdsa_public_key(&args)
     .await
     .expect("failed to get public key");
     key.public_key
@@ -85,7 +88,7 @@ pub async fn eth_address(principal: Principal) -> Result<EthAddressResponse, Eth
 
 /// Computes a signature for a precomputed hash.
 pub async fn sign_prehash(prehash: String) -> String {
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let hash_bytes = decode_hex(&prehash);
 
@@ -104,7 +107,7 @@ pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransac
 
     const EIP1559_TX_ID: u8 = 2;
 
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let data = req.data.as_ref().map(|s| decode_hex(s));
 
@@ -146,7 +149,7 @@ pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransac
 
 /// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 pub async fn personal_sign(plaintext: String) -> String {
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let bytes = decode_hex(&plaintext);
 

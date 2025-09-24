@@ -6,7 +6,7 @@ use bitcoin::{
     OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use candid::Principal;
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
+use ic_cdk::bitcoin_canister::{Network as BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
 use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
 use crate::{
@@ -240,8 +240,8 @@ mod tests {
     use bitcoin::{
         hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
     };
-    use ic_cdk::api::management_canister::bitcoin::{
-        BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo,
+    use ic_cdk::bitcoin_canister::{
+        Network as BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo,
     };
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
@@ -453,7 +453,7 @@ mod tests {
     #[test]
     fn test_build_p2wpkh_transaction_not_p2wpkh_source_address() {
         let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH address, not P2WPKH
-
+        
         let result =
             build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
 

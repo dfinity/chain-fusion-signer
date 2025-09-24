@@ -8,6 +8,18 @@ pub mod schnorr;
 
 pub type Timestamp = u64;
 
+/// Custom `RejectionCode` enum with `CandidType` support
+#[derive(CandidType, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum RejectionCode {
+    NoError,
+    SysFatal,
+    SysTransient,
+    DestinationInvalid,
+    CanisterReject,
+    CanisterError,
+    Unknown,
+}
+
 #[derive(CandidType, Deserialize, Clone, Eq, PartialEq, Debug)]
 pub struct InitArg {
     pub ecdsa_key_name: String,
@@ -50,7 +62,7 @@ pub mod transaction {
 
 pub mod bitcoin {
     use candid::{CandidType, Deserialize};
-    use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+    use ic_cdk::bitcoin_canister::{Network, Utxo};
     use ic_papi_api::PaymentError;
 
     #[derive(CandidType, Deserialize, Debug)]
@@ -60,7 +72,7 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub struct GetAddressRequest {
-        pub network: BitcoinNetwork,
+        pub network: Network,
         pub address_type: BitcoinAddressType,
     }
 
@@ -77,7 +89,7 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub struct GetBalanceRequest {
-        pub network: BitcoinNetwork,
+        pub network: Network,
         pub address_type: BitcoinAddressType,
         pub min_confirmations: Option<u32>,
     }
@@ -101,7 +113,7 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub struct SendBtcRequest {
-        pub network: BitcoinNetwork,
+        pub network: Network,
         pub address_type: BitcoinAddressType,
         pub utxos_to_spend: Vec<Utxo>,
         pub fee_satoshis: Option<u64>,
