@@ -1,15 +1,18 @@
 //! A generic signing API equivalent to that provided by the canister API.
 use candid::Principal;
 use ic_cdk::management_canister::{
-    ecdsa_public_key as ic_ecdsa_public_key, sign_with_ecdsa as ic_sign_with_ecdsa, 
-    schnorr_public_key as ic_schnorr_public_key, sign_with_schnorr as ic_sign_with_schnorr,
-    EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SignWithEcdsaArgs, SignWithEcdsaResult,
-    SchnorrPublicKeyArgs, SchnorrPublicKeyResult, SignWithSchnorrArgs, SignWithSchnorrResult,
+    ecdsa_public_key as ic_ecdsa_public_key, schnorr_public_key as ic_schnorr_public_key,
+    sign_with_ecdsa as ic_sign_with_ecdsa, sign_with_schnorr as ic_sign_with_schnorr,
+    EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult,
+    SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
 };
 pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,
 };
-use ic_chain_fusion_signer_api::types::{schnorr::{SchnorrPublicKeyError, SchnorrSigningError}, RejectionCode};
+use ic_chain_fusion_signer_api::types::{
+    schnorr::{SchnorrPublicKeyError, SchnorrSigningError},
+    RejectionCode,
+};
 
 use crate::derivation_path::Schema;
 
@@ -28,7 +31,7 @@ pub async fn caller_ecdsa_public_key(
             // Use a default rejection code and convert error to string
             Err(GenericCallerEcdsaPublicKeyError::SigningError(
                 RejectionCode::CanisterError,
-                format!("{call_error:?}")
+                format!("{call_error:?}"),
             ))
         }
     }
@@ -49,7 +52,7 @@ pub async fn sign_with_ecdsa(
             // Use a default rejection code and convert error to string
             Err(GenericSignWithEcdsaError::SigningError(
                 RejectionCode::CanisterError,
-                format!("{sign_error:?}")
+                format!("{sign_error:?}"),
             ))
         }
     }
@@ -64,7 +67,10 @@ pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgs,
 ) -> Result<SchnorrPublicKeyResult, SchnorrPublicKeyError> {
     // Moves the canister_id from the argument to the derivation path.
-    let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::api::msg_caller);
+    let key_owner = arg
+        .canister_id
+        .take()
+        .unwrap_or_else(ic_cdk::api::msg_caller);
     if key_owner == Principal::anonymous() {
         ic_cdk::trap("Anonymous principal has no key.");
     }
@@ -77,7 +83,7 @@ pub async fn schnorr_public_key(
             // Use a default rejection code and convert error to string
             Err(SchnorrPublicKeyError::SigningError(
                 RejectionCode::CanisterError,
-                format!("{call_error:?}")
+                format!("{call_error:?}"),
             ))
         }
     }
@@ -95,7 +101,7 @@ pub async fn schnorr_sign(
             // Use a default rejection code and convert error to string
             Err(SchnorrSigningError::SigningError(
                 RejectionCode::CanisterError,
-                format!("{sign_error:?}")
+                format!("{sign_error:?}"),
             ))
         }
     }

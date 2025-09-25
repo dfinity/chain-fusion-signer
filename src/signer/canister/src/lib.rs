@@ -1,8 +1,7 @@
 use candid::Principal;
 use ic_cdk::management_canister::{
-    EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SignWithEcdsaArgs,
-    SignWithEcdsaResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult, 
-    SignWithSchnorrArgs, SignWithSchnorrResult,
+    EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult,
+    SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
 };
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
@@ -448,10 +447,12 @@ pub async fn btc_caller_address(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::api::msg_caller())
-                    .await
-                    .map_err(|msg| GetAddressError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetAddressError::InternalError { msg })?;
 
             Ok(GetAddressResponse { address })
         }
@@ -487,10 +488,12 @@ pub async fn btc_caller_balance(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::api::msg_caller())
-                    .await
-                    .map_err(|msg| GetBalanceError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             let balance =
                 bitcoin_api::get_balance(params.network, address, params.min_confirmations)

@@ -44,9 +44,7 @@ pub trait PicCanisterTrait {
                     e.reject_code, e.reject_message
                 )
             })
-            .and_then(|reply| {
-                decode_one(&reply).map_err(|e| format!("Decoding failed: {e}"))
-            })
+            .and_then(|reply| decode_one(&reply).map_err(|e| format!("Decoding failed: {e}")))
     }
 
     /// Makes a query call to the canister.
@@ -63,9 +61,7 @@ pub trait PicCanisterTrait {
                     e.reject_code, e.reject_message
                 )
             })
-            .and_then(|reply| {
-                decode_one(&reply).map_err(|_| "Decoding failed".to_string())
-            })
+            .and_then(|reply| decode_one(&reply).map_err(|_| "Decoding failed".to_string()))
     }
 }
 fn workspace_dir() -> PathBuf {

@@ -1,7 +1,7 @@
 use ic_cdk::bitcoin_canister::{
     bitcoin_get_balance, bitcoin_get_current_fee_percentiles, bitcoin_send_transaction,
-    GetBalanceRequest, GetCurrentFeePercentilesRequest, MillisatoshiPerByte, Network as BitcoinNetwork,
-    SendTransactionRequest,
+    GetBalanceRequest, GetCurrentFeePercentilesRequest, MillisatoshiPerByte,
+    Network as BitcoinNetwork, SendTransactionRequest,
 };
 
 /// Returns the balance of the given bitcoin address.

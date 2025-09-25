@@ -72,17 +72,18 @@ impl TryFrom<DefiniteCanisterSettings> for DefiniteCanisterSettingsArgs {
 ///   it will panic if the canister has no controllers.
 pub async fn get_canister_status_v2() -> CanisterStatusResultV2 {
     let canister_id = ic_cdk::api::canister_self(); // Own canister ID.
-    
+
     // canister_status returns a Result containing the response
     let result = canister_status(&CanisterStatusArgs { canister_id })
         .await
         .unwrap_or_else(|err| panic!("Failed to get status: {err:#?}"));
 
-    let controller = *result.settings
+    let controller = *result
+        .settings
         .controllers
         .first()
         .expect("This canister has not even one controller");
-    
+
     let balance = vec![(vec![0], result.cycles.clone())];
     let freezing_threshold = result.settings.freezing_threshold.clone();
 

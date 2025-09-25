@@ -20,8 +20,8 @@ pub async fn get_ecdsa_signature(
     };
 
     let res = sign_with_ecdsa(&args)
-    .await
-    .map_err(|err| format!("{err:?}"))?;
+        .await
+        .map_err(|err| format!("{err:?}"))?;
 
     Ok(res.signature)
 }
@@ -39,8 +39,8 @@ pub async fn ecdsa_pubkey_of(derivation_path: Vec<Vec<u8>>) -> Result<Vec<u8>, S
     };
 
     let response = ecdsa_public_key(&args)
-    .await
-    .map_err(|err| format!("{err:?}"))?;
+        .await
+        .map_err(|err| format!("{err:?}"))?;
 
     Ok(response.public_key)
 }

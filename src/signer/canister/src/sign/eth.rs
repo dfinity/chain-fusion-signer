@@ -6,7 +6,6 @@ use ethers_core::{
     types::transaction::eip2930::AccessList,
     utils::keccak256,
 };
-
 use ic_cdk::management_canister::{
     ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs,
     SignWithEcdsaArgs,
@@ -51,10 +50,7 @@ pub async fn pubkey_and_signature(caller: &Principal, message_hash: Vec<u8>) -> 
             name: read_config(|s| s.ecdsa_key_name.clone()),
         },
     };
-    let (pubkey, response) = futures::join!(
-        ecdsa_pubkey_of(caller),
-        sign_with_ecdsa(&sign_args)
-    );
+    let (pubkey, response) = futures::join!(ecdsa_pubkey_of(caller), sign_with_ecdsa(&sign_args));
     (
         pubkey,
         response.expect("failed to sign the message").signature,
@@ -74,8 +70,8 @@ pub async fn ecdsa_pubkey_of(principal: &Principal) -> Vec<u8> {
         },
     };
     let key = ecdsa_public_key(&args)
-    .await
-    .expect("failed to get public key");
+        .await
+        .expect("failed to get public key");
     key.public_key
 }
 
