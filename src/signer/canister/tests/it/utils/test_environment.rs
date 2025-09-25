@@ -48,11 +48,11 @@ impl Default for TestSetup {
     fn default() -> Self {
         let pic = Arc::new(
             PocketIcBuilder::new()
+                .with_nns_subnet()
                 .with_fiduciary_subnet()
                 .with_system_subnet()
                 .with_application_subnet()
                 .with_ii_subnet()
-                .with_nns_subnet()
                 .build(),
         );
         let cycles_ledger_canister_id = pic
