@@ -9,7 +9,10 @@
 //! currently requested `CanisterStatusResultV2`.
 
 use candid::{CandidType, Deserialize, Nat, Principal};
-use ic_cdk::management_canister::{canister_status, CanisterStatusArgs, CanisterStatusResult, CanisterStatusType, DefiniteCanisterSettings};
+use ic_cdk::management_canister::{
+    canister_status, CanisterStatusArgs, CanisterStatusResult, CanisterStatusType,
+    DefiniteCanisterSettings
+};
 
 /// Copy of the synonymous Rosetta type.
 #[derive(CandidType, Debug, Deserialize, Eq, PartialEq)]
