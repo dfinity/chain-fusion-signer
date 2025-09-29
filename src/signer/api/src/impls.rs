@@ -3,7 +3,7 @@ use ic_papi_api::PaymentError;
 
 use crate::types::{
     bitcoin::{GetAddressError, GetBalanceError, SendBtcError},
-    Config, InitArg, RejectionCode,
+    Config, InitArg,
 };
 
 impl From<InitArg> for Config {
@@ -48,18 +48,5 @@ impl From<PaymentError> for GetBalanceError {
 impl From<PaymentError> for SendBtcError {
     fn from(e: PaymentError) -> Self {
         SendBtcError::PaymentError(e)
-    }
-}
-
-impl From<ic_cdk::call::RejectCode> for RejectionCode {
-    fn from(code: ic_cdk::call::RejectCode) -> Self {
-        match code {
-            ic_cdk::call::RejectCode::SysFatal => RejectionCode::SysFatal,
-            ic_cdk::call::RejectCode::SysTransient => RejectionCode::SysTransient,
-            ic_cdk::call::RejectCode::DestinationInvalid => RejectionCode::DestinationInvalid,
-            ic_cdk::call::RejectCode::CanisterReject => RejectionCode::CanisterReject,
-            ic_cdk::call::RejectCode::CanisterError => RejectionCode::CanisterError,
-            ic_cdk::call::RejectCode::SysUnknown => RejectionCode::Unknown,
-        }
     }
 }
