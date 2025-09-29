@@ -1196,7 +1196,8 @@ dependencies = [
 
 [[package]]
 name = "ic-cycles-ledger-client"
-version = "0.1.1"
+version = "0.1.1-alpha.1"
+source = "git+https://github.com/dfinity/papi?rev=4795965d29cf16db8c2bb8ed148f47e62d76f7fa#4795965d29cf16db8c2bb8ed148f47e62d76f7fa"
 dependencies = [
  "candid",
  "ic-cdk",
@@ -1249,7 +1250,8 @@ checksum = "8b5c7628eac357aecda461130f8074468be5aa4d258a002032d82d817f79f1f8"
 
 [[package]]
 name = "ic-papi-api"
-version = "0.1.1"
+version = "0.1.1-alpha.1"
+source = "git+https://github.com/dfinity/papi?rev=4795965d29cf16db8c2bb8ed148f47e62d76f7fa#4795965d29cf16db8c2bb8ed148f47e62d76f7fa"
 dependencies = [
  "candid",
  "hex",
@@ -1261,7 +1263,8 @@ dependencies = [
 
 [[package]]
 name = "ic-papi-guard"
-version = "0.1.1"
+version = "0.1.1-alpha.1"
+source = "git+https://github.com/dfinity/papi?rev=4795965d29cf16db8c2bb8ed148f47e62d76f7fa#4795965d29cf16db8c2bb8ed148f47e62d76f7fa"
 dependencies = [
  "candid",
  "ic-cdk",

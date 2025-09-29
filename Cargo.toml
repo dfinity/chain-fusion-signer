@@ -27,12 +27,12 @@ bitcoin = "0.32.7"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
-ic-papi-api = { path = "/home/apollo/git/dfinity/others/papi/src/api" }
-ic-papi-guard = { path = "/home/apollo/git/dfinity/others/papi/src/guard" }
+ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "4795965d29cf16db8c2bb8ed148f47e62d76f7fa" }
+ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "4795965d29cf16db8c2bb8ed148f47e62d76f7fa" }
 ed25519-dalek = "2.2.0"
 signature = "2.2"
 
 # START papi dependencies
 ic-ledger-types = "0.15.0"
-cycles-ledger-client = { path = "/home/apollo/git/dfinity/others/papi/src/declarations/cycles_ledger" }
+cycles-ledger-client = { git = "https://github.com/dfinity/papi", rev = "4795965d29cf16db8c2bb8ed148f47e62d76f7fa" }
 # END papi dependencies
