@@ -390,7 +390,6 @@ fn public_keys_are_different() {
                     )
                     .unwrap()
                     .unwrap()
-                    .0
                     .public_key;
                 assert!(
                     !public_keys.contains_key(&public_key),
@@ -470,7 +469,6 @@ fn signatures_can_be_verified() {
                     )
                     .unwrap()
                     .unwrap()
-                    .0
                     .public_key
                     .into_vec();
 
@@ -490,7 +488,6 @@ fn signatures_can_be_verified() {
                     )
                     .unwrap()
                     .unwrap()
-                    .0
                     .signature
                     .into_vec();
 

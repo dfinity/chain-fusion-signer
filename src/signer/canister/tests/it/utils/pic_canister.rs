@@ -31,20 +31,21 @@ pub trait PicCanisterTrait {
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
-        self.pic()
-            .update_call(
-                self.canister_id(),
-                caller,
-                method,
-                encode_args(args).unwrap(),
-            )
-            .map_err(|e| {
-                format!(
-                    "Update call error. RejectionCode: {:?}, Error: {}",
-                    e.reject_code, e.reject_message
-                )
-            })
-            .and_then(|reply| decode_one(&reply).map_err(|e| format!("Decoding failed: {e}")))
+        match self.pic().update_call(
+            self.canister_id(),
+            caller,
+            method,
+            encode_args(args).unwrap(),
+        ) {
+            Ok(result) => {
+                // Add debug output to see the raw response
+                eprintln!("Debug: Method '{}' returned raw bytes: {:?}", method, result);
+                decode_one(&result).map_err(|e| format!("Decoding failed: {e}"))
+            }
+            Err(e) => {
+                Err(e.reject_message)
+            }
+        }
     }
 
     /// Makes a query call to the canister.
@@ -53,15 +54,14 @@ pub trait PicCanisterTrait {
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
-        self.pic()
-            .query_call(self.canister_id(), caller, method, encode_one(arg).unwrap())
-            .map_err(|e| {
-                format!(
-                    "Query call error. RejectionCode: {:?}, Error: {}",
-                    e.reject_code, e.reject_message
-                )
-            })
-            .and_then(|reply| decode_one(&reply).map_err(|_| "Decoding failed".to_string()))
+        match self.pic().query_call(self.canister_id(), caller, method, encode_one(arg).unwrap()) {
+            Ok(result) => {
+                decode_one(&result).map_err(|_| "Decoding failed".to_string())
+            }
+            Err(e) => {
+                Err(e.reject_message)
+            }
+        }
     }
 }
 fn workspace_dir() -> PathBuf {
