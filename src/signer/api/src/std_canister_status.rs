@@ -9,9 +9,7 @@
 //! currently requested `CanisterStatusResultV2`.
 
 use candid::{CandidType, Deserialize, Nat, Principal};
-use ic_cdk::management_canister::{
-    canister_status, CanisterStatusArgs, CanisterStatusType, DefiniteCanisterSettings,
-};
+use ic_cdk::management_canister::{canister_status, CanisterStatusArgs, CanisterStatusResult, CanisterStatusType, DefiniteCanisterSettings};
 
 /// Copy of the synonymous Rosetta type.
 #[derive(CandidType, Debug, Deserialize, Eq, PartialEq)]
@@ -26,6 +24,40 @@ pub struct CanisterStatusResultV2 {
     balance: Vec<(Vec<u8>, Nat)>,
     freezing_threshold: Nat,
     idle_cycles_burned_per_day: Nat,
+}
+
+impl TryFrom<CanisterStatusResult> for CanisterStatusResultV2 {
+    type Error = &'static str;
+    fn try_from(value: CanisterStatusResult) -> Result<Self, Self::Error> {
+        let CanisterStatusResult {
+            status,
+            module_hash,
+            settings,
+            memory_size,
+            cycles,
+            idle_cycles_burned_per_day,
+            ..
+        } = value;
+
+        let controller = *settings
+            .controllers
+            .first()
+            .ok_or("This canister has not even one controller")?;
+        let balance = vec![(vec![0], cycles.clone())];
+        let freezing_threshold = settings.freezing_threshold.clone();
+
+        Ok(Self {
+            status,
+            module_hash,
+            controller,
+            settings: settings.try_into()?,
+            memory_size,
+            cycles,
+            balance,
+            freezing_threshold,
+            idle_cycles_burned_per_day,
+        })
+    }
 }
 
 /// Copy of synonymous Rosetta type.
@@ -62,43 +94,19 @@ impl TryFrom<DefiniteCanisterSettings> for DefiniteCanisterSettingsArgs {
     }
 }
 
-/// Gets status information about the canister.
-///
-/// See [IC method `canister_status`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-canister_status).
+/// Gets the canister status using the standard `CanisterStatusResultV2` format.
 ///
 /// # Panics
-/// - If the call to the management canister fails.
-/// - If the response cannot be converted to `CanisterStatusResultV2`.  For example, it looks as if
-///   it will panic if the canister has no controllers.
+/// Panics if the canister status cannot be retrieved or if the response cannot be
+/// converted to `CanisterStatusResultV2` format.
 pub async fn get_canister_status_v2() -> CanisterStatusResultV2 {
     let canister_id = ic_cdk::api::canister_self(); // Own canister ID.
-
-    // canister_status returns a Result containing the response
-    let result = canister_status(&CanisterStatusArgs { canister_id })
+    canister_status(&CanisterStatusArgs { canister_id })
         .await
-        .unwrap_or_else(|err| panic!("Failed to get status: {err:#?}"));
-
-    let controller = *result
-        .settings
-        .controllers
-        .first()
-        .expect("This canister has not even one controller");
-
-    let balance = vec![(vec![0], result.cycles.clone())];
-    let freezing_threshold = result.settings.freezing_threshold.clone();
-
-    let settings = DefiniteCanisterSettingsArgs::try_from(result.settings)
-        .expect("Failed to convert DefiniteCanisterSettings");
-
-    CanisterStatusResultV2 {
-        status: result.status,
-        module_hash: result.module_hash,
-        controller,
-        settings,
-        memory_size: result.memory_size,
-        cycles: result.cycles,
-        balance,
-        freezing_threshold,
-        idle_cycles_burned_per_day: result.idle_cycles_burned_per_day,
-    }
+        .map_err(|err| format!("Failed to get status: {err:#?}"))
+        .and_then(|canister_status_response| {
+            CanisterStatusResultV2::try_from(canister_status_response)
+                .map_err(|str| format!("CanisterStatusResultV2::try_from failed: {str}"))
+        })
+        .unwrap_or_else(|err| panic!("Couldn't get canister_status of {canister_id}. Err: {err}"))
 }
