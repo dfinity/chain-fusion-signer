@@ -1,5 +1,6 @@
 use candid::{CandidType, Deserialize};
-use ic_cdk::api::call::RejectionCode;
+
+use crate::types::RejectionCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum GenericSigningError {

@@ -6,7 +6,7 @@ use bitcoin::{
     OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use candid::Principal;
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
+use ic_cdk::bitcoin_canister::{Network as BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
 use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
 use crate::{
@@ -240,9 +240,7 @@ mod tests {
     use bitcoin::{
         hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
     };
-    use ic_cdk::api::management_canister::bitcoin::{
-        BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo,
-    };
+    use ic_cdk::bitcoin_canister::{Network as BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
     use super::{build_p2wpkh_transaction, get_input_value, DUST_THRESHOLD};
