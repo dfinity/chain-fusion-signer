@@ -1,6 +1,5 @@
 //! Types for the Schnorr signing API.
 use candid::{CandidType, Deserialize};
-
 use crate::types::RejectionCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
