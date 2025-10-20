@@ -6,6 +6,7 @@ use ic_cdk::call::RejectCode as IcCdkRejectCode;
 /// Local RejectCode type that matches the upstream ic-error-types RejectCode
 #[derive(CandidType, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RejectCode {
+    #[deprecated(note = "NoError is deprecated; ")]
     NoError = 0,
     SysFatal = 1,
     SysTransient = 2,
@@ -24,7 +25,7 @@ impl From<IcCdkRejectCode> for RejectCode {
             IcCdkRejectCode::DestinationInvalid => RejectCode::DestinationInvalid,
             IcCdkRejectCode::CanisterReject => RejectCode::CanisterReject,
             IcCdkRejectCode::CanisterError => RejectCode::CanisterError,
-            IcCdkRejectCode::Unknown => RejectCode::Unknown,
+            IcCdkRejectCode::SysUnknown => RejectCode::Unknown,
         }
     }
 }
@@ -38,7 +39,7 @@ impl From<RejectCode> for IcCdkRejectCode {
             RejectCode::DestinationInvalid => IcCdkRejectCode::DestinationInvalid,
             RejectCode::CanisterReject => IcCdkRejectCode::CanisterReject,
             RejectCode::CanisterError => IcCdkRejectCode::CanisterError,
-            RejectCode::Unknown => IcCdkRejectCode::Unknown,
+            RejectCode::Unknown => IcCdkRejectCode::SysUnknown,
         }
     }
 }
