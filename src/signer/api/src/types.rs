@@ -1,6 +1,47 @@
 use std::fmt::Debug;
 
 use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::call::RejectCode as IcCdkRejectCode;
+
+/// Local RejectCode type that matches the upstream ic-error-types RejectCode
+#[derive(CandidType, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RejectCode {
+    NoError = 0,
+    SysFatal = 1,
+    SysTransient = 2,
+    DestinationInvalid = 3,
+    CanisterReject = 4,
+    CanisterError = 5,
+    Unknown,
+}
+
+impl From<IcCdkRejectCode> for RejectCode {
+    fn from(code: IcCdkRejectCode) -> Self {
+        match code {
+            IcCdkRejectCode::NoError => RejectCode::NoError,
+            IcCdkRejectCode::SysFatal => RejectCode::SysFatal,
+            IcCdkRejectCode::SysTransient => RejectCode::SysTransient,
+            IcCdkRejectCode::DestinationInvalid => RejectCode::DestinationInvalid,
+            IcCdkRejectCode::CanisterReject => RejectCode::CanisterReject,
+            IcCdkRejectCode::CanisterError => RejectCode::CanisterError,
+            IcCdkRejectCode::Unknown => RejectCode::Unknown,
+        }
+    }
+}
+
+impl From<RejectCode> for IcCdkRejectCode {
+    fn from(code: RejectCode) -> Self {
+        match code {
+            RejectCode::NoError => IcCdkRejectCode::NoError,
+            RejectCode::SysFatal => IcCdkRejectCode::SysFatal,
+            RejectCode::SysTransient => IcCdkRejectCode::SysTransient,
+            RejectCode::DestinationInvalid => IcCdkRejectCode::DestinationInvalid,
+            RejectCode::CanisterReject => IcCdkRejectCode::CanisterReject,
+            RejectCode::CanisterError => IcCdkRejectCode::CanisterError,
+            RejectCode::Unknown => IcCdkRejectCode::Unknown,
+        }
+    }
+}
 
 pub mod eth;
 pub mod generic;
