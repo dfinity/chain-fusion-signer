@@ -293,7 +293,7 @@ pub async fn eth_address(
     request: EthAddressRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
-    let principal = request.principal.unwrap_or_else(ic_cdk::caller);
+    let principal = request.principal.unwrap_or_else(ic_cdk::api::msg_caller);
     if principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
@@ -321,7 +321,7 @@ pub async fn eth_address(
 pub async fn eth_address_of_caller(
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
-    let principal = ic_cdk::caller();
+    let principal = ic_cdk::api::msg_caller();
     if principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
@@ -453,10 +453,12 @@ pub async fn btc_caller_address(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
-                    .await
-                    .map_err(|msg| GetAddressError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetAddressError::InternalError { msg })?;
 
             Ok(GetAddressResponse { address })
         }
@@ -492,10 +494,12 @@ pub async fn btc_caller_balance(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
-                    .await
-                    .map_err(|msg| GetBalanceError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             let balance =
                 bitcoin_api::get_balance(params.network, address, params.min_confirmations)
@@ -535,7 +539,7 @@ pub async fn btc_caller_send(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let principal = ic_cdk::caller();
+            let principal = ic_cdk::api::msg_caller();
             let source_address =
                 bitcoin_utils::principal_to_p2wpkh_address(params.network, &principal)
                     .await
