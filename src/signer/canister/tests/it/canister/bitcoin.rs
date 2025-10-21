@@ -7,137 +7,139 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
+
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum Flag {
-    #[serde(rename = "disabled")]
-    Disabled,
-    #[serde(rename = "enabled")]
-    Enabled,
+  #[serde(rename="disabled")]
+  Disabled,
+  #[serde(rename="enabled")]
+  Enabled,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct Fees {
-    pub(crate) get_current_fee_percentiles: candid::Nat,
-    pub(crate) get_utxos_maximum: candid::Nat,
-    pub(crate) get_block_headers_cycles_per_ten_instructions: candid::Nat,
-    pub(crate) get_current_fee_percentiles_maximum: candid::Nat,
-    pub(crate) send_transaction_per_byte: candid::Nat,
-    pub(crate) get_balance: candid::Nat,
-    pub(crate) get_utxos_cycles_per_ten_instructions: candid::Nat,
-    pub(crate) get_block_headers_base: candid::Nat,
-    pub(crate) get_utxos_base: candid::Nat,
-    pub(crate) get_balance_maximum: candid::Nat,
-    pub(crate) send_transaction_base: candid::Nat,
-    pub(crate) get_block_headers_maximum: candid::Nat,
+  pub(crate) get_current_fee_percentiles: candid::Nat,
+  pub(crate) get_utxos_maximum: candid::Nat,
+  pub(crate) get_block_headers_cycles_per_ten_instructions: candid::Nat,
+  pub(crate) get_current_fee_percentiles_maximum: candid::Nat,
+  pub(crate) send_transaction_per_byte: candid::Nat,
+  pub(crate) get_balance: candid::Nat,
+  pub(crate) get_utxos_cycles_per_ten_instructions: candid::Nat,
+  pub(crate) get_block_headers_base: candid::Nat,
+  pub(crate) get_utxos_base: candid::Nat,
+  pub(crate) get_balance_maximum: candid::Nat,
+  pub(crate) send_transaction_base: candid::Nat,
+  pub(crate) get_block_headers_maximum: candid::Nat,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum Network {
-    #[serde(rename = "mainnet")]
-    Mainnet,
-    #[serde(rename = "regtest")]
-    Regtest,
-    #[serde(rename = "testnet")]
-    Testnet,
+  #[serde(rename="mainnet")]
+  Mainnet,
+  #[serde(rename="regtest")]
+  Regtest,
+  #[serde(rename="testnet")]
+  Testnet,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct InitConfig {
-    pub(crate) api_access: Option<Flag>,
-    pub(crate) lazily_evaluate_fee_percentiles: Option<Flag>,
-    pub(crate) blocks_source: Option<Principal>,
-    pub(crate) fees: Option<Fees>,
-    pub(crate) watchdog_canister: Option<Option<Principal>>,
-    pub(crate) network: Option<Network>,
-    pub(crate) stability_threshold: Option<candid::Nat>,
-    pub(crate) syncing: Option<Flag>,
-    pub(crate) burn_cycles: Option<Flag>,
-    pub(crate) disable_api_if_not_fully_synced: Option<Flag>,
+  pub(crate) api_access: Option<Flag>,
+  pub(crate) lazily_evaluate_fee_percentiles: Option<Flag>,
+  pub(crate) blocks_source: Option<Principal>,
+  pub(crate) fees: Option<Fees>,
+  pub(crate) watchdog_canister: Option<Option<Principal>>,
+  pub(crate) network: Option<Network>,
+  pub(crate) stability_threshold: Option<candid::Nat>,
+  pub(crate) syncing: Option<Flag>,
+  pub(crate) burn_cycles: Option<Flag>,
+  pub(crate) disable_api_if_not_fully_synced: Option<Flag>,
 }
 pub(crate) type Address = String;
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetBalanceRequest {
-    pub(crate) network: Network,
-    pub(crate) address: Address,
-    pub(crate) min_confirmations: Option<u32>,
+  pub(crate) network: Network,
+  pub(crate) address: Address,
+  pub(crate) min_confirmations: Option<u32>,
 }
 pub(crate) type Satoshi = u64;
 pub(crate) type BlockHeight = u32;
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetBlockHeadersRequest {
-    pub(crate) start_height: BlockHeight,
-    pub(crate) end_height: Option<BlockHeight>,
-    pub(crate) network: Network,
+  pub(crate) start_height: BlockHeight,
+  pub(crate) end_height: Option<BlockHeight>,
+  pub(crate) network: Network,
 }
 pub(crate) type BlockHeader = serde_bytes::ByteBuf;
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetBlockHeadersResponse {
-    pub(crate) tip_height: BlockHeight,
-    pub(crate) block_headers: Vec<BlockHeader>,
+  pub(crate) tip_height: BlockHeight,
+  pub(crate) block_headers: Vec<BlockHeader>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetCurrentFeePercentilesRequest {
-    pub(crate) network: Network,
+  pub(crate) network: Network,
 }
 pub(crate) type MillisatoshiPerByte = u64;
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum GetUtxosRequestFilterInner {
-    #[serde(rename = "page")]
-    Page(serde_bytes::ByteBuf),
-    #[serde(rename = "min_confirmations")]
-    MinConfirmations(u32),
+  #[serde(rename="page")]
+  Page(serde_bytes::ByteBuf),
+  #[serde(rename="min_confirmations")]
+  MinConfirmations(u32),
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetUtxosRequest {
-    pub(crate) network: Network,
-    pub(crate) filter: Option<GetUtxosRequestFilterInner>,
-    pub(crate) address: Address,
+  pub(crate) network: Network,
+  pub(crate) filter: Option<GetUtxosRequestFilterInner>,
+  pub(crate) address: Address,
 }
 pub(crate) type BlockHash = serde_bytes::ByteBuf;
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct Outpoint {
-    pub(crate) txid: serde_bytes::ByteBuf,
-    pub(crate) vout: u32,
+  pub(crate) txid: serde_bytes::ByteBuf,
+  pub(crate) vout: u32,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct Utxo {
-    pub(crate) height: BlockHeight,
-    pub(crate) value: Satoshi,
-    pub(crate) outpoint: Outpoint,
+  pub(crate) height: BlockHeight,
+  pub(crate) value: Satoshi,
+  pub(crate) outpoint: Outpoint,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetUtxosResponse {
-    pub(crate) next_page: Option<serde_bytes::ByteBuf>,
-    pub(crate) tip_height: BlockHeight,
-    pub(crate) tip_block_hash: BlockHash,
-    pub(crate) utxos: Vec<Utxo>,
+  pub(crate) next_page: Option<serde_bytes::ByteBuf>,
+  pub(crate) tip_height: BlockHeight,
+  pub(crate) tip_block_hash: BlockHash,
+  pub(crate) utxos: Vec<Utxo>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct SendTransactionRequest {
-    pub(crate) transaction: serde_bytes::ByteBuf,
-    pub(crate) network: Network,
+  pub(crate) transaction: serde_bytes::ByteBuf,
+  pub(crate) network: Network,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct Config {
-    pub(crate) api_access: Flag,
-    pub(crate) lazily_evaluate_fee_percentiles: Flag,
-    pub(crate) blocks_source: Principal,
-    pub(crate) fees: Fees,
-    pub(crate) watchdog_canister: Option<Principal>,
-    pub(crate) network: Network,
-    pub(crate) stability_threshold: candid::Nat,
-    pub(crate) syncing: Flag,
-    pub(crate) burn_cycles: Flag,
-    pub(crate) disable_api_if_not_fully_synced: Flag,
+  pub(crate) api_access: Flag,
+  pub(crate) lazily_evaluate_fee_percentiles: Flag,
+  pub(crate) blocks_source: Principal,
+  pub(crate) fees: Fees,
+  pub(crate) watchdog_canister: Option<Principal>,
+  pub(crate) network: Network,
+  pub(crate) stability_threshold: candid::Nat,
+  pub(crate) syncing: Flag,
+  pub(crate) burn_cycles: Flag,
+  pub(crate) disable_api_if_not_fully_synced: Flag,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct SetConfigRequest {
-    pub(crate) api_access: Option<Flag>,
-    pub(crate) lazily_evaluate_fee_percentiles: Option<Flag>,
-    pub(crate) fees: Option<Fees>,
-    pub(crate) watchdog_canister: Option<Option<Principal>>,
-    pub(crate) stability_threshold: Option<candid::Nat>,
-    pub(crate) syncing: Option<Flag>,
-    pub(crate) burn_cycles: Option<Flag>,
-    pub(crate) disable_api_if_not_fully_synced: Option<Flag>,
+  pub(crate) api_access: Option<Flag>,
+  pub(crate) lazily_evaluate_fee_percentiles: Option<Flag>,
+  pub(crate) fees: Option<Fees>,
+  pub(crate) watchdog_canister: Option<Option<Principal>>,
+  pub(crate) stability_threshold: Option<candid::Nat>,
+  pub(crate) syncing: Option<Flag>,
+  pub(crate) burn_cycles: Option<Flag>,
+  pub(crate) disable_api_if_not_fully_synced: Option<Flag>,
 }
+
 
 pub struct BitcoinPic {
     pub pic: Arc<PocketIc>,
@@ -165,59 +167,32 @@ impl PicCanisterTrait for BitcoinPic {
 }
 
 impl BitcoinPic {
-    pub fn bitcoin_get_balance(
-        &self,
-        caller: Principal,
-        arg0: &GetBalanceRequest,
-    ) -> Result<Satoshi, String> {
-        self.update(caller, "bitcoin_get_balance", (arg0,))
-    }
-    pub fn bitcoin_get_balance_query(
-        &self,
-        caller: Principal,
-        arg0: &GetBalanceRequest,
-    ) -> Result<Satoshi, String> {
-        self.update(caller, "bitcoin_get_balance_query", (arg0,))
-    }
-    pub fn bitcoin_get_block_headers(
-        &self,
-        caller: Principal,
-        arg0: &GetBlockHeadersRequest,
-    ) -> Result<GetBlockHeadersResponse, String> {
-        self.update(caller, "bitcoin_get_block_headers", (arg0,))
-    }
-    pub fn bitcoin_get_current_fee_percentiles(
-        &self,
-        caller: Principal,
-        arg0: &GetCurrentFeePercentilesRequest,
-    ) -> Result<Vec<MillisatoshiPerByte>, String> {
-        self.update(caller, "bitcoin_get_current_fee_percentiles", (arg0,))
-    }
-    pub fn bitcoin_get_utxos(
-        &self,
-        caller: Principal,
-        arg0: &GetUtxosRequest,
-    ) -> Result<GetUtxosResponse, String> {
-        self.update(caller, "bitcoin_get_utxos", (arg0,))
-    }
-    pub fn bitcoin_get_utxos_query(
-        &self,
-        caller: Principal,
-        arg0: &GetUtxosRequest,
-    ) -> Result<GetUtxosResponse, String> {
-        self.update(caller, "bitcoin_get_utxos_query", (arg0,))
-    }
-    pub fn bitcoin_send_transaction(
-        &self,
-        caller: Principal,
-        arg0: &SendTransactionRequest,
-    ) -> Result<(), String> {
-        self.update(caller, "bitcoin_send_transaction", (arg0,))
-    }
-    pub fn get_config(&self, caller: Principal) -> Result<Config, String> {
-        self.update(caller, "get_config", ())
-    }
-    pub fn set_config(&self, caller: Principal, arg0: &SetConfigRequest) -> Result<(), String> {
-        self.update(caller, "set_config", (arg0,))
-    }
+  pub fn bitcoin_get_balance(&self, caller: Principal, arg0: &GetBalanceRequest) -> Result<Satoshi, String> {
+      self.update(caller, "bitcoin_get_balance", (arg0, ))
+  }
+  pub fn bitcoin_get_balance_query(&self, caller: Principal, arg0: &GetBalanceRequest) -> Result<Satoshi, String> {
+      self.update(caller, "bitcoin_get_balance_query", (arg0, ))
+  }
+  pub fn bitcoin_get_block_headers(&self, caller: Principal, arg0: &GetBlockHeadersRequest) -> Result<GetBlockHeadersResponse, String> {
+      self.update(caller, "bitcoin_get_block_headers", (arg0, ))
+  }
+  pub fn bitcoin_get_current_fee_percentiles(&self, caller: Principal, arg0: &GetCurrentFeePercentilesRequest) -> Result<Vec<MillisatoshiPerByte>, String> {
+      self.update(caller, "bitcoin_get_current_fee_percentiles", (arg0, ))
+  }
+  pub fn bitcoin_get_utxos(&self, caller: Principal, arg0: &GetUtxosRequest) -> Result<GetUtxosResponse, String> {
+      self.update(caller, "bitcoin_get_utxos", (arg0, ))
+  }
+  pub fn bitcoin_get_utxos_query(&self, caller: Principal, arg0: &GetUtxosRequest) -> Result<GetUtxosResponse, String> {
+      self.update(caller, "bitcoin_get_utxos_query", (arg0, ))
+  }
+  pub fn bitcoin_send_transaction(&self, caller: Principal, arg0: &SendTransactionRequest) -> Result<(), String> {
+      self.update(caller, "bitcoin_send_transaction", (arg0, ))
+  }
+  pub fn get_config(&self, caller: Principal) -> Result<Config, String> {
+      self.update(caller, "get_config", ())
+  }
+  pub fn set_config(&self, caller: Principal, arg0: &SetConfigRequest) -> Result<(), String> {
+      self.update(caller, "set_config", (arg0, ))
+  }
 }
+
