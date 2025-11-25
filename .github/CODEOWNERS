@@ -6,6 +6,6 @@
 #       If standard maintainers are not available, please contact GIX.
 * @bitdivine
 
-# The codebase is owned by the Governance & Identity Experience team at DFINITY
-# For questions, reach out to: <gix@dfinity.org>
-.github/CODEOWNERS @dfinity/gix
+# The codebase is owned by the OISY team at DFINITY
+# For questions, reach out to: <oisy-wallet@dfinity.org>
+.github/CODEOWNERS @dfinity/gix @dfinity/oisy
