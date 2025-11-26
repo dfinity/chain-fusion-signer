@@ -8,7 +8,7 @@ use std::{
 use candid::{
     decode_one, encode_args, encode_one, utils::ArgumentEncoder, CandidType, Deserialize, Principal,
 };
-use pocket_ic::{PocketIc, WasmResult};
+use pocket_ic::PocketIc;
 
 /// Common methods for interacting with a canister using `PocketIc`.
 pub trait PicCanisterTrait {
@@ -31,25 +31,22 @@ pub trait PicCanisterTrait {
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
-        self.pic()
-            .update_call(
-                self.canister_id(),
-                caller,
-                method,
-                encode_args(args).unwrap(),
-            )
-            .map_err(|e| {
-                format!(
-                    "Update call error. RejectionCode: {:?}, Error: {}",
-                    e.code, e.description
-                )
-            })
-            .and_then(|reply| match reply {
-                WasmResult::Reply(reply) => {
-                    decode_one(&reply).map_err(|e| format!("Decoding failed: {e}"))
-                }
-                WasmResult::Reject(error) => Err(error),
-            })
+        match self.pic().update_call(
+            self.canister_id(),
+            caller,
+            method,
+            encode_args(args).unwrap(),
+        ) {
+            Ok(result) => {
+                // Add debug output to see the raw response
+                eprintln!(
+                    "Debug: Method '{}' returned raw bytes: {:?}",
+                    method, result
+                );
+                decode_one(&result).map_err(|e| format!("Decoding failed: {e}"))
+            }
+            Err(e) => Err(e.reject_message),
+        }
     }
 
     /// Makes a query call to the canister.
@@ -58,20 +55,13 @@ pub trait PicCanisterTrait {
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
-        self.pic()
+        match self
+            .pic()
             .query_call(self.canister_id(), caller, method, encode_one(arg).unwrap())
-            .map_err(|e| {
-                format!(
-                    "Query call error. RejectionCode: {:?}, Error: {}",
-                    e.code, e.description
-                )
-            })
-            .and_then(|reply| match reply {
-                WasmResult::Reply(reply) => {
-                    decode_one(&reply).map_err(|_| "Decoding failed".to_string())
-                }
-                WasmResult::Reject(error) => Err(error),
-            })
+        {
+            Ok(result) => decode_one(&result).map_err(|_| "Decoding failed".to_string()),
+            Err(e) => Err(e.reject_message),
+        }
     }
 }
 fn workspace_dir() -> PathBuf {
@@ -129,6 +119,7 @@ impl PicCanisterTrait for PicCanister {
 
 impl PicCanister {
     /// Creates a new canister.
+    #[allow(dead_code)]
     pub fn new(pic: Arc<PocketIc>, wasm_path: &str) -> Self {
         PicCanisterBuilder::default()
             .with_wasm(wasm_path)
