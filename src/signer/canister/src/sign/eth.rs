@@ -85,7 +85,7 @@ pub async fn eth_address(principal: Principal) -> Result<EthAddressResponse, Eth
 
 /// Computes a signature for a precomputed hash.
 pub async fn sign_prehash(prehash: String) -> String {
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let hash_bytes = decode_hex(&prehash);
 
@@ -104,7 +104,7 @@ pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransac
 
     const EIP1559_TX_ID: u8 = 2;
 
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let data = req.data.as_ref().map(|s| decode_hex(s));
 
@@ -146,7 +146,7 @@ pub async fn sign_transaction(req: SignRequest) -> Result<String, EthSignTransac
 
 /// Computes a signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
 pub async fn personal_sign(plaintext: String) -> String {
-    let caller = ic_cdk::caller();
+    let caller = ic_cdk::api::msg_caller();
 
     let bytes = decode_hex(&plaintext);
 
