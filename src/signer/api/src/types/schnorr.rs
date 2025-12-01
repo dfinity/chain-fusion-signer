@@ -1,6 +1,7 @@
 //! Types for the Schnorr signing API.
 use candid::{CandidType, Deserialize};
-use ic_cdk::api::call::RejectionCode;
+
+use crate::types::RejectionCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum SchnorrSigningError {
@@ -51,5 +52,10 @@ pub enum SchnorrSignWithEcdsaError {
 impl From<ic_papi_api::PaymentError> for SchnorrSignWithEcdsaError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
+    }
+}
+impl From<(RejectionCode, String)> for SchnorrSignWithEcdsaError {
+    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+        Self::SigningError(rejection_code, message)
     }
 }

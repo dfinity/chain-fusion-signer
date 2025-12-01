@@ -297,7 +297,7 @@ pub(crate) struct SignWithEcdsaArgument {
 pub(crate) struct SignWithEcdsaResponse {
     pub(crate) signature: serde_bytes::ByteBuf,
 }
-pub(crate) type Result7 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result7 = std::result::Result<SignWithEcdsaResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CanisterStatusType {
     #[serde(rename = "stopped")]
@@ -358,14 +358,14 @@ pub(crate) struct SchnorrPublicKeyArgument {
     pub(crate) canister_id: Option<Principal>,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-pub(crate) type Result8 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
+pub(crate) type Result8 = std::result::Result<EcdsaPublicKeyResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithSchnorrArgument {
     pub(crate) key_id: SchnorrKeyId,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
     pub(crate) message: serde_bytes::ByteBuf,
 }
-pub(crate) type Result9 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result9 = std::result::Result<SignWithEcdsaResponse, EthAddressError>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,
