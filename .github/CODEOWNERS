@@ -8,4 +8,4 @@
 
 # The codebase is owned by the OISY team at DFINITY
 # For questions, reach out to: <oisy-wallet@dfinity.org>
-.github/CODEOWNERS @dfinity/gix @dfinity/oisy
+.github/CODEOWNERS @dfinity/oisy
