@@ -3,15 +3,15 @@
 //! Note: This API is used my many canisters but the code is not packaged up in a portable way and
 //! implementations typically use old APIs to get the data.
 //!
-//! The `ic_cdk` has a method called [`canister_status`](https://docs.rs/ic-cdk/0.10.0/ic_cdk/api/management_canister/main/fn.canister_status.html)
-//! with all the same data.  Consumers such as the cycle management canister should consider
-//! supporting that.  In the meantime we convert the type used in the current `ic_cdk` into the
+//! The `ic_cdk` has a method called [`canister_status`](https://docs.rs/ic-cdk/0.18.0/ic_cdk/management_canister/fn.canister_status.html)
+//! with all the same data. Consumers such as the cycle management canister should consider
+//! supporting that. In the meantime we convert the current `ic_cdk` response into the
 //! currently requested `CanisterStatusResultV2`.
 
 use candid::{CandidType, Deserialize, Nat, Principal};
-use ic_cdk::api::management_canister::main::{
-    canister_status, CanisterIdRecord, CanisterStatusResponse, CanisterStatusType,
-    DefiniteCanisterSettings,
+use ic_cdk::management_canister::{
+    canister_status, CanisterStatusArgs, CanisterStatusResult, CanisterStatusType,
+    DefiniteCanisterSettings
 };
 
 /// Copy of the synonymous Rosetta type.
@@ -19,7 +19,7 @@ use ic_cdk::api::management_canister::main::{
 pub struct CanisterStatusResultV2 {
     status: CanisterStatusType,
     module_hash: Option<Vec<u8>>,
-    controller: candid::Principal,
+    controller: Principal,
     settings: DefiniteCanisterSettingsArgs,
     memory_size: Nat,
     cycles: Nat,
@@ -29,10 +29,10 @@ pub struct CanisterStatusResultV2 {
     idle_cycles_burned_per_day: Nat,
 }
 
-impl TryFrom<CanisterStatusResponse> for CanisterStatusResultV2 {
+impl TryFrom<CanisterStatusResult> for CanisterStatusResultV2 {
     type Error = &'static str;
-    fn try_from(value: CanisterStatusResponse) -> Result<Self, Self::Error> {
-        let CanisterStatusResponse {
+    fn try_from(value: CanisterStatusResult) -> Result<Self, Self::Error> {
+        let CanisterStatusResult {
             status,
             module_hash,
             settings,
@@ -97,20 +97,17 @@ impl TryFrom<DefiniteCanisterSettings> for DefiniteCanisterSettingsArgs {
     }
 }
 
-/// Gets status information about the canister.
-///
-/// See [IC method `canister_status`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-canister_status).
+/// Gets the canister status using the standard `CanisterStatusResultV2` format.
 ///
 /// # Panics
-/// - If the call to the management canister fails.
-/// - If the response cannot be converted to `CanisterStatusResultV2`.  For example, it looks as if
-///   it will panic if the canister has no controllers.
+/// Panics if the canister status cannot be retrieved or if the response cannot be
+/// converted to `CanisterStatusResultV2` format.
 pub async fn get_canister_status_v2() -> CanisterStatusResultV2 {
-    let canister_id = ic_cdk::api::id(); // Own canister ID.
-    canister_status(CanisterIdRecord { canister_id })
+    let canister_id = ic_cdk::api::canister_self(); // Own canister ID.
+    canister_status(&CanisterStatusArgs { canister_id })
         .await
         .map_err(|err| format!("Failed to get status: {err:#?}"))
-        .and_then(|(canister_status_response,)| {
+        .and_then(|canister_status_response| {
             CanisterStatusResultV2::try_from(canister_status_response)
                 .map_err(|str| format!("CanisterStatusResultV2::try_from failed: {str}"))
         })
