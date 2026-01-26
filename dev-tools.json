@@ -53,7 +53,7 @@
 	},
 	"cargo-audit": {
 		"method": "cargo-binstall",
-		"version": "0.21.2"
+		"version": "0.22.0"
 	},
 	"cargo-edit": {
 		"method": "cargo-binstall",
