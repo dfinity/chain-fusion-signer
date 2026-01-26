@@ -175,7 +175,7 @@ mod address {
         assert!(response.is_err());
         assert_eq!(
             response.unwrap_err(),
-            "Anonymous caller not authorized.".to_string()
+            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
         );
     }
 

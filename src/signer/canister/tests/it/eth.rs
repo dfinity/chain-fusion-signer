@@ -103,7 +103,7 @@ mod sign_transaction {
         assert!(response.is_err());
         assert_eq!(
             response.unwrap_err(),
-            "Anonymous caller not authorized.".to_string()
+            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
         );
     }
 }
@@ -178,7 +178,7 @@ mod personal_sign {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Anonymous caller not authorized.".to_string()
+            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
         );
     }
 }
@@ -255,7 +255,7 @@ mod eth_address {
         assert!(response.is_err());
         assert_eq!(
             response.unwrap_err(),
-            "Anonymous caller not authorized.".to_string()
+           "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
         );
     }
 
