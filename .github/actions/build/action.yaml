@@ -31,4 +31,4 @@ runs:
         git log | head -n1 > out/commit.txt
     - name: Hash artefacts
       shell: bash
-      run: scripts/docker-hashes
+      run: scripts/build.signer.report.sh
