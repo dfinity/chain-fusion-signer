@@ -31,7 +31,7 @@ runs:
         git log | head -n1 > out/commit.txt
     - name: Install build tools
       shell: bash
-      run: scripts/setup ic-wasm
+      run: scripts/setup cargo-binstall ic-wasm
     - name: Hash artefacts
       shell: bash
       run: scripts/build.signer.report.sh
