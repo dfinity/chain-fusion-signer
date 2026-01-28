@@ -124,7 +124,7 @@ check_call_pricing btc_caller_balance '
   opt variant { CallerPaysIcrc2Cycles },
 )
 '
-check_call_pricing btc_caller_send '
+BTC_SIGN_OR_SEND_ARGS='
 (
   record {
     fee_satoshis = null;
@@ -157,6 +157,8 @@ check_call_pricing btc_caller_send '
   opt variant { CallerPaysIcrc2Cycles },
 )
 '
+check_call_pricing btc_caller_sign "$BTC_SIGN_OR_SEND_ARGS"
+check_call_pricing btc_caller_send "$BTC_SIGN_OR_SEND_ARGS"
 check_call_pricing eth_address '
 (
   record {},
