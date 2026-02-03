@@ -137,24 +137,25 @@ type RejectionCode_1 = variant {
 };
 type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
 type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
-type Result_2 = variant { Ok : SendBtcResponse; Err : SendBtcError };
-type Result_3 = variant { Ok : EthAddressResponse; Err : EthAddressError };
-type Result_4 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
-type Result_5 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
-type Result_6 = variant {
-  Ok : record { EcdsaPublicKeyResponse };
+type Result_10 = variant {
+  Ok : record { SignWithEcdsaResponse };
   Err : EthAddressError;
 };
+type Result_2 = variant { Ok : SendBtcResponse; Err : SendBtcError };
+type Result_3 = variant { Ok : SignBtcResponse; Err : SendBtcError };
+type Result_4 = variant { Ok : EthAddressResponse; Err : EthAddressError };
+type Result_5 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
+type Result_6 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
 type Result_7 = variant {
-  Ok : record { SignWithEcdsaResponse };
+  Ok : record { EcdsaPublicKeyResponse };
   Err : EthAddressError;
 };
 type Result_8 = variant {
-  Ok : record { EcdsaPublicKeyResponse };
+  Ok : record { SignWithEcdsaResponse };
   Err : EthAddressError;
 };
 type Result_9 = variant {
-  Ok : record { SignWithEcdsaResponse };
+  Ok : record { EcdsaPublicKeyResponse };
   Err : EthAddressError;
 };
 type SchnorrAlgorithm = variant { ed25519; bip340secp256k1 };
@@ -177,6 +178,7 @@ type SendBtcRequest = record {
   outputs : vec BtcTxOutput;
 };
 type SendBtcResponse = record { txid : text };
+type SignBtcResponse = record { txid : text; signed_transaction_hex : text };
 type SignWithEcdsaArgument = record {
   key_id : EcdsaKeyId;
   derivation_path : vec blob;
@@ -331,7 +333,7 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   eth_sign_transaction : (EthSignTransactionRequest, opt PaymentType) -> (
-      Result_5,
+      Result_6,
     );
   // Returns the generic ECDSA public key of the caller.
   // 
@@ -366,7 +368,7 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgument) -> (
-      Result_7,
+      Result_8,
     );
   // API method to get cycle balance and burn rate.
   get_canister_status : () -> (CanisterStatusResultV2);
@@ -405,7 +407,7 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   schnorr_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
-      Result_8,
+      Result_9,
     );
   // Signs a message using the caller's Schnorr key.
   // 
