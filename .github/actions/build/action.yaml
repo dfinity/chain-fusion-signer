@@ -29,6 +29,9 @@ runs:
       run: |
         set -euxo pipefail
         git log | head -n1 > out/commit.txt
+    - name: Install build tools
+      shell: bash
+      run: scripts/setup cargo-binstall ic-wasm
     - name: Hash artefacts
       shell: bash
-      run: scripts/docker-hashes
+      run: scripts/build.signer.report.sh

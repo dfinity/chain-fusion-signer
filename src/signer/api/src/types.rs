@@ -156,6 +156,12 @@ pub mod bitcoin {
     }
 
     #[derive(CandidType, Deserialize, Debug)]
+    pub struct SignBtcResponse {
+        pub signed_transaction_hex: String,
+        pub txid: String,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
     pub enum BuildP2wpkhTxError {
         NotP2WPKHSourceAddress,
         InvalidDestinationAddress { address: String },

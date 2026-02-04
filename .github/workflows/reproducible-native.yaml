@@ -37,13 +37,13 @@ jobs:
           # Provide the `shasum` command
           brew install coreutils
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dfx
         uses: dfinity/setup-dfx@main
       - name: Build
         run: dfx build --ic signer
       - name: 'Upload Wasm module'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: signer-wasm-${{ matrix.os }}
           path: .dfx/ic/canisters/signer/signer.wasm.gz
@@ -53,7 +53,7 @@ jobs:
           mkdir -p hashes
           sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}.txt"
       - name: 'Upload hashes'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: hashes_${{ matrix.os }}
           path: hashes/*.txt
@@ -63,12 +63,12 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Merge Hashes
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           name: hashes
           pattern: hashes_*
       - name: Get hashes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: hashes
           path: hashes
@@ -82,7 +82,7 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/needs_success
         with:
           needs: '${{ toJson(needs) }}'

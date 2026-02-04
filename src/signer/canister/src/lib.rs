@@ -19,7 +19,7 @@ use ic_chain_fusion_signer_api::{
         bitcoin::{
             BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse,
             GetBalanceError, GetBalanceRequest, GetBalanceResponse, SendBtcError, SendBtcRequest,
-            SendBtcResponse,
+            SendBtcResponse, SignBtcResponse,
         },
         eth::{
             EthPersonalSignError, EthPersonalSignRequest, EthPersonalSignResponse,
@@ -507,6 +507,78 @@ pub async fn btc_caller_balance(
                     .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             Ok(GetBalanceResponse { balance })
+        }
+    }
+}
+
+/// Internal helper that builds and signs a P2WPKH transaction.
+async fn sign_btc_transaction_p2wpkh(
+    params: &SendBtcRequest,
+) -> Result<sign::bitcoin::tx_utils::SignedTransaction, SendBtcError> {
+    let principal = ic_cdk::caller();
+    let source_address = bitcoin_utils::principal_to_p2wpkh_address(params.network, &principal)
+        .await
+        .map_err(|msg| SendBtcError::InternalError { msg })?;
+    let fee = calculate_fee(
+        params.fee_satoshis,
+        &params.utxos_to_spend,
+        params.network,
+        params.outputs.len() as u64,
+    )
+    .await
+    .map_err(|msg| SendBtcError::InternalError { msg })?;
+
+    let transaction = build_p2wpkh_transaction(
+        &source_address,
+        params.network,
+        &params.utxos_to_spend,
+        fee,
+        &params.outputs,
+    )
+    .map_err(SendBtcError::BuildP2wpkhError)?;
+
+    btc_sign_transaction(
+        &principal,
+        transaction,
+        &params.utxos_to_spend,
+        source_address,
+        params.network,
+    )
+    .await
+    .map_err(|msg| SendBtcError::InternalError { msg })
+}
+
+/// Creates and signs a BTC transaction from the caller's address without broadcasting it.
+///
+/// # Details
+/// - Gets the principal's public key with `management_canister::ecdsa::ecdsa_public_key(..)`
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - Converts the public key to a P2WPKH address.
+///   - Costs: [Execution cycles](https://internetcomputer.org/docs/current/developer-docs/gas-cost#execution)
+/// - For every transaction input:
+///   - Calls `sign_with_ecdsa(..)` on that input.
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn btc_caller_sign(
+    params: SendBtcRequest,
+    payment: Option<PaymentType>,
+) -> Result<SignBtcResponse, SendBtcError> {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::BtcCallerSign.fee(),
+        )
+        .await?;
+    match params.address_type {
+        BitcoinAddressType::P2WPKH => {
+            let signed_transaction = sign_btc_transaction_p2wpkh(&params).await?;
+            Ok(SignBtcResponse {
+                signed_transaction_hex: hex::encode(&signed_transaction.signed_transaction_bytes),
+                txid: signed_transaction.txid,
+            })
         }
     }
 }

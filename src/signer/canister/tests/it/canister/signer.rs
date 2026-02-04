@@ -217,6 +217,12 @@ pub(crate) enum SendBtcError {
 }
 pub(crate) type Result2 = std::result::Result<SendBtcResponse, SendBtcError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) struct SignBtcResponse {
+    pub(crate) txid: String,
+    pub(crate) signed_transaction_hex: String,
+}
+pub(crate) type Result3 = std::result::Result<SignBtcResponse, SendBtcError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Config {
     pub(crate) ecdsa_key_name: String,
     pub(crate) ic_root_key_raw: Option<serde_bytes::ByteBuf>,
@@ -235,7 +241,7 @@ pub(crate) enum EthAddressError {
     SigningError(RejectionCode1, String),
     PaymentError(PaymentError),
 }
-pub(crate) type Result3 = std::result::Result<EthAddressResponse, EthAddressError>;
+pub(crate) type Result4 = std::result::Result<EthAddressResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthPersonalSignRequest {
     pub(crate) message: String,
@@ -244,7 +250,7 @@ pub(crate) struct EthPersonalSignRequest {
 pub(crate) struct EthPersonalSignResponse {
     pub(crate) signature: String,
 }
-pub(crate) type Result4 = std::result::Result<EthPersonalSignResponse, EthAddressError>;
+pub(crate) type Result5 = std::result::Result<EthPersonalSignResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignPrehashRequest {
     pub(crate) hash: String,
@@ -253,7 +259,7 @@ pub(crate) struct EthSignPrehashRequest {
 pub(crate) struct EthSignPrehashResponse {
     pub(crate) signature: String,
 }
-pub(crate) type Result5 = std::result::Result<EthSignPrehashResponse, EthAddressError>;
+pub(crate) type Result6 = std::result::Result<EthSignPrehashResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignTransactionRequest {
     pub(crate) to: String,
@@ -286,7 +292,7 @@ pub(crate) struct EcdsaPublicKeyResponse {
     pub(crate) public_key: serde_bytes::ByteBuf,
     pub(crate) chain_code: serde_bytes::ByteBuf,
 }
-pub(crate) type Result6 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
+pub(crate) type Result7 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithEcdsaArgument {
     pub(crate) key_id: EcdsaKeyId,
@@ -297,7 +303,7 @@ pub(crate) struct SignWithEcdsaArgument {
 pub(crate) struct SignWithEcdsaResponse {
     pub(crate) signature: serde_bytes::ByteBuf,
 }
-pub(crate) type Result7 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result8 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CanisterStatusType {
     #[serde(rename = "stopped")]
@@ -358,14 +364,14 @@ pub(crate) struct SchnorrPublicKeyArgument {
     pub(crate) canister_id: Option<Principal>,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-pub(crate) type Result8 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
+pub(crate) type Result9 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithSchnorrArgument {
     pub(crate) key_id: SchnorrKeyId,
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
     pub(crate) message: serde_bytes::ByteBuf,
 }
-pub(crate) type Result9 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result10 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,
@@ -417,6 +423,14 @@ impl SignerPic {
     ) -> Result<Result2, String> {
         self.update(caller, "btc_caller_send", (arg0, arg1))
     }
+    pub fn btc_caller_sign(
+        &self,
+        caller: Principal,
+        arg0: &SendBtcRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result3, String> {
+        self.update(caller, "btc_caller_sign", (arg0, arg1))
+    }
     pub fn config(&self, caller: Principal) -> Result<Config, String> {
         self.update(caller, "config", ())
     }
@@ -425,14 +439,14 @@ impl SignerPic {
         caller: Principal,
         arg0: &EthAddressRequest,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result3, String> {
+    ) -> Result<Result4, String> {
         self.update(caller, "eth_address", (arg0, arg1))
     }
     pub fn eth_address_of_caller(
         &self,
         caller: Principal,
         arg0: &Option<PaymentType>,
-    ) -> Result<Result3, String> {
+    ) -> Result<Result4, String> {
         self.update(caller, "eth_address_of_caller", (arg0,))
     }
     pub fn eth_personal_sign(
@@ -440,7 +454,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &EthPersonalSignRequest,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result4, String> {
+    ) -> Result<Result5, String> {
         self.update(caller, "eth_personal_sign", (arg0, arg1))
     }
     pub fn eth_sign_prehash(
@@ -448,7 +462,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &EthSignPrehashRequest,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result5, String> {
+    ) -> Result<Result6, String> {
         self.update(caller, "eth_sign_prehash", (arg0, arg1))
     }
     pub fn eth_sign_transaction(
@@ -456,7 +470,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &EthSignTransactionRequest,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result5, String> {
+    ) -> Result<Result6, String> {
         self.update(caller, "eth_sign_transaction", (arg0, arg1))
     }
     pub fn generic_caller_ecdsa_public_key(
@@ -464,7 +478,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &EcdsaPublicKeyArgument,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result6, String> {
+    ) -> Result<Result7, String> {
         self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
     }
     pub fn generic_sign_with_ecdsa(
@@ -472,7 +486,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &Option<PaymentType>,
         arg1: &SignWithEcdsaArgument,
-    ) -> Result<Result7, String> {
+    ) -> Result<Result8, String> {
         self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1))
     }
     pub fn get_canister_status(&self, caller: Principal) -> Result<CanisterStatusResultV2, String> {
@@ -490,7 +504,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &SchnorrPublicKeyArgument,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result8, String> {
+    ) -> Result<Result9, String> {
         self.update(caller, "schnorr_public_key", (arg0, arg1))
     }
     pub fn schnorr_sign(
@@ -498,7 +512,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &SignWithSchnorrArgument,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result9, String> {
+    ) -> Result<Result10, String> {
         self.update(caller, "schnorr_sign", (arg0, arg1))
     }
 }

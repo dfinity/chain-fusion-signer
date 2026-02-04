@@ -34,7 +34,7 @@ fn anonymous_user_cannot_sign() {
     );
     assert_eq!(
         signature,
-        Err("Anonymous caller not authorized.".to_string()),
+        Err("Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()),
         "The anonymous user should not be allowed to sign."
     );
 }
