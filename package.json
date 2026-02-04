@@ -21,6 +21,6 @@
 		"@dfinity/identity": "^2.4.1",
 		"prettier": "^3.8.1",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"prettier-plugin-svelte": "^3.4.0"
+		"prettier-plugin-svelte": "^3.4.1"
 	}
 }
