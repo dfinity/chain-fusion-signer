@@ -17,10 +17,10 @@
 		"src/example_frontend"
 	],
 	"devDependencies": {
-		"@dfinity/auth-client": "^2.4.1",
-		"@dfinity/identity": "^2.4.1",
+		"@dfinity/auth-client": "^3.4.3",
+		"@dfinity/identity": "^3.4.3",
 		"prettier": "^3.8.1",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"prettier-plugin-svelte": "^3.4.0"
+		"prettier-plugin-svelte": "^3.4.1"
 	}
 }
