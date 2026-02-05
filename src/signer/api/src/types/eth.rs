@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Nat, Principal};
-use ic_cdk::api::call::RejectionCode;
 
 use super::transaction;
+use super::RejectCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub struct EthAddressRequest {
@@ -19,15 +19,15 @@ pub enum EthAddressError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthAddressError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for EthAddressError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for EthAddressError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }
@@ -69,15 +69,15 @@ pub enum EthSignTransactionError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthSignTransactionError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for EthSignTransactionError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for EthSignTransactionError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }
@@ -96,15 +96,15 @@ pub enum EthPersonalSignError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthPersonalSignError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for EthPersonalSignError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for EthPersonalSignError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }
@@ -123,15 +123,15 @@ pub enum EthSignPrehashError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for EthSignPrehashError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for EthSignPrehashError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for EthSignPrehashError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }

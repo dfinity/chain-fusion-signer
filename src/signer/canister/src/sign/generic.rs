@@ -25,7 +25,7 @@ pub async fn caller_ecdsa_public_key(
     mut arg: EcdsaPublicKeyArgument,
 ) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
     arg.derivation_path =
-        Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
+        Schema::Generic.derivation_path_ending_in(&ic_cdk::api::msg_caller(), arg.derivation_path);
     Ok(canister_ecdsa::ecdsa_public_key(arg).await?)
 }
 
@@ -37,7 +37,7 @@ pub async fn sign_with_ecdsa(
     mut arg: SignWithEcdsaArgument,
 ) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
     arg.derivation_path =
-        Schema::Generic.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
+        Schema::Generic.derivation_path_ending_in(&ic_cdk::api::msg_caller(), arg.derivation_path);
     Ok(canister_ecdsa::sign_with_ecdsa(arg).await?)
 }
 
@@ -50,7 +50,7 @@ pub async fn schnorr_public_key(
     mut arg: SchnorrPublicKeyArgument,
 ) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
     // Moves the canister_id from the argument to the derivation path.
-    let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::caller);
+    let key_owner = arg.canister_id.take().unwrap_or_else(ic_cdk::msg_caller);
     if key_owner == Principal::anonymous() {
         ic_cdk::trap("Anonymous principal has no key.");
     }
@@ -65,6 +65,6 @@ pub async fn schnorr_sign(
     mut arg: SignWithSchnorrArgument,
 ) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
     arg.derivation_path =
-        Schema::Schnorr.derivation_path_ending_in(&ic_cdk::caller(), arg.derivation_path);
+        Schema::Schnorr.derivation_path_ending_in(&ic_cdk::api::msg_caller(), arg.derivation_path);
     Ok(ic_cdk::api::management_canister::schnorr::sign_with_schnorr(arg).await?)
 }
