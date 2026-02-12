@@ -747,7 +747,7 @@ name = "example_backend"
 version = "0.2.8"
 dependencies = [
  "candid",
- "ic-cdk 0.17.1",
+ "ic-cdk 0.18.3",
 ]
 
 [[package]]
@@ -1158,19 +1158,6 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk"
-version = "0.17.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "122efbcb0af5280d408a75a57b7dc6e9d92893bf6ed9cc98fe4dcff51f18b67c"
-dependencies = [
- "candid",
- "ic-cdk-macros 0.17.1",
- "ic0 0.23.0",
- "serde",
- "serde_bytes",
-]
-
-[[package]]
-name = "ic-cdk"
 version = "0.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7f23cb28bde80ae66f4d6c2bb8682ff6d0de1191666fe032995a21c021e52eb"
@@ -1255,7 +1242,7 @@ version = "0.2.8"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
- "ic-cdk 0.17.1",
+ "ic-cdk 0.18.3",
  "ic-cdk-macros 0.17.1",
  "ic-metrics-encoder",
  "ic-papi-api",
@@ -2733,7 +2720,7 @@ dependencies = [
  "futures",
  "getrandom",
  "hex",
- "ic-cdk 0.17.1",
+ "ic-cdk 0.18.3",
  "ic-cdk-macros 0.17.1",
  "ic-chain-fusion-signer-api",
  "ic-papi-api",
@@ -2823,7 +2810,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
