@@ -22,22 +22,12 @@ pub trait PicCanisterTrait {
     fn canister_id(&self) -> Principal;
 
     /// Makes an update call to the canister, to a method with signature `(...) -> T`.
-    fn update<Tuple: ArgumentEncoder, T>(
-        &self,
-        caller: Principal,
-        method: &str,
-        args: Tuple,
-    ) -> Result<T, String>
+    fn update<T>(&self, caller: Principal, method: &str, arg: impl CandidType) -> Result<T, String>
     where
         T: for<'a> Deserialize<'a> + CandidType,
     {
         self.pic()
-            .update_call(
-                self.canister_id(),
-                caller,
-                method,
-                encode_args(args).unwrap(),
-            )
+            .update_call(self.canister_id(), caller, method, encode_one(arg).unwrap())
             .map_err(|e| {
                 format!(
                     "Update call error. RejectionCode: {:?}, Error: {}",
