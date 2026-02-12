@@ -37,7 +37,7 @@ pub(crate) struct SubnetFilter {
 pub(crate) enum SubnetSelection {
     /// Choose a random subnet that satisfies the specified properties.
     Filter(SubnetFilter),
-    /// Choose a specific subnet
+    /// / Choose a specific subnet
     Subnet { subnet: Principal },
 }
 #[derive(CandidType, Deserialize, Debug)]
