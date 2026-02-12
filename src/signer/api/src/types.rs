@@ -1,6 +1,44 @@
 use std::fmt::Debug;
 
 use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::call::RejectCode as IcCdkRejectCode;
+
+/// Local `RejectCode` type that matches the upstream ic-error-types `RejectCode`
+#[derive(CandidType, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RejectCode {
+    SysFatal = 1,
+    SysTransient = 2,
+    DestinationInvalid = 3,
+    CanisterReject = 4,
+    CanisterError = 5,
+    Unknown,
+}
+
+impl From<IcCdkRejectCode> for RejectCode {
+    fn from(code: IcCdkRejectCode) -> Self {
+        match code {
+            IcCdkRejectCode::SysFatal => RejectCode::SysFatal,
+            IcCdkRejectCode::SysTransient => RejectCode::SysTransient,
+            IcCdkRejectCode::DestinationInvalid => RejectCode::DestinationInvalid,
+            IcCdkRejectCode::CanisterReject => RejectCode::CanisterReject,
+            IcCdkRejectCode::CanisterError => RejectCode::CanisterError,
+            IcCdkRejectCode::SysUnknown => RejectCode::Unknown,
+        }
+    }
+}
+
+impl From<RejectCode> for IcCdkRejectCode {
+    fn from(code: RejectCode) -> Self {
+        match code {
+            RejectCode::SysFatal => IcCdkRejectCode::SysFatal,
+            RejectCode::SysTransient => IcCdkRejectCode::SysTransient,
+            RejectCode::DestinationInvalid => IcCdkRejectCode::DestinationInvalid,
+            RejectCode::CanisterReject => IcCdkRejectCode::CanisterReject,
+            RejectCode::CanisterError => IcCdkRejectCode::CanisterError,
+            RejectCode::Unknown => IcCdkRejectCode::SysUnknown,
+        }
+    }
+}
 
 pub mod eth;
 pub mod generic;
@@ -50,7 +88,7 @@ pub mod transaction {
 
 pub mod bitcoin {
     use candid::{CandidType, Deserialize};
-    use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+    use ic_cdk::bitcoin_canister::{Network as BitcoinNetwork, Utxo};
     use ic_papi_api::PaymentError;
 
     #[derive(CandidType, Deserialize, Debug)]

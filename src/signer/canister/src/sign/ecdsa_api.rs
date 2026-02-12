@@ -1,6 +1,6 @@
-use ic_cdk::api::management_canister::ecdsa::{
-    ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument,
-    SignWithEcdsaArgument,
+use ic_cdk::management_canister::{
+    ecdsa_public_key, sign_with_ecdsa, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs,
+    SignWithEcdsaArgs,
 };
 
 use crate::state::read_config;
@@ -15,21 +15,21 @@ pub async fn get_ecdsa_signature(
         name: key_name,
     };
 
-    let res = sign_with_ecdsa(SignWithEcdsaArgument {
+    let res = sign_with_ecdsa(&SignWithEcdsaArgs {
         message_hash,
         derivation_path,
         key_id,
     })
     .await
-    .map_err(|err| err.1)?;
+    .map_err(|err| format!("{:?}", err))?;
 
-    Ok(res.0.signature)
+    Ok(res.signature)
 }
 
 /// Computes the public key of the specified principal.
 pub async fn ecdsa_pubkey_of(derivation_path: Vec<Vec<u8>>) -> Result<Vec<u8>, String> {
     let key_name = read_config(|s| s.ecdsa_key_name.clone());
-    let response = ecdsa_public_key(EcdsaPublicKeyArgument {
+    let response = ecdsa_public_key(&EcdsaPublicKeyArgs {
         canister_id: None,
         derivation_path,
         key_id: EcdsaKeyId {
@@ -38,7 +38,7 @@ pub async fn ecdsa_pubkey_of(derivation_path: Vec<Vec<u8>>) -> Result<Vec<u8>, S
         },
     })
     .await
-    .map_err(|err| err.1)?;
+    .map_err(|err| format!("{:?}", err))?;
 
-    Ok(response.0.public_key)
+    Ok(response.public_key)
 }

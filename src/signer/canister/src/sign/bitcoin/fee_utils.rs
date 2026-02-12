@@ -1,4 +1,4 @@
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+use ic_cdk::bitcoin_canister::{Network as BitcoinNetwork, Utxo};
 
 use super::bitcoin_api;
 

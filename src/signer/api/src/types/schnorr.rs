@@ -1,6 +1,7 @@
 //! Types for the Schnorr signing API.
 use candid::{CandidType, Deserialize};
-use ic_cdk::api::call::RejectionCode;
+
+use crate::types::RejectCode;
 
 #[derive(CandidType, Deserialize, Debug, Clone)]
 pub enum SchnorrSigningError {
@@ -8,15 +9,15 @@ pub enum SchnorrSigningError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for SchnorrSigningError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for SchnorrSigningError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for SchnorrSigningError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }
@@ -27,15 +28,15 @@ pub enum SchnorrPublicKeyError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for SchnorrPublicKeyError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
         Self::PaymentError(e)
     }
 }
-impl From<(RejectionCode, String)> for SchnorrPublicKeyError {
-    fn from((rejection_code, message): (RejectionCode, String)) -> Self {
+impl From<(RejectCode, String)> for SchnorrPublicKeyError {
+    fn from((rejection_code, message): (RejectCode, String)) -> Self {
         Self::SigningError(rejection_code, message)
     }
 }
@@ -46,7 +47,7 @@ pub enum SchnorrSignWithEcdsaError {
     PaymentError(ic_papi_api::PaymentError),
     /// An `ic_cdk::call::CallResult` error received when making the canister threshold signature
     /// API call.
-    SigningError(RejectionCode, String),
+    SigningError(RejectCode, String),
 }
 impl From<ic_papi_api::PaymentError> for SchnorrSignWithEcdsaError {
     fn from(e: ic_papi_api::PaymentError) -> Self {

@@ -1,13 +1,7 @@
 use candid::Principal;
-use ic_cdk::api::management_canister::{
-    ecdsa::{
-        EcdsaPublicKeyArgument, EcdsaPublicKeyResponse, SignWithEcdsaArgument,
-        SignWithEcdsaResponse,
-    },
-    schnorr::{
-        SchnorrPublicKeyArgument, SchnorrPublicKeyResponse, SignWithSchnorrArgument,
-        SignWithSchnorrResponse,
-    },
+use ic_cdk::management_canister::{
+    EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult,
+    SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
 };
 use ic_cdk_macros::{export_candid, init, post_upgrade, query, update};
 use ic_chain_fusion_signer_api::{
@@ -140,9 +134,9 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn generic_caller_ecdsa_public_key(
-    arg: EcdsaPublicKeyArgument,
+    arg: EcdsaPublicKeyArgs,
     payment: Option<PaymentType>,
-) -> Result<(EcdsaPublicKeyResponse,), GenericCallerEcdsaPublicKeyError> {
+) -> Result<(EcdsaPublicKeyResult,), GenericCallerEcdsaPublicKeyError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -169,8 +163,8 @@ pub async fn generic_caller_ecdsa_public_key(
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
-    arg: SignWithEcdsaArgument,
-) -> Result<(SignWithEcdsaResponse,), GenericSignWithEcdsaError> {
+    arg: SignWithEcdsaArgs,
+) -> Result<(SignWithEcdsaResult,), GenericSignWithEcdsaError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -185,8 +179,8 @@ pub async fn generic_sign_with_ecdsa(
 /// Note: This is an exact dual of the canister [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key) method.  The argument and response types are also the same.
 ///
 /// # Arguments
-/// - `arg`: The same `SchnorrPublicKeyArgument` as the management canister argument.  The semantics
-///   are identical but the meaning of the fields in the new context deserve some explanation.
+/// - `arg`: The same `SchnorrPublicKeyArgs` as the management canister argument.  The semantics are
+///   identical but the meaning of the fields in the new context deserve some explanation.
 ///   - `arg.canister_id`: The principal of the canister or user for which the Chain Fusion Signer
 ///     has issued the public key.  If `None`, the caller's public key is returned.
 ///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
@@ -214,9 +208,9 @@ pub async fn generic_sign_with_ecdsa(
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_public_key(
-    arg: SchnorrPublicKeyArgument,
+    arg: SchnorrPublicKeyArgs,
     payment: Option<PaymentType>,
-) -> Result<(SchnorrPublicKeyResponse,), SchnorrPublicKeyError> {
+) -> Result<(SchnorrPublicKeyResult,), SchnorrPublicKeyError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -231,8 +225,8 @@ pub async fn schnorr_public_key(
 /// Note: This is an exact dual of the canister [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr) method.  The argument and response types are also the same.
 ///
 /// # Arguments
-/// - `arg`: The same `SignWithSchnorrArgument` as the management canister argument.  The semantics
-///   are identical but the meaning of the fields in the new context deserve some explanation.
+/// - `arg`: The same `SignWithSchnorrArgs` as the management canister argument.  The semantics are
+///   identical but the meaning of the fields in the new context deserve some explanation.
 ///   - `arg.message`: The data to sign.  Note that if you have a large amount of data, you are
 ///     probably better off hashing the data and then signing the hash.
 ///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
@@ -260,9 +254,9 @@ pub async fn schnorr_public_key(
 /// - If the caller is the anonymous user.
 #[update(guard = "caller_is_not_anonymous")]
 pub async fn schnorr_sign(
-    arg: SignWithSchnorrArgument,
+    arg: SignWithSchnorrArgs,
     payment: Option<PaymentType>,
-) -> Result<(SignWithSchnorrResponse,), SchnorrSigningError> {
+) -> Result<(SignWithSchnorrResult,), SchnorrSigningError> {
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -293,7 +287,7 @@ pub async fn eth_address(
     request: EthAddressRequest,
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
-    let principal = request.principal.unwrap_or_else(ic_cdk::caller);
+    let principal = request.principal.unwrap_or_else(ic_cdk::api::msg_caller);
     if principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
@@ -321,7 +315,7 @@ pub async fn eth_address(
 pub async fn eth_address_of_caller(
     payment: Option<PaymentType>,
 ) -> Result<EthAddressResponse, EthAddressError> {
-    let principal = ic_cdk::caller();
+    let principal = ic_cdk::api::msg_caller();
     if principal == Principal::anonymous() {
         // TODO: Why trap rather than return an error?
         ic_cdk::trap("Anonymous principal is not authorized");
@@ -453,10 +447,12 @@ pub async fn btc_caller_address(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
-                    .await
-                    .map_err(|msg| GetAddressError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetAddressError::InternalError { msg })?;
 
             Ok(GetAddressResponse { address })
         }
@@ -492,10 +488,12 @@ pub async fn btc_caller_balance(
         .await?;
     match params.address_type {
         BitcoinAddressType::P2WPKH => {
-            let address =
-                bitcoin_utils::principal_to_p2wpkh_address(params.network, &ic_cdk::caller())
-                    .await
-                    .map_err(|msg| GetBalanceError::InternalError { msg })?;
+            let address = bitcoin_utils::principal_to_p2wpkh_address(
+                params.network,
+                &ic_cdk::api::msg_caller(),
+            )
+            .await
+            .map_err(|msg| GetBalanceError::InternalError { msg })?;
 
             let balance =
                 bitcoin_api::get_balance(params.network, address, params.min_confirmations)
@@ -511,7 +509,7 @@ pub async fn btc_caller_balance(
 async fn sign_btc_transaction_p2wpkh(
     params: &SendBtcRequest,
 ) -> Result<sign::bitcoin::tx_utils::SignedTransaction, SendBtcError> {
-    let principal = ic_cdk::caller();
+    let principal = ic_cdk::api::msg_caller();
     let source_address = bitcoin_utils::principal_to_p2wpkh_address(params.network, &principal)
         .await
         .map_err(|msg| SendBtcError::InternalError { msg })?;
