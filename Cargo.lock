@@ -1256,7 +1256,7 @@ dependencies = [
  "candid",
  "ic-canister-sig-creation",
  "ic-cdk 0.17.1",
- "ic-cdk-macros 0.17.1",
+ "ic-cdk-macros 0.18.3",
  "ic-metrics-encoder",
  "ic-papi-api",
  "serde",
@@ -2734,7 +2734,7 @@ dependencies = [
  "getrandom",
  "hex",
  "ic-cdk 0.17.1",
- "ic-cdk-macros 0.17.1",
+ "ic-cdk-macros 0.18.3",
  "ic-chain-fusion-signer-api",
  "ic-papi-api",
  "ic-papi-guard",
@@ -2823,7 +2823,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
