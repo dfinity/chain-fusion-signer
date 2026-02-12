@@ -25,7 +25,7 @@ pocket-ic = "7.0.0"
 pretty_assertions = "1.4.1"
 bitcoin = "0.32.7"
 strum = "0.26.3"
-strum_macros = "0.26.4"
+strum_macros = "0.27.2"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
 ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
 ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "43c42fa2ea5f3d23d81360749deb58a29450c237" }
