@@ -8,4 +8,4 @@ submodule = "impls"
 
 [rust]
 visibility = "pub(crate)"
-attributes = "#[derive(CandidType, Deserialize, Debug)]"
+attributes = "#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]"
