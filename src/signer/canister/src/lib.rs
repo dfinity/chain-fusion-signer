@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use candid::Principal;
 use ic_cdk::api::management_canister::{
     ecdsa::{

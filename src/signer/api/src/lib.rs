@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 pub mod http;
 mod impls;
 pub mod methods;
