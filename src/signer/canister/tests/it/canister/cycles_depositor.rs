@@ -7,22 +7,22 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct InitArg {
     pub(crate) ledger_id: Principal,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Account {
     pub(crate) owner: Principal,
     pub(crate) subaccount: Option<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DepositArg {
     pub(crate) to: Account,
     pub(crate) memo: Option<serde_bytes::ByteBuf>,
     pub(crate) cycles: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DepositResult {
     pub(crate) balance: candid::Nat,
     pub(crate) block_index: candid::Nat,

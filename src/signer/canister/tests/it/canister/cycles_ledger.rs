@@ -9,38 +9,38 @@ use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
 pub mod impls;
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum ChangeIndexId {
     SetTo(Principal),
     Unset,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct UpgradeArgs {
     pub(crate) change_index_id: Option<ChangeIndexId>,
     pub(crate) max_blocks_per_request: Option<u64>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct InitArgs {
     pub(crate) index_id: Option<Principal>,
     pub(crate) max_blocks_per_request: u64,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum LedgerArgs {
     Upgrade(Option<UpgradeArgs>),
     Init(InitArgs),
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SubnetFilter {
     pub(crate) subnet_type: Option<String>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SubnetSelection {
     /// Choose a random subnet that satisfies the specified properties.
     Filter(SubnetFilter),
     /// / Choose a specific subnet
     Subnet { subnet: Principal },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CanisterSettings {
     pub(crate) freezing_threshold: Option<candid::Nat>,
     pub(crate) controllers: Option<Vec<Principal>>,
@@ -48,7 +48,7 @@ pub(crate) struct CanisterSettings {
     pub(crate) memory_allocation: Option<candid::Nat>,
     pub(crate) compute_allocation: Option<candid::Nat>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CmcCreateCanisterArgs {
     /// Optional instructions to select on which subnet the new canister will be created on.
     pub(crate) subnet_selection: Option<SubnetSelection>,
@@ -57,7 +57,7 @@ pub(crate) struct CmcCreateCanisterArgs {
     /// set to default values.
     pub(crate) settings: Option<CanisterSettings>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CreateCanisterArgs {
     pub(crate) from_subaccount: Option<serde_bytes::ByteBuf>,
     pub(crate) created_at_time: Option<u64>,
@@ -65,12 +65,12 @@ pub(crate) struct CreateCanisterArgs {
     pub(crate) creation_args: Option<CmcCreateCanisterArgs>,
 }
 pub(crate) type BlockIndex = candid::Nat;
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CreateCanisterSuccess {
     pub(crate) block_id: BlockIndex,
     pub(crate) canister_id: Principal,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CreateCanisterError {
     GenericError {
         message: String,
@@ -96,12 +96,12 @@ pub(crate) enum CreateCanisterError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Account {
     pub(crate) owner: Principal,
     pub(crate) subaccount: Option<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CreateCanisterFromArgs {
     pub(crate) spender_subaccount: Option<serde_bytes::ByteBuf>,
     pub(crate) from: Account,
@@ -109,7 +109,7 @@ pub(crate) struct CreateCanisterFromArgs {
     pub(crate) amount: candid::Nat,
     pub(crate) creation_args: Option<CmcCreateCanisterArgs>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum RejectionCode {
     NoError,
     CanisterError,
@@ -119,7 +119,7 @@ pub(crate) enum RejectionCode {
     SysFatal,
     CanisterReject,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CreateCanisterFromError {
     FailedToCreateFrom {
         create_from_block: Option<BlockIndex>,
@@ -150,42 +150,42 @@ pub(crate) enum CreateCanisterFromError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DepositArgs {
     pub(crate) to: Account,
     pub(crate) memo: Option<serde_bytes::ByteBuf>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DepositResult {
     pub(crate) balance: candid::Nat,
     pub(crate) block_index: BlockIndex,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpRequest {
     pub(crate) url: String,
     pub(crate) method: String,
     pub(crate) body: serde_bytes::ByteBuf,
     pub(crate) headers: Vec<(String, String)>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpResponse {
     pub(crate) body: serde_bytes::ByteBuf,
     pub(crate) headers: Vec<(String, String)>,
     pub(crate) status_code: u16,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum MetadataValue {
     Int(candid::Int),
     Nat(candid::Nat),
     Blob(serde_bytes::ByteBuf),
     Text(String),
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SupportedStandard {
     pub(crate) url: String,
     pub(crate) name: String,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TransferArgs {
     pub(crate) to: Account,
     pub(crate) fee: Option<candid::Nat>,
@@ -194,7 +194,7 @@ pub(crate) struct TransferArgs {
     pub(crate) created_at_time: Option<u64>,
     pub(crate) amount: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum TransferError {
     GenericError {
         message: String,
@@ -218,17 +218,17 @@ pub(crate) enum TransferError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct AllowanceArgs {
     pub(crate) account: Account,
     pub(crate) spender: Account,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Allowance {
     pub(crate) allowance: candid::Nat,
     pub(crate) expires_at: Option<u64>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ApproveArgs {
     pub(crate) fee: Option<candid::Nat>,
     pub(crate) memo: Option<serde_bytes::ByteBuf>,
@@ -239,7 +239,7 @@ pub(crate) struct ApproveArgs {
     pub(crate) expires_at: Option<u64>,
     pub(crate) spender: Account,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum ApproveError {
     GenericError {
         message: String,
@@ -266,7 +266,7 @@ pub(crate) enum ApproveError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TransferFromArgs {
     pub(crate) to: Account,
     pub(crate) fee: Option<candid::Nat>,
@@ -276,7 +276,7 @@ pub(crate) struct TransferFromArgs {
     pub(crate) created_at_time: Option<u64>,
     pub(crate) amount: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum TransferFromError {
     GenericError {
         message: String,
@@ -303,7 +303,7 @@ pub(crate) enum TransferFromError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetArchivesArgs {
     /// The last archive seen by the client.
     /// The ledger will return archives coming
@@ -311,7 +311,7 @@ pub(crate) struct GetArchivesArgs {
     /// will return the first archives.
     pub(crate) from: Option<Principal>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetArchivesResultItem {
     /// The last block in the archive
     pub(crate) end: candid::Nat,
@@ -321,13 +321,13 @@ pub(crate) struct GetArchivesResultItem {
     pub(crate) start: candid::Nat,
 }
 pub(crate) type GetArchivesResult = Vec<GetArchivesResultItem>;
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBlocksArgsItem {
     pub(crate) start: candid::Nat,
     pub(crate) length: candid::Nat,
 }
 pub(crate) type GetBlocksArgs = Vec<GetBlocksArgsItem>;
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum Value {
     Int(candid::Int),
     Map(Vec<(String, Box<Value>)>),
@@ -337,7 +337,7 @@ pub(crate) enum Value {
     Text(String),
     Array(Vec<Box<Value>>),
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBlocksResultBlocksItem {
     pub(crate) id: candid::Nat,
     pub(crate) block: Box<Value>,
@@ -345,12 +345,12 @@ pub(crate) struct GetBlocksResultBlocksItem {
 candid::define_function!(pub(crate) GetBlocksResultArchivedBlocksItemCallback : (
     GetBlocksArgs,
   ) -> (GetBlocksResult) query);
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBlocksResultArchivedBlocksItem {
     pub(crate) args: GetBlocksArgs,
     pub(crate) callback: GetBlocksResultArchivedBlocksItemCallback,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBlocksResult {
     /// Total number of blocks in the
     /// block log.
@@ -360,26 +360,26 @@ pub(crate) struct GetBlocksResult {
     /// for this ledger because there is no archive node.
     pub(crate) archived_blocks: Vec<GetBlocksResultArchivedBlocksItem>,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DataCertificate {
     /// See https://internetcomputer.org/docs/current/references/ic-interface-spec#certification
     pub(crate) certificate: serde_bytes::ByteBuf,
     /// CBOR encoded hash_tree
     pub(crate) hash_tree: serde_bytes::ByteBuf,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SupportedBlockType {
     pub(crate) url: String,
     pub(crate) block_type: String,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct WithdrawArgs {
     pub(crate) to: Principal,
     pub(crate) from_subaccount: Option<serde_bytes::ByteBuf>,
     pub(crate) created_at_time: Option<u64>,
     pub(crate) amount: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum WithdrawError {
     FailedToWithdraw {
         rejection_code: RejectionCode,
@@ -408,7 +408,7 @@ pub(crate) enum WithdrawError {
         balance: candid::Nat,
     },
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct WithdrawFromArgs {
     pub(crate) to: Principal,
     pub(crate) spender_subaccount: Option<serde_bytes::ByteBuf>,
@@ -416,7 +416,7 @@ pub(crate) struct WithdrawFromArgs {
     pub(crate) created_at_time: Option<u64>,
     pub(crate) amount: candid::Nat,
 }
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum WithdrawFromError {
     GenericError {
         message: String,
