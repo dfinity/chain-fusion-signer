@@ -62,7 +62,7 @@ fi
 PEM_PATH="$HOME/.config/dfx/identity/${DFX_IDENTITY}/identity.pem"
 if [[ "${DFX_NETWORK:-}" =~ mainnet|ic ]] || [[ "${DFX_HSM_KEY_ID:-}" != "" ]]; then
   # Authenticate with an HSM
-  read -rp "HSM Pin: " DFX_HSM_PIN
+  read -rps "HSM Pin: " DFX_HSM_PIN
   export DFX_HSM_PIN # Needed for dfx canister id, for some strange reason.
   AUTH_ARGS=(--use-hsm --pin "$DFX_HSM_PIN" --key-id "${DFX_HSM_KEY_ID}" --slot 0)
 elif test -e "$PEM_PATH"; then
@@ -118,6 +118,8 @@ test -e "$ARG_PATH" || {
   exit 1
 } >&2
 
+ARG_SHA="$(sha256sum <"$ARG_PATH" | awk '{print $1}')"
+
 # Gets the proposal text
 SUMMARY_FILE=release/PROPOSAL.md
 test -e "${SUMMARY_FILE:-}" || {
@@ -126,7 +128,7 @@ test -e "${SUMMARY_FILE:-}" || {
 } >&2
 
 # Prepares the command
-set ic-admin "${AUTH_ARGS[@]}" --nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$WASM_SHA" --arg "$ARG_PATH"
+set ic-admin "${AUTH_ARGS[@]}" --nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$WASM_SHA" --arg "$ARG_PATH" --arg-sha256 "$ARG_SHA"
 # ... just checking...
 echo
 echo PLEASE REVIEW THIS COMMAND:
