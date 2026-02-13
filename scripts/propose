@@ -63,6 +63,7 @@ PEM_PATH="$HOME/.config/dfx/identity/${DFX_IDENTITY}/identity.pem"
 if [[ "${DFX_NETWORK:-}" =~ mainnet|ic ]] || [[ "${DFX_HSM_KEY_ID:-}" != "" ]]; then
   # Authenticate with an HSM
   read -rps "HSM Pin: " DFX_HSM_PIN
+  echo
   export DFX_HSM_PIN # Needed for dfx canister id, for some strange reason.
   AUTH_ARGS=(--use-hsm --pin "$DFX_HSM_PIN" --key-id "${DFX_HSM_KEY_ID}" --slot 0)
 elif test -e "$PEM_PATH"; then
