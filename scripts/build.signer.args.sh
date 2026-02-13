@@ -49,6 +49,8 @@ case "$DFX_NETWORK" in
   ;;
 esac
 
+CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-$(dfx canister id cycles_ledger --network "$DFX_NETWORK")}"
+
 # .. Creates the init args file
 rm -f "$ARG_FILE"
 mkdir -p "$(dirname "$ARG_FILE")"

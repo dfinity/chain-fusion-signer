@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Detect platform
+OS_RAW="$(uname -s)"
+ARCH_RAW="$(uname -m)"
+
+case "$OS_RAW" in
+Darwin) PLATFORM_OS="darwin" ;;
+Linux) PLATFORM_OS="linux" ;;
+*)
+  echo "ERROR: Unsupported OS: $OS_RAW" >&2
+  exit 1
+  ;;
+esac
+
+case "$ARCH_RAW" in
+x86_64 | amd64) PLATFORM_ARCH="x86_64" ;;
+arm64 | aarch64) PLATFORM_ARCH="arm64" ;;
+*)
+  echo "ERROR: Unsupported arch: $ARCH_RAW" >&2
+  exit 1
+  ;;
+esac
+
+export PLATFORM_OS PLATFORM_ARCH
+
 for tool in "${@}"; do
   echo "Installing '$tool'..."
   export tool
@@ -8,11 +32,48 @@ for tool in "${@}"; do
   echo "  install_method: $install_method"
   case "$install_method" in
   "curl")
-    url="$(jq -r '.[env.tool].version as $version | .[env.tool].url | gsub("[$]{VERSION}"; $version)' dev-tools.json)"
+    url="$(
+      jq -r '
+        .[env.tool].version as $version
+        | .[env.tool].url
+        | gsub("\\$\\{VERSION\\}"; $version)
+        | gsub("\\$\\{OS\\}"; env.PLATFORM_OS)
+        | gsub("\\$\\{ARCH\\}"; env.PLATFORM_ARCH)
+      ' dev-tools.json
+    )"
+
     pipe="$(jq -r '.[env.tool].pipe // "cat"' dev-tools.json)"
     target="$HOME/.local/bin/$tool"
     mkdir -p "$(dirname "$target")"
-    curl -Lf "$url" | "$pipe" | install -m 755 /dev/stdin "$target"
+
+    echo "  url: $url"
+
+    # Apple Silicon macOS fallback: arm64 -> x86_64 (Rosetta)
+    if [[ "$PLATFORM_OS" == "darwin" && "$PLATFORM_ARCH" == "arm64" ]]; then
+      if ! curl -fsIL "$url" >/dev/null 2>&1; then
+        fallback_url="${url//arm64/x86_64}"
+        if [[ "$fallback_url" != "$url" ]] && curl -fsIL "$fallback_url" >/dev/null 2>&1; then
+          echo "  arm64 asset not found; falling back to x86_64 (Rosetta): $fallback_url"
+          url="$fallback_url"
+        fi
+      fi
+    fi
+
+    tmp_raw="$(mktemp)"
+    tmp_out="$(mktemp)"
+
+    # Always clean up temp files
+    trap 'rm -f "$tmp_raw" "$tmp_out"' RETURN
+
+    # 1) Download to a file (no stdout piping)
+    curl -Lf "$url" -o "$tmp_raw"
+
+    # 2) Apply optional transform (e.g. gunzip) into another file
+    # shellcheck disable=SC2086
+    eval "$pipe" <"$tmp_raw" >"$tmp_out"
+
+    # 3) Install from the final file
+    install -m 755 "$tmp_out" "$target"
     ;;
   "sh")
     version="$(jq -r '.[env.tool].version' dev-tools.json)" "$0-$tool"

@@ -25,7 +25,7 @@ cd "$SOURCE_DIR/.."
 export DFX_NETWORK
 
 # If the currently deployed git ref is not specified, get it from the canister metadata.
-test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git:commit --network "$DFX_NETWORK")"
+test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git_commit_id --network "$DFX_NETWORK")"
 
 RELEASE_GITHUB_URL="$(gh release view "$RELEASE_CANDIDATE_TAG" --json url -q .url)"
 OUTPUT_PROPOSAL="release/PROPOSAL.md"
