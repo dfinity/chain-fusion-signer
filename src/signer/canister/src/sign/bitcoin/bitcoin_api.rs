@@ -19,7 +19,7 @@ pub async fn get_balance(
         min_confirmations,
     })
     .await
-    .map_err(|err| err.1)?;
+    .map_err(|err| format!("{err:?}"))?;
 
     Ok(balance_res.0)
 }
@@ -34,7 +34,7 @@ async fn get_current_fee_percentiles(
 ) -> Result<Vec<MillisatoshiPerByte>, String> {
     let res = bitcoin_get_current_fee_percentiles(GetCurrentFeePercentilesRequest { network })
         .await
-        .map_err(|err| err.1)?;
+        .map_err(|err| format!("{err:?}"))?;
 
     Ok(res.0)
 }
@@ -65,7 +65,7 @@ pub async fn send_transaction(network: BitcoinNetwork, transaction: Vec<u8>) -> 
         network,
     })
     .await
-    .map_err(|err| err.1)?;
+    .map_err(|err| format!("{err:?}"))?;
 
     Ok(())
 }

@@ -35,7 +35,9 @@ pub(crate) struct SubnetFilter {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum SubnetSelection {
+    /// Choose a random subnet that satisfies the specified properties.
     Filter(SubnetFilter),
+    /// / Choose a specific subnet
     Subnet { subnet: Principal },
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -48,7 +50,11 @@ pub(crate) struct CanisterSettings {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct CmcCreateCanisterArgs {
+    /// Optional instructions to select on which subnet the new canister will be created on.
     pub(crate) subnet_selection: Option<SubnetSelection>,
+    /// Optional canister settings that, if set, are applied to the newly created canister.
+    /// If not specified, the caller is the controller of the canister and the other settings are
+    /// set to default values.
     pub(crate) settings: Option<CanisterSettings>,
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -73,6 +79,8 @@ pub(crate) enum CreateCanisterError {
     TemporarilyUnavailable,
     Duplicate {
         duplicate_of: candid::Nat,
+        /// If the original transaction created a canister then this field will contain the
+        /// canister id.
         canister_id: Option<Principal>,
     },
     CreatedInFuture {
@@ -130,6 +138,8 @@ pub(crate) enum CreateCanisterFromError {
     },
     Duplicate {
         duplicate_of: candid::Nat,
+        /// If the original transaction created a canister then this field will contain the
+        /// canister id.
         canister_id: Option<Principal>,
     },
     CreatedInFuture {
@@ -295,12 +305,19 @@ pub(crate) enum TransferFromError {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetArchivesArgs {
+    /// The last archive seen by the client.
+    /// The ledger will return archives coming
+    /// after this one if set, otherwise it
+    /// will return the first archives.
     pub(crate) from: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetArchivesResultItem {
+    /// The last block in the archive
     pub(crate) end: candid::Nat,
+    /// The id of the archive
     pub(crate) canister_id: Principal,
+    /// The first block in the archive
     pub(crate) start: candid::Nat,
 }
 pub(crate) type GetArchivesResult = Vec<GetArchivesResultItem>;
@@ -335,13 +352,19 @@ pub(crate) struct GetBlocksResultArchivedBlocksItem {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetBlocksResult {
+    /// Total number of blocks in the
+    /// block log.
     pub(crate) log_length: candid::Nat,
     pub(crate) blocks: Vec<GetBlocksResultBlocksItem>,
+    /// The archived_blocks vector is always going to be empty
+    /// for this ledger because there is no archive node.
     pub(crate) archived_blocks: Vec<GetBlocksResultArchivedBlocksItem>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct DataCertificate {
+    /// See https://internetcomputer.org/docs/current/references/ic-interface-spec#certification
     pub(crate) certificate: serde_bytes::ByteBuf,
+    /// CBOR encoded hash_tree
     pub(crate) hash_tree: serde_bytes::ByteBuf,
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -446,7 +469,7 @@ impl PicCanisterTrait for CyclesLedgerPic {
     }
     /// The ID of this canister.
     fn canister_id(&self) -> Principal {
-        self.canister_id.clone()
+        self.canister_id
     }
 }
 
