@@ -7,17 +7,18 @@
 The cost of operating a canister has increased and some prices no longer cover the cost of a typical API call:
 
 ```
-OK: Signer balance rose by 945_027_353 for: schnorr_public_key
-OK: Signer balance rose by 13_791_062_383 for: schnorr_sign
-WARNING: signer balance fell by -35_728_568 for: btc_caller_address
-WARNING: signer balance fell by -40_248_266 for: btc_caller_balance
-OK: Signer balance rose by 35_997_576_554 for: btc_caller_send
-OK: Signer balance rose by 945_500_972 for: eth_address
-OK: Signer balance rose by 13_745_862_039 for: eth_personal_sign
-OK: Signer balance rose by 13_715_928_103 for: eth_sign_prehash
-OK: Signer balance rose by 13_713_932_473 for: eth_sign_transaction
-OK: Signer balance rose by 945_149_949 for: generic_caller_ecdsa_public_key
-OK: Signer balance rose by 13_791_161_094 for: generic_sign_with_ecdsa
+OK: Signer balance rose by 18_721_905 for: schnorr_public_key
+OK: Signer balance rose by 10_787_834_615 for: schnorr_sign
+OK: Signer balance rose by 20_002_986 for: btc_caller_address
+OK: Signer balance rose by 29_482_092 for: btc_caller_balance
+OK: Signer balance rose by 53_389_886_961 for: btc_caller_sign
+OK: Signer balance rose by 37_954_522_981 for: btc_caller_send
+OK: Signer balance rose by 19_210_845 for: eth_address
+OK: Signer balance rose by 10_747_829_457 for: eth_personal_sign
+OK: Signer balance rose by 10_723_111_175 for: eth_sign_prehash
+OK: Signer balance rose by 10_746_203_674 for: eth_sign_transaction
+OK: Signer balance rose by 18_898_161 for: generic_caller_ecdsa_public_key
+OK: Signer balance rose by 10_787_893_521 for: generic_sign_with_ecdsa
 ```
 
 ## Current pricing
@@ -25,18 +26,18 @@ OK: Signer balance rose by 13_791_161_094 for: generic_sign_with_ecdsa
 The fee in cycles charged for each method is:
 
 ```
-            SignerMethods::GenericCallerEcdsaPublicKey
-            | SignerMethods::SchnorrPublicKey
-            | SignerMethods::EthAddress
-            | SignerMethods::EthAddressOfCaller => 1_000_000_000,
-            SignerMethods::GenericSignWithEcdsa
-            | SignerMethods::SchnorrSign
-            | SignerMethods::EthSignTransaction
-            | SignerMethods::EthPersonalSign
-            | SignerMethods::EthSignPrehash => 40_000_000_000,
-            SignerMethods::BtcCallerAddress => 20_000_000,
-            SignerMethods::BtcCallerBalance => 40_000_000,
-            SignerMethods::BtcCallerSend => 130_000_000_000,
+            SignerMethods::BtcCallerAddress => 79_000_000,
+            SignerMethods::BtcCallerBalance => 113_000_000,
+            SignerMethods::BtcCallerSend => 132_000_000_000,
+            SignerMethods::BtcCallerSign => 132_000_000_000,
+            SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
+            SignerMethods::EthPersonalSign => 37_000_000_000,
+            SignerMethods::EthSignPrehash => 37_000_000_000,
+            SignerMethods::EthSignTransaction => 37_000_000_000,
+            SignerMethods::GenericCallerEcdsaPublicKey => 77_000_000,
+            SignerMethods::GenericSignWithEcdsa => 37_000_000_000,
+            SignerMethods::SchnorrPublicKey => 77_000_000,
+            SignerMethods::SchnorrSign => 37_000_000_000,
 ```
 
 ## Pricing policy
@@ -56,13 +57,22 @@ Prices for typical calls are determined by running `scripts/check-pricing` again
 Adding the current prices to the output JSON we get:
 
 ```
-jq -s '. | map({key: .method_name, value: .}) | from_entries' fees.jsonl > fees.json
-jq -s '. | map({key: .method_name, value: .}) | from_entries' check-pricing.beta.2025-03-10T12:20:55+01:00.jsonl > check-pricing.beta.2025-03-10T12:20:55+01:00.json
-jq -s '.[0] * .[1] | to_entries | .[].value' fees.json check-pricing.beta.2025-03-10T12:20:55+01:00.json > check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json
+BASE="check-pricing.beta.2026-03-02T13:12:44+01:00"
+
+jq -s '. | map({key: .method_name, value: .}) | from_entries' \
+  "fees.jsonl" > "fees.json"
+
+jq -s '. | map({key: .method_name, value: .}) | from_entries' \
+  "${BASE}.jsonl" > "${BASE}.json"
+
+jq -s '.[0] * .[1] | to_entries | .[].value' \
+  "fees.json" \
+  "${BASE}.json" \
+  > "${BASE}.fees.json"
 ```
 
 ```
-$ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost = .fee - .diff | .cost_plus = .typical_cost * 1.4 | .rounding = if .cost_plus <1000000000 then 1000000 else 1000000000 end | .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) | .recommended_change = (.recommended_fee - .fee) | .fee_usd = .fee / 1000000000000 * 1.336610 | .recommended_fee_usd = .recommended_fee /
+$ cat check-pricing.beta.2026-02-27T14:13:09+01:00.fees.json | jq '.typical_cost = .fee - .diff | .cost_plus = .typical_cost * 1.4 | .rounding = if .cost_plus <1000000000 then 1000000 else 1000000000 end | .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) | .recommended_change = (.recommended_fee - .fee) | .fee_usd = .fee / 1000000000000 * 1.336610 | .recommended_fee_usd = .recommended_fee /
   1000000000000 * 1.336610'
 
 {
