@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+METHODS_RS="src/signer/api/src/methods.rs"
+
 print_help() {
   cat <<-EOF
 	Checks that API pricing covers cycle costs.
@@ -14,20 +16,41 @@ print_help() {
 	Note: Measurement is affected by other API calls made to the network.
 
 	Usage: "$(basename "$0")" [network] [method_name_pattern]
+	       "$(basename "$0")" --generate-fees
 	where:
 	  'network' is a dfx network name.
 	     Default: ic
 	  'method_name_pattern' is a regular expression; only API methods
 	     matching the pattern will be tested.
 	     Default: All methods.
+	  --generate-fees  Extract current fees from ${METHODS_RS}
+	     and write fees.jsonl for use in the pricing report workflow.
 	Example:
 	  "$(basename "$0")" ic btc
 	     will check pricing for all bitcoin methods.
 	EOF
 }
 
+generate_fees_jsonl() {
+  : "Extract current fees from methods.rs and write fees.jsonl"
+  grep -E 'SignerMethods::\w+ =>' "$METHODS_RS" |
+    sed -n 's/^[[:space:]]*SignerMethods::\([A-Za-z]*\).* => \([0-9_]*\).*/\1 \2/p' |
+    while read -r variant fee; do
+      method=$(echo "$variant" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]')
+      fee_num=$(echo "$fee" | tr -d '_')
+      jq -c --null-input --arg m "$method" --arg f "$fee_num" \
+        '{method_name: $m, fee: ($f | tonumber)}'
+    done > fees.jsonl
+  echo "Generated fees.jsonl with $(wc -l < fees.jsonl | tr -d ' ') entries from ${METHODS_RS}"
+}
+
 [[ "${1:-}" != "--help" ]] || {
   print_help
+  exit 0
+}
+
+[[ "${1:-}" != "--generate-fees" ]] || {
+  generate_fees_jsonl
   exit 0
 }
 
