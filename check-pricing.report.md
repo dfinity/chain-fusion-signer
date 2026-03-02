@@ -289,6 +289,6 @@ No change needed: `btc_caller_send`, `eth_personal_sign`, `eth_sign_prehash`, `e
 ## Addendum
 
 It seems we have a larger amount of cycles in the CFS, and the amopunt is increasing.
-Maybe we decrease the margin of currently 40%. I made quick export of the 4 BTC methods and the impact of adding a 40%, 20% or 10% margin.
+Maybe we decrease the margin of currently 40%. I made quick export of the methods and the impact of adding a 40%, 20% or 10% margin on the check run outcome.
 
-<img width="1531" height="123" alt="image" src="https://github.com/user-attachments/assets/78570d4b-b353-49cc-9ac8-290adc1edc0a" />
+<img width="1609" height="313" alt="image" src="https://github.com/user-attachments/assets/b23d1c82-3223-45f8-80d0-a516e16a58a0" />
