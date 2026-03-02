@@ -66,34 +66,6 @@ $ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost
   1000000000000 * 1.336610'
 
 {
-  "method_name": "schnorr_public_key",
-  "fee": 1000000000,
-  "cycles_balance_before": 11245238972675,
-  "cycles_balance_after": 11246184000028,
-  "diff": 945027353,
-  "typical_cost": 54972647,
-  "cost_plus": 76961705.8,
-  "rounding": 1000000,
-  "recommended_fee": 77000000,
-  "recommended_change": -923000000,
-  "fee_usd": 0.00133661,
-  "recommended_fee_usd": 0.00010291897
-}
-{
-  "method_name": "schnorr_sign",
-  "fee": 40000000000,
-  "cycles_balance_before": 11246180558182,
-  "cycles_balance_after": 11259971620565,
-  "diff": 13791062383,
-  "typical_cost": 26208937617,
-  "cost_plus": 36692512663.799995,
-  "rounding": 1000000000,
-  "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
-  "recommended_fee_usd": 0.04945457
-}
-{
   "method_name": "btc_caller_address",
   "fee": 20000000,
   "cycles_balance_before": 11259968178719,
@@ -213,6 +185,34 @@ $ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost
   "diff": 13791161094,
   "typical_cost": 26208838906,
   "cost_plus": 36692374468.399994,
+  "rounding": 1000000000,
+  "recommended_fee": 37000000000,
+  "recommended_change": -3000000000,
+  "fee_usd": 0.0534644,
+  "recommended_fee_usd": 0.04945457
+}
+{
+  "method_name": "schnorr_public_key",
+  "fee": 1000000000,
+  "cycles_balance_before": 11245238972675,
+  "cycles_balance_after": 11246184000028,
+  "diff": 945027353,
+  "typical_cost": 54972647,
+  "cost_plus": 76961705.8,
+  "rounding": 1000000,
+  "recommended_fee": 77000000,
+  "recommended_change": -923000000,
+  "fee_usd": 0.00133661,
+  "recommended_fee_usd": 0.00010291897
+}
+{
+  "method_name": "schnorr_sign",
+  "fee": 40000000000,
+  "cycles_balance_before": 11246180558182,
+  "cycles_balance_after": 11259971620565,
+  "diff": 13791062383,
+  "typical_cost": 26208937617,
+  "cost_plus": 36692512663.799995,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": -3000000000,
