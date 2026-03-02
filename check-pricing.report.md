@@ -285,3 +285,10 @@ Fees that should be **increased**: `btc_caller_address`, `btc_caller_balance`, `
 Fees that can be **reduced**: `btc_caller_sign`.
 
 No change needed: `btc_caller_send`, `eth_personal_sign`, `eth_sign_prehash`, `eth_sign_transaction`, `generic_sign_with_ecdsa`, `schnorr_sign`.
+
+## Addendum
+
+It seems we have a larger amount of cycles in the CFS, and the amopunt is increasing.
+Maybe we decrease the margin of currently 40%. I made quick export of the 4 BTC methods and the impact of adding a 40%, 20% or 10% margin.
+
+<img width="1531" height="123" alt="image" src="https://github.com/user-attachments/assets/78570d4b-b353-49cc-9ac8-290adc1edc0a" />
