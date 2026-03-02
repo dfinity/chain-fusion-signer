@@ -69,6 +69,9 @@ analyze_results() {
     .rounding = (if .cost_plus < 1000000000 then 1000000 else 1000000000 end) |
     .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) |
     .recommended_change = (.recommended_fee - .fee) |
+    .overcharge = .fee - .typical_cost |
+    .overcharge_pct = (if .typical_cost != 0 then .overcharge / .typical_cost * 100 else 0 end) |
+    .overcharge_usd = .overcharge / 1000000000000 * $usd |
     .fee_usd = .fee / 1000000000000 * $usd |
     .recommended_fee_usd = .recommended_fee / 1000000000000 * $usd
   ' <(echo "$fees_json") <(echo "$check_json")
