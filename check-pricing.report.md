@@ -240,6 +240,34 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
   "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
+{
+  "method_name": "schnorr_public_key",
+  "fee": 1000000000,
+  "cycles_balance_before": 11245238972675,
+  "cycles_balance_after": 11246184000028,
+  "diff": 945027353,
+  "typical_cost": 54972647,
+  "cost_plus": 76961705.8,
+  "rounding": 1000000,
+  "recommended_fee": 77000000,
+  "recommended_change": -923000000,
+  "fee_usd": 0.00133661,
+  "recommended_fee_usd": 0.00010291897
+}
+{
+  "method_name": "schnorr_sign",
+  "fee": 40000000000,
+  "cycles_balance_before": 11246180558182,
+  "cycles_balance_after": 11259971620565,
+  "diff": 13791062383,
+  "typical_cost": 26208937617,
+  "cost_plus": 36692512663.799995,
+  "rounding": 1000000000,
+  "recommended_fee": 37000000000,
+  "recommended_change": -3000000000,
+  "fee_usd": 0.0534644,
+  "recommended_fee_usd": 0.04945457
+}
 ```
 
 ### Conclusion
