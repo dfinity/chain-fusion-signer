@@ -2,26 +2,37 @@
 
 **Date: March 2026**
 
-## Motivation
+## Pricing policy
 
-The cost of operating a canister has increased and some prices no longer cover the cost of a typical API call:
+Some costs are not paid by PAPI, such as the cost of failed API calls.
+
+API calls are therefore charged at cost plus a margin to cover otherwise unpaid expenditures, that would otherwise cause the canister to eventually run out of cycles.
+
+The margin is currently set at 40% over a typical API call for each method. Note that the most expensive call possible for each method is higher than the typical call.
+
+Fees are rounded, to make them simpler to use and remember.
+
+## How to update pricing
+
+Run the check-pricing script against the `beta` canister:
 
 ```
-OK: Signer balance rose by 18_721_905 for: schnorr_public_key
-OK: Signer balance rose by 10_787_834_615 for: schnorr_sign
-OK: Signer balance rose by 20_002_986 for: btc_caller_address
-OK: Signer balance rose by 29_482_092 for: btc_caller_balance
-OK: Signer balance rose by 53_389_886_961 for: btc_caller_sign
-OK: Signer balance rose by 37_954_522_981 for: btc_caller_send
-OK: Signer balance rose by 19_210_845 for: eth_address
-OK: Signer balance rose by 10_747_829_457 for: eth_personal_sign
-OK: Signer balance rose by 10_723_111_175 for: eth_sign_prehash
-OK: Signer balance rose by 10_746_203_674 for: eth_sign_transaction
-OK: Signer balance rose by 18_898_161 for: generic_caller_ecdsa_public_key
-OK: Signer balance rose by 10_787_893_521 for: generic_sign_with_ecdsa
+scripts/check-pricing beta
 ```
 
-## Current pricing
+The script will:
+1. Measure the actual cycle cost of each API method
+2. Compare against the current fees in `src/signer/api/src/methods.rs`
+3. Calculate recommended fees (cost + 40% margin, rounded)
+4. Print results and update this report
+
+To re-analyze an existing measurement without re-running canister calls:
+
+```
+scripts/check-pricing --analyze <jsonl-file>
+```
+
+## Current fees
 
 The fee in cycles charged for each method is:
 
@@ -40,47 +51,26 @@ The fee in cycles charged for each method is:
             SignerMethods::SchnorrSign => 37_000_000_000,
 ```
 
-## Pricing policy
-
-Some costs are not paid by PAPI, such as the cost of failed API calls.
-
-API calls are therefore charged at cost plus a margin to cover otherwise unpaid expenditures, that would otherwise cause the canister to eventually run out of cycles.
-
-The margin is currently set at 40% over a typical API call for each method. Note that the most expensive call possible for each method is higher than the typical call.
-
-Fees are rounded, to make them simpler to use and remember.
-
-## Pricing calculation
-
-Prices for typical calls are determined by running `scripts/check-pricing` against the `beta` canister.
-
-First, generate `fees.jsonl` from the current fees in `methods.rs`:
+## Check results
 
 ```
-scripts/check-pricing --generate-fees
+OK: Signer balance rose by 18721905 for: schnorr_public_key
+OK: Signer balance rose by 10787834615 for: schnorr_sign
+OK: Signer balance rose by 20002986 for: btc_caller_address
+OK: Signer balance rose by 29482092 for: btc_caller_balance
+OK: Signer balance rose by 53389886961 for: btc_caller_sign
+OK: Signer balance rose by 37954522981 for: btc_caller_send
+OK: Signer balance rose by 19210845 for: eth_address
+OK: Signer balance rose by 10747829457 for: eth_personal_sign
+OK: Signer balance rose by 10723111175 for: eth_sign_prehash
+OK: Signer balance rose by 10746203674 for: eth_sign_transaction
+OK: Signer balance rose by 18898161 for: generic_caller_ecdsa_public_key
+OK: Signer balance rose by 10787893521 for: generic_sign_with_ecdsa
 ```
 
-Then, merge the current fees with the check-pricing output:
+## Analysis
 
 ```
-BASE="check-pricing.beta.2026-03-02T13:12:44+01:00"
-
-jq -s '. | map({key: .method_name, value: .}) | from_entries' \
-  "fees.jsonl" > "fees.json"
-
-jq -s '. | map({key: .method_name, value: .}) | from_entries' \
-  "${BASE}.jsonl" > "${BASE}.json"
-
-jq -s '.[0] * .[1] | to_entries | .[].value' \
-  "fees.json" \
-  "${BASE}.json" \
-  > "${BASE}.fees.json"
-```
-
-```
-$ cat check-pricing.beta.2026-03-02T13:12:44+01:00.fees.json | jq '.typical_cost = .fee - .diff | .cost_plus = .typical_cost * 1.4 | .rounding = if .cost_plus <1000000000 then 1000000 else 1000000000 end | .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) | .recommended_change = (.recommended_fee - .fee) | .fee_usd = .fee / 1000000000000 * 1.336610 | .recommended_fee_usd = .recommended_fee /
-  1000000000000 * 1.336610'
-
 {
   "method_name": "btc_caller_address",
   "fee": 79000000,
@@ -253,4 +243,8 @@ $ cat check-pricing.beta.2026-03-02T13:12:44+01:00.fees.json | jq '.typical_cost
 
 ### Conclusion
 
-Ethereum signing prices can be reduced slightly. `btc_caller_address` and `btc_caller_balance` prices need to be increased.
+Fees that should be **increased**: `btc_caller_address`, `btc_caller_balance`, `eth_address`, `generic_caller_ecdsa_public_key`, `schnorr_public_key`.
+
+Fees that can be **reduced**: `btc_caller_sign`.
+
+No change needed: `btc_caller_send`, `eth_personal_sign`, `eth_sign_prehash`, `eth_sign_transaction`, `generic_sign_with_ecdsa`, `schnorr_sign`.
