@@ -55,18 +55,18 @@ The fee in cycles charged for each method is:
 ## Check results
 
 ```
-OK: Signer balance rose by 18_699_807 for: schnorr_public_key
-OK: Signer balance rose by 10_787_823_584 for: schnorr_sign
-OK: Signer balance rose by 20_007_839 for: btc_caller_address
-OK: Signer balance rose by 29_532_659 for: btc_caller_balance
-OK: Signer balance rose by 53_389_820_640 for: btc_caller_sign
-OK: Signer balance rose by 37_994_481_882 for: btc_caller_send
-OK: Signer balance rose by 19_222_125 for: eth_address
-OK: Signer balance rose by 10_722_728_398 for: eth_personal_sign
-OK: Signer balance rose by 10_748_162_886 for: eth_sign_prehash
-OK: Signer balance rose by 10_721_011_065 for: eth_sign_transaction
-OK: Signer balance rose by 18_862_233 for: generic_caller_ecdsa_public_key
-OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
+OK: Signer balance rose by 18_602_713 for: schnorr_public_key
+OK: Signer balance rose by 10_787_751_732 for: schnorr_sign
+OK: Signer balance rose by 19_932_548 for: btc_caller_address
+OK: Signer balance rose by 29_480_767 for: btc_caller_balance
+OK: Signer balance rose by 53_389_816_759 for: btc_caller_sign
+OK: Signer balance rose by 37_994_462_267 for: btc_caller_send
+OK: Signer balance rose by 19_215_047 for: eth_address
+OK: Signer balance rose by 10_747_815_577 for: eth_personal_sign
+OK: Signer balance rose by 10_723_063_451 for: eth_sign_prehash
+OK: Signer balance rose by 10_721_078_417 for: eth_sign_transaction
+OK: Signer balance rose by 18_845_835 for: generic_caller_ecdsa_public_key
+OK: Signer balance rose by 10_787_866_426 for: generic_sign_with_ecdsa
 ```
 
 ## Analysis
@@ -75,11 +75,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "btc_caller_address",
   "fee": 79000000,
-  "cycles_balance_before": 11963718370286,
-  "cycles_balance_after": 11963738378125,
-  "diff": 20007839,
-  "typical_cost": 58992161,
-  "cost_plus": 82589025.39999999,
+  "cycles_balance_before": 12108903984691,
+  "cycles_balance_after": 12108923917239,
+  "diff": 19932548,
+  "typical_cost": 59067452,
+  "cost_plus": 82694432.8,
   "rounding": 1000000,
   "recommended_fee": 83000000,
   "recommended_change": 4000000,
@@ -89,11 +89,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "btc_caller_balance",
   "fee": 113000000,
-  "cycles_balance_before": 11963733293818,
-  "cycles_balance_after": 11963762826477,
-  "diff": 29532659,
-  "typical_cost": 83467341,
-  "cost_plus": 116854277.39999999,
+  "cycles_balance_before": 12108918832932,
+  "cycles_balance_after": 12108948313699,
+  "diff": 29480767,
+  "typical_cost": 83519233,
+  "cost_plus": 116926926.19999999,
   "rounding": 1000000,
   "recommended_fee": 117000000,
   "recommended_change": 4000000,
@@ -103,11 +103,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "btc_caller_send",
   "fee": 132000000000,
-  "cycles_balance_before": 12017142478503,
-  "cycles_balance_after": 12055136960385,
-  "diff": 37994481882,
-  "typical_cost": 94005518118,
-  "cost_plus": 131607725365.2,
+  "cycles_balance_before": 12162327961844,
+  "cycles_balance_after": 12200322424111,
+  "diff": 37994462267,
+  "typical_cost": 94005537733,
+  "cost_plus": 131607752826.2,
   "rounding": 1000000000,
   "recommended_fee": 132000000000,
   "recommended_change": 0,
@@ -117,11 +117,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "btc_caller_sign",
   "fee": 132000000000,
-  "cycles_balance_before": 11963757742170,
-  "cycles_balance_after": 12017147562810,
-  "diff": 53389820640,
-  "typical_cost": 78610179360,
-  "cost_plus": 110054251104,
+  "cycles_balance_before": 12108943229392,
+  "cycles_balance_after": 12162333046151,
+  "diff": 53389816759,
+  "typical_cost": 78610183241,
+  "cost_plus": 110054256537.4,
   "rounding": 1000000000,
   "recommended_fee": 111000000000,
   "recommended_change": -21000000000,
@@ -131,11 +131,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "eth_address",
   "fee": 77000000,
-  "cycles_balance_before": 12055131876078,
-  "cycles_balance_after": 12055151098203,
-  "diff": 19222125,
-  "typical_cost": 57777875,
-  "cost_plus": 80889025,
+  "cycles_balance_before": 12200317339804,
+  "cycles_balance_after": 12200336554851,
+  "diff": 19215047,
+  "typical_cost": 57784953,
+  "cost_plus": 80898934.19999999,
   "rounding": 1000000,
   "recommended_fee": 81000000,
   "recommended_change": 4000000,
@@ -145,11 +145,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "eth_personal_sign",
   "fee": 37000000000,
-  "cycles_balance_before": 12055145982046,
-  "cycles_balance_after": 12065868710444,
-  "diff": 10722728398,
-  "typical_cost": 26277271602,
-  "cost_plus": 36788180242.799995,
+  "cycles_balance_before": 12200331438694,
+  "cycles_balance_after": 12211079254271,
+  "diff": 10747815577,
+  "typical_cost": 26252184423,
+  "cost_plus": 36753058192.2,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": 0,
@@ -159,11 +159,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "eth_sign_prehash",
   "fee": 37000000000,
-  "cycles_balance_before": 12065863626137,
-  "cycles_balance_after": 12076611789023,
-  "diff": 10748162886,
-  "typical_cost": 26251837114,
-  "cost_plus": 36752571959.6,
+  "cycles_balance_before": 12211074138114,
+  "cycles_balance_after": 12221797201565,
+  "diff": 10723063451,
+  "typical_cost": 26276936549,
+  "cost_plus": 36787711168.6,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": 0,
@@ -173,11 +173,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "eth_sign_transaction",
   "fee": 37000000000,
-  "cycles_balance_before": 12076606704716,
-  "cycles_balance_after": 12087327715781,
-  "diff": 10721011065,
-  "typical_cost": 26278988935,
-  "cost_plus": 36790584509,
+  "cycles_balance_before": 12221792085408,
+  "cycles_balance_after": 12232513163825,
+  "diff": 10721078417,
+  "typical_cost": 26278921583,
+  "cost_plus": 36790490216.2,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": 0,
@@ -187,11 +187,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "generic_caller_ecdsa_public_key",
   "fee": 77000000,
-  "cycles_balance_before": 12087322631474,
-  "cycles_balance_after": 12087341493707,
-  "diff": 18862233,
-  "typical_cost": 58137767,
-  "cost_plus": 81392873.8,
+  "cycles_balance_before": 12232508047668,
+  "cycles_balance_after": 12232526893503,
+  "diff": 18845835,
+  "typical_cost": 58154165,
+  "cost_plus": 81415831,
   "rounding": 1000000,
   "recommended_fee": 82000000,
   "recommended_change": 5000000,
@@ -201,11 +201,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "generic_sign_with_ecdsa",
   "fee": 37000000000,
-  "cycles_balance_before": 12087336409400,
-  "cycles_balance_after": 12098124307770,
-  "diff": 10787898370,
-  "typical_cost": 26212101630,
-  "cost_plus": 36696942282,
+  "cycles_balance_before": 12232521774161,
+  "cycles_balance_after": 12243309640587,
+  "diff": 10787866426,
+  "typical_cost": 26212133574,
+  "cost_plus": 36696987003.6,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": 0,
@@ -215,11 +215,11 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "schnorr_public_key",
   "fee": 77000000,
-  "cycles_balance_before": 11952922047359,
-  "cycles_balance_after": 11952940747166,
-  "diff": 18699807,
-  "typical_cost": 58300193,
-  "cost_plus": 81620270.19999999,
+  "cycles_balance_before": 12098107798860,
+  "cycles_balance_after": 12098126401573,
+  "diff": 18602713,
+  "typical_cost": 58397287,
+  "cost_plus": 81756201.8,
   "rounding": 1000000,
   "recommended_fee": 82000000,
   "recommended_change": 5000000,
@@ -229,43 +229,15 @@ OK: Signer balance rose by 10_787_898_370 for: generic_sign_with_ecdsa
 {
   "method_name": "schnorr_sign",
   "fee": 37000000000,
-  "cycles_balance_before": 11952935662859,
-  "cycles_balance_after": 11963723486443,
-  "diff": 10787823584,
-  "typical_cost": 26212176416,
-  "cost_plus": 36697046982.399994,
+  "cycles_balance_before": 12098121317266,
+  "cycles_balance_after": 12108909068998,
+  "diff": 10787751732,
+  "typical_cost": 26212248268,
+  "cost_plus": 36697147575.2,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
   "recommended_change": 0,
   "fee_usd": 0.04945457,
-  "recommended_fee_usd": 0.04945457
-}
-{
-  "method_name": "schnorr_public_key",
-  "fee": 1000000000,
-  "cycles_balance_before": 11245238972675,
-  "cycles_balance_after": 11246184000028,
-  "diff": 945027353,
-  "typical_cost": 54972647,
-  "cost_plus": 76961705.8,
-  "rounding": 1000000,
-  "recommended_fee": 77000000,
-  "recommended_change": -923000000,
-  "fee_usd": 0.00133661,
-  "recommended_fee_usd": 0.00010291897
-}
-{
-  "method_name": "schnorr_sign",
-  "fee": 40000000000,
-  "cycles_balance_before": 11246180558182,
-  "cycles_balance_after": 11259971620565,
-  "diff": 13791062383,
-  "typical_cost": 26208937617,
-  "cost_plus": 36692512663.799995,
-  "rounding": 1000000000,
-  "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
   "recommended_fee_usd": 0.04945457
 }
 ```
