@@ -21,6 +21,7 @@ scripts/check-pricing beta
 ```
 
 The script will:
+
 1. Measure the actual cycle cost of each API method
 2. Compare against the current fees in `src/signer/api/src/methods.rs`
 3. Calculate recommended fees (cost + 40% margin, rounded)
