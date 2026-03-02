@@ -147,7 +147,7 @@ The script will:
 3. Calculate recommended fees (cost + $(echo "scale=0; ($PRICING_MARGIN * 100 - 100) / 1" | bc)% margin, rounded)
 4. Print results and update this report
 
-To re-analyze an existing measurement without re-running canister calls:
+To re-analyse an existing measurement without re-running canister calls:
 
 ${fence}
 scripts/check-pricing --analyze <jsonl-file>
@@ -265,28 +265,6 @@ dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
 
 : Check that each method is making a profit
 
-check_call_pricing schnorr_public_key '
-(
-  record {
-    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
-    canister_id = null;
-    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
-  },
-  opt variant { CallerPaysIcrc2Cycles },
-)
-'
-
-check_call_pricing schnorr_sign '
-(
-  record {
-    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
-    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
-    message = blob "Your cycles or your knife!";
-  },
-  opt variant { CallerPaysIcrc2Cycles },
-)
-'
-
 check_call_pricing btc_caller_address '
 (
   record { network = variant { mainnet }; address_type = variant { P2WPKH } },
@@ -333,8 +311,8 @@ BTC_SIGN_OR_SEND_ARGS='
   opt variant { CallerPaysIcrc2Cycles },
 )
 '
-check_call_pricing btc_caller_sign "$BTC_SIGN_OR_SEND_ARGS"
 check_call_pricing btc_caller_send "$BTC_SIGN_OR_SEND_ARGS"
+check_call_pricing btc_caller_sign "$BTC_SIGN_OR_SEND_ARGS"
 check_call_pricing eth_address '
 (
   record {},
@@ -381,6 +359,28 @@ check_call_pricing generic_sign_with_ecdsa '
     derivation_path = vec { blob "foo"; blob "bar"; blob "bat" };
     message_hash = blob "\41\40\f0\a8\8b\3e\ea\41\5c\d2\77\4f\c2\70\f1\6b\51\2c\7c\63\7e\9b\54\2a\31\35\96\8b\ac\b1\47\ae";
   },
+)
+'
+
+check_call_pricing schnorr_public_key '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    canister_id = null;
+    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
+check_call_pricing schnorr_sign '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
+    message = blob "Your cycles or your knife!";
+  },
+  opt variant { CallerPaysIcrc2Cycles },
 )
 '
 
