@@ -37,7 +37,7 @@ print_help() {
 	  "$(basename "$0")" beta btc
 	     will check pricing for all bitcoin methods.
 	  "$(basename "$0")" --analyze check-pricing.beta.2026-03-02T13:12:44+01:00.jsonl
-	     will re-analyze an existing measurement file.
+	     will re-analyse an existing measurement file.
 	EOF
 }
 
