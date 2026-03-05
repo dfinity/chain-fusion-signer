@@ -1,35 +1,212 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+METHODS_RS="src/signer/api/src/methods.rs"
+REPORT_FILE="check-pricing.report.md"
+PRICING_MARGIN=1.4
+USD_PER_TRILLION_CYCLES=1.336610
+
 print_help() {
   cat <<-EOF
-	Checks that API pricing covers cycle costs.
+	Checks that API pricing covers cycle costs, calculates recommended
+	fees, and updates the pricing report.
 
 	For each API method, this:
 	* Gets the signer canister cycles balance
 	* Makes a sample API call
 	* Gets the cycles balance again
-	* Reports on the difference.
+	* Compares against the current fee in ${METHODS_RS}
+	* Calculates recommended fees (cost + ${PRICING_MARGIN}x margin, rounded)
+	* Updates ${REPORT_FILE} with the results
 
 	Note: Measurement is affected by other API calls made to the network.
 
 	Usage: "$(basename "$0")" [network] [method_name_pattern]
+	       "$(basename "$0")" --analyze <jsonl-file>
 	where:
 	  'network' is a dfx network name.
 	     Default: ic
 	  'method_name_pattern' is a regular expression; only API methods
 	     matching the pattern will be tested.
 	     Default: All methods.
+	  --analyze <file>  Re-run analysis on an existing check-pricing
+	     JSONL file without making new canister calls.
 	Example:
-	  "$(basename "$0")" ic btc
+	  "$(basename "$0")" beta
+	     will check pricing against the beta canister.
+	  "$(basename "$0")" beta btc
 	     will check pricing for all bitcoin methods.
+	  "$(basename "$0")" --analyze check-pricing.beta.2026-03-02T13:12:44+01:00.jsonl
+	     will re-analyse an existing measurement file.
 	EOF
+}
+
+# --- Analysis functions (no network access needed) ---
+
+fees_from_methods_rs() {
+  : "Extract current fees from methods.rs as JSONL to stdout"
+  grep -E 'SignerMethods::\w+ =>' "$METHODS_RS" |
+    sed -n 's/^[[:space:]]*SignerMethods::\([A-Za-z]*\).* => \([0-9_]*\).*/\1 \2/p' |
+    while read -r variant fee; do
+      method=$(echo "$variant" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]')
+      fee_num=$(echo "$fee" | tr -d '_')
+      jq -c --null-input --arg m "$method" --arg f "$fee_num" \
+        '{method_name: $m, fee: ($f | tonumber)}'
+    done
+}
+
+analyze_results() {
+  : "Merge check results with current fees and calculate recommendations"
+  local log_file="$1"
+  local fees_json check_json
+  fees_json=$(fees_from_methods_rs | jq -s 'map({key: .method_name, value: .}) | from_entries')
+  check_json=$(jq -s 'map({key: .method_name, value: .}) | from_entries' "$log_file")
+
+  jq -s --argjson margin "$PRICING_MARGIN" --argjson usd "$USD_PER_TRILLION_CYCLES" '
+    .[0] * .[1] | to_entries | .[].value |
+    .typical_cost = .fee - .diff |
+    .cost_plus = .typical_cost * $margin |
+    .rounding = (if .cost_plus < 1000000000 then 1000000 else 1000000000 end) |
+    .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) |
+    .recommended_change = (.recommended_fee - .fee) |
+    .overcharge = .fee - .typical_cost |
+    .overcharge_pct = (if .typical_cost != 0 then .overcharge / .typical_cost * 100 else 0 end) |
+    .overcharge_usd = .overcharge / 1000000000000 * $usd |
+    .fee_usd = .fee / 1000000000000 * $usd |
+    .recommended_fee_usd = .recommended_fee / 1000000000000 * $usd
+  ' <(echo "$fees_json") <(echo "$check_json")
+}
+
+print_analysis() {
+  : "Print a human-readable summary of the analysis"
+  local analysis_file="$1"
+  echo ""
+  echo "=== Pricing Analysis (margin: ${PRICING_MARGIN}x) ==="
+  jq -r '
+    (if .recommended_change > 0 then "  INCREASE"
+     elif .recommended_change < 0 then "  DECREASE"
+     else "       OK " end) as $status |
+    "\($status)  \(.method_name): \(.fee) → \(.recommended_fee) (change: \(.recommended_change))"
+  ' "$analysis_file"
+  echo ""
+}
+
+update_report() {
+  : "Generate the pricing report markdown file"
+  local log_file="$1" analysis_file="$2"
+  local date_str check_summary current_fees analysis_pretty conclusion
+  local fence='```'
+
+  date_str=$(date +"%B %Y")
+
+  check_summary=$(jq -r '
+    if .diff >= 0 then "OK: Signer balance rose by \(.diff) for: \(.method_name)"
+    else "WARNING: signer balance fell by \(-.diff) for: \(.method_name)" end
+  ' "$log_file")
+
+  current_fees=$(sed -n '/pub fn fee/,/^    }/p' "$METHODS_RS" | grep '=>')
+
+  analysis_pretty=$(jq '.' "$analysis_file")
+
+  conclusion=$(jq -sr '
+    [.[] | select(.recommended_change > 0) | "`\(.method_name)`"] as $inc |
+    [.[] | select(.recommended_change < 0) | "`\(.method_name)`"] as $dec |
+    [.[] | select(.recommended_change == 0) | "`\(.method_name)`"] as $ok |
+    (if ($inc | length) > 0 then "Fees that should be **increased**: \($inc | join(", ")).\n\n" else "" end) +
+    (if ($dec | length) > 0 then "Fees that can be **reduced**: \($dec | join(", ")).\n\n" else "" end) +
+    (if ($ok | length) > 0 then "No change needed: \($ok | join(", ")).\n" else "" end)
+  ' "$analysis_file")
+
+  cat >"$REPORT_FILE" <<REPORT_EOF
+# Pricing Report
+
+**Date: ${date_str}**
+
+## Pricing policy
+
+Some costs are not paid by PAPI, such as the cost of failed API calls.
+
+API calls are therefore charged at cost plus a margin to cover otherwise unpaid expenditures, that would otherwise cause the canister to eventually run out of cycles.
+
+The margin is currently set at $(echo "scale=0; ($PRICING_MARGIN * 100 - 100) / 1" | bc)% over a typical API call for each method. Note that the most expensive call possible for each method is higher than the typical call.
+
+Fees are rounded, to make them simpler to use and remember.
+
+## How to update pricing
+
+Run the check-pricing script against the \`beta\` canister:
+
+${fence}
+scripts/check-pricing beta
+${fence}
+
+The script will:
+
+1. Measure the actual cycle cost of each API method
+2. Compare against the current fees in \`${METHODS_RS}\`
+3. Calculate recommended fees (cost + $(echo "scale=0; ($PRICING_MARGIN * 100 - 100) / 1" | bc)% margin, rounded)
+4. Print results and update this report
+
+To re-analyse an existing measurement without re-running canister calls:
+
+${fence}
+scripts/check-pricing --analyze <jsonl-file>
+${fence}
+
+## Current fees
+
+The fee in cycles charged for each method is:
+
+${fence}
+${current_fees}
+${fence}
+
+## Check results
+
+${fence}
+${check_summary}
+${fence}
+
+## Analysis
+
+${fence}
+${analysis_pretty}
+${fence}
+
+### Conclusion
+
+${conclusion}
+REPORT_EOF
+
+  echo "Updated ${REPORT_FILE}"
+}
+
+run_analysis() {
+  : "Run analysis on a JSONL file, print results, and update the report"
+  local log_file="$1"
+  local analysis_file="${log_file%.jsonl}.analysis.json"
+
+  analyze_results "$log_file" >"$analysis_file"
+  print_analysis "$analysis_file"
+  update_report "$log_file" "$analysis_file"
 }
 
 [[ "${1:-}" != "--help" ]] || {
   print_help
   exit 0
 }
+
+[[ "${1:-}" != "--analyze" ]] || {
+  LOG_FILE="${2:?Usage: $0 --analyze <jsonl-file>}"
+  [[ -f "$LOG_FILE" ]] || {
+    echo "Error: file not found: $LOG_FILE" >&2
+    exit 1
+  }
+  run_analysis "$LOG_FILE"
+  exit 0
+}
+
+# --- Network check functions (requires dfx) ---
 
 DFX_NETWORK="${1:-ic}"
 METHOD_NAME_PATTERN="${2:-.}"
@@ -76,6 +253,8 @@ check_call_pricing() {
   )
 }
 
+# --- Main execution ---
+
 APPROVAL="1P"
 
 : Approve funds for use in the test
@@ -88,28 +267,6 @@ dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
   }" >/dev/null
 
 : Check that each method is making a profit
-
-check_call_pricing schnorr_public_key '
-(
-  record {
-    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
-    canister_id = null;
-    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
-  },
-  opt variant { CallerPaysIcrc2Cycles },
-)
-'
-
-check_call_pricing schnorr_sign '
-(
-  record {
-    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
-    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
-    message = blob "Your cycles or your knife!";
-  },
-  opt variant { CallerPaysIcrc2Cycles },
-)
-'
 
 check_call_pricing btc_caller_address '
 (
@@ -157,8 +314,8 @@ BTC_SIGN_OR_SEND_ARGS='
   opt variant { CallerPaysIcrc2Cycles },
 )
 '
-check_call_pricing btc_caller_sign "$BTC_SIGN_OR_SEND_ARGS"
 check_call_pricing btc_caller_send "$BTC_SIGN_OR_SEND_ARGS"
+check_call_pricing btc_caller_sign "$BTC_SIGN_OR_SEND_ARGS"
 check_call_pricing eth_address '
 (
   record {},
@@ -207,3 +364,29 @@ check_call_pricing generic_sign_with_ecdsa '
   },
 )
 '
+
+check_call_pricing schnorr_public_key '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    canister_id = null;
+    derivation_path = vec { blob "jhskgjdsfhgkljhsdfkglhsdkflghjs" };
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
+check_call_pricing schnorr_sign '
+(
+  record {
+    key_id = record { algorithm = variant { ed25519 }; name = "key_1" };
+    derivation_path = vec { blob "dfsgsdgf"; blob "dsfgdsfg"; blob "dsfgdsfg" };
+    message = blob "Your cycles or your knife!";
+  },
+  opt variant { CallerPaysIcrc2Cycles },
+)
+'
+
+# --- Post-check analysis ---
+
+run_analysis "$LOG_FILE"
