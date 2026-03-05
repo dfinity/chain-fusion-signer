@@ -117,7 +117,7 @@ update_report() {
     (if ($ok | length) > 0 then "No change needed: \($ok | join(", ")).\n" else "" end)
   ' "$analysis_file")
 
-  cat > "$REPORT_FILE" <<REPORT_EOF
+  cat >"$REPORT_FILE" <<REPORT_EOF
 # Pricing Report
 
 **Date: ${date_str}**
@@ -186,7 +186,7 @@ run_analysis() {
   local log_file="$1"
   local analysis_file="${log_file%.jsonl}.analysis.json"
 
-  analyze_results "$log_file" > "$analysis_file"
+  analyze_results "$log_file" >"$analysis_file"
   print_analysis "$analysis_file"
   update_report "$log_file" "$analysis_file"
 }
@@ -198,7 +198,10 @@ run_analysis() {
 
 [[ "${1:-}" != "--analyze" ]] || {
   LOG_FILE="${2:?Usage: $0 --analyze <jsonl-file>}"
-  [[ -f "$LOG_FILE" ]] || { echo "Error: file not found: $LOG_FILE" >&2; exit 1; }
+  [[ -f "$LOG_FILE" ]] || {
+    echo "Error: file not found: $LOG_FILE" >&2
+    exit 1
+  }
   run_analysis "$LOG_FILE"
   exit 0
 }
