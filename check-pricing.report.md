@@ -27,7 +27,7 @@ The script will:
 3. Calculate recommended fees (cost + 40% margin, rounded)
 4. Print results and update this report
 
-To re-analyze an existing measurement without re-running canister calls:
+To re-analyse an existing measurement without re-running canister calls:
 
 ```
 scripts/check-pricing --analyze <jsonl-file>
