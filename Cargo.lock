@@ -659,12 +659,12 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.3.9"
+version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "534c5cf6194dfab3db3242765c03bbe257cf92f22b38f6bc0c58d59108a820ba"
+checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1193,7 +1193,7 @@ dependencies = [
  "ic-cdk-executor",
  "ic-cdk-macros 0.18.3",
  "ic-error-types",
- "ic-management-canister-types",
+ "ic-management-canister-types 0.3.1",
  "ic0 0.25.1",
  "serde",
  "serde_bytes",
@@ -1310,6 +1310,17 @@ name = "ic-management-canister-types"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98554c2d8a30c00b6bfda18062fdcef21215cad07a52d8b8b1eb3130e51bfe71"
+dependencies = [
+ "candid",
+ "serde",
+ "serde_bytes",
+]
+
+[[package]]
+name = "ic-management-canister-types"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3149217e24186df3f13dc45eee14cdb3e5cad07d0b2b67bd53555c1c55462957"
 dependencies = [
  "candid",
  "serde",
@@ -1656,9 +1667,9 @@ checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.14"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
+checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "litemap"
@@ -1756,7 +1767,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1947,9 +1958,9 @@ dependencies = [
 
 [[package]]
 name = "pocket-ic"
-version = "9.0.2"
+version = "12.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e523c23bda9dc26ae989aab647b8bd805b54c72a3f2f00d668830d8b490c9c8"
+checksum = "03c0fe19b920be1485cdd3d58a70abfa768c2608f8349864d950791fe1a5c193"
 dependencies = [
  "backoff",
  "base64 0.13.1",
@@ -1957,10 +1968,11 @@ dependencies = [
  "flate2",
  "hex",
  "ic-certification",
- "ic-management-canister-types",
+ "ic-management-canister-types 0.5.0",
  "ic-transport-types",
  "reqwest",
  "schemars",
+ "semver",
  "serde",
  "serde_bytes",
  "serde_cbor",
@@ -2379,15 +2391,15 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.35"
+version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a85d50532239da68e9addb745ba38ff4612a242c1c7ceea689c4bc7c2f43c36f"
+checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
 dependencies = [
  "bitflags",
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -2608,6 +2620,9 @@ name = "semver"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "serde"
@@ -2989,15 +3004,15 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "tempfile"
-version = "3.12.0"
+version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04cbcdd0c794ebb0d4cf35e88edd2f7d2c4c3e9a5a6dab322839b321c6a87a64"
+checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
- "cfg-if",
  "fastrand",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
