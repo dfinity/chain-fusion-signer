@@ -1,43 +1,6 @@
 # Pricing Report
 
-**Date: March 2025**
-
-## Motivation
-
-The cost of operating a canister has increased and some prices no longer cover the cost of a typical API call:
-
-```
-OK: Signer balance rose by 945_027_353 for: schnorr_public_key
-OK: Signer balance rose by 13_791_062_383 for: schnorr_sign
-WARNING: signer balance fell by -35_728_568 for: btc_caller_address
-WARNING: signer balance fell by -40_248_266 for: btc_caller_balance
-OK: Signer balance rose by 35_997_576_554 for: btc_caller_send
-OK: Signer balance rose by 945_500_972 for: eth_address
-OK: Signer balance rose by 13_745_862_039 for: eth_personal_sign
-OK: Signer balance rose by 13_715_928_103 for: eth_sign_prehash
-OK: Signer balance rose by 13_713_932_473 for: eth_sign_transaction
-OK: Signer balance rose by 945_149_949 for: generic_caller_ecdsa_public_key
-OK: Signer balance rose by 13_791_161_094 for: generic_sign_with_ecdsa
-```
-
-## Current pricing
-
-The fee in cycles charged for each method is:
-
-```
-            SignerMethods::GenericCallerEcdsaPublicKey
-            | SignerMethods::SchnorrPublicKey
-            | SignerMethods::EthAddress
-            | SignerMethods::EthAddressOfCaller => 1_000_000_000,
-            SignerMethods::GenericSignWithEcdsa
-            | SignerMethods::SchnorrSign
-            | SignerMethods::EthSignTransaction
-            | SignerMethods::EthPersonalSign
-            | SignerMethods::EthSignPrehash => 40_000_000_000,
-            SignerMethods::BtcCallerAddress => 20_000_000,
-            SignerMethods::BtcCallerBalance => 40_000_000,
-            SignerMethods::BtcCallerSend => 130_000_000_000,
-```
+**Date: March 2026**
 
 ## Pricing policy
 
@@ -49,178 +12,283 @@ The margin is currently set at 40% over a typical API call for each method. Note
 
 Fees are rounded, to make them simpler to use and remember.
 
-## Pricing calculation
+## How to update pricing
 
-Prices for typical calls are determined by running `scripts/check-pricing` against the `beta` canister.
-
-Adding the current prices to the output JSON we get:
+Run the check-pricing script against the `beta` canister:
 
 ```
-jq -s '. | map({key: .method_name, value: .}) | from_entries' fees.jsonl > fees.json
-jq -s '. | map({key: .method_name, value: .}) | from_entries' check-pricing.beta.2025-03-10T12:20:55+01:00.jsonl > check-pricing.beta.2025-03-10T12:20:55+01:00.json
-jq -s '.[0] * .[1] | to_entries | .[].value' fees.json check-pricing.beta.2025-03-10T12:20:55+01:00.json > check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json
+scripts/check-pricing beta
 ```
 
-```
-$ cat check-pricing.beta.2025-03-10T12:20:55+01:00.fees.json | jq '.typical_cost = .fee - .diff | .cost_plus = .typical_cost * 1.4 | .rounding = if .cost_plus <1000000000 then 1000000 else 1000000000 end | .recommended_fee = ((.cost_plus / .rounding | ceil) * .rounding) | .recommended_change = (.recommended_fee - .fee) | .fee_usd = .fee / 1000000000000 * 1.336610 | .recommended_fee_usd = .recommended_fee /
-  1000000000000 * 1.336610'
+The script will:
 
+1. Measure the actual cycle cost of each API method
+2. Compare against the current fees in `src/signer/api/src/methods.rs`
+3. Calculate recommended fees (cost + 40% margin, rounded)
+4. Print results and update this report
+
+To re-analyse an existing measurement without re-running canister calls:
+
+```
+scripts/check-pricing --analyze <jsonl-file>
+```
+
+## Current fees
+
+The fee in cycles charged for each method is:
+
+```
+            SignerMethods::BtcCallerAddress => 79_000_000,
+            SignerMethods::BtcCallerBalance => 113_000_000,
+            SignerMethods::BtcCallerSend => 132_000_000_000,
+            SignerMethods::BtcCallerSign => 132_000_000_000,
+            SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
+            SignerMethods::EthPersonalSign => 37_000_000_000,
+            SignerMethods::EthSignPrehash => 37_000_000_000,
+            SignerMethods::EthSignTransaction => 37_000_000_000,
+            SignerMethods::GenericCallerEcdsaPublicKey => 77_000_000,
+            SignerMethods::GenericSignWithEcdsa => 37_000_000_000,
+            SignerMethods::SchnorrPublicKey => 77_000_000,
+            SignerMethods::SchnorrSign => 37_000_000_000,
+```
+
+## Check results
+
+```
+OK: Signer balance rose by 18721905 for: schnorr_public_key
+OK: Signer balance rose by 10787834615 for: schnorr_sign
+OK: Signer balance rose by 20002986 for: btc_caller_address
+OK: Signer balance rose by 29482092 for: btc_caller_balance
+OK: Signer balance rose by 53389886961 for: btc_caller_sign
+OK: Signer balance rose by 37954522981 for: btc_caller_send
+OK: Signer balance rose by 19210845 for: eth_address
+OK: Signer balance rose by 10747829457 for: eth_personal_sign
+OK: Signer balance rose by 10723111175 for: eth_sign_prehash
+OK: Signer balance rose by 10746203674 for: eth_sign_transaction
+OK: Signer balance rose by 18898161 for: generic_caller_ecdsa_public_key
+OK: Signer balance rose by 10787893521 for: generic_sign_with_ecdsa
+```
+
+## Analysis
+
+```
 {
   "method_name": "btc_caller_address",
-  "fee": 20000000,
-  "cycles_balance_before": 11259968178719,
-  "cycles_balance_after": 11259932450151,
-  "diff": -35728568,
-  "typical_cost": 55728568,
-  "cost_plus": 78019995.19999999,
+  "fee": 79000000,
+  "cycles_balance_before": 11705572451724,
+  "cycles_balance_after": 11705592454710,
+  "diff": 20002986,
+  "typical_cost": 58997014,
+  "cost_plus": 82595819.6,
   "rounding": 1000000,
-  "recommended_fee": 79000000,
-  "recommended_change": 59000000,
-  "fee_usd": 2.6732200000000005e-05,
-  "recommended_fee_usd": 0.00010559219
+  "recommended_fee": 83000000,
+  "recommended_change": 4000000,
+  "overcharge": 20002986,
+  "overcharge_pct": 33.905082043643766,
+  "overcharge_usd": 0.000026736191117460002,
+  "fee_usd": 0.00010559219,
+  "recommended_fee_usd": 0.00011093863
 }
 {
   "method_name": "btc_caller_balance",
-  "fee": 40000000,
-  "cycles_balance_before": 11259928976438,
-  "cycles_balance_after": 11259888728172,
-  "diff": -40248266,
-  "typical_cost": 80248266,
-  "cost_plus": 112347572.39999999,
+  "fee": 113000000,
+  "cycles_balance_before": 11705587370403,
+  "cycles_balance_after": 11705616852495,
+  "diff": 29482092,
+  "typical_cost": 83517908,
+  "cost_plus": 116925071.19999999,
   "rounding": 1000000,
-  "recommended_fee": 113000000,
-  "recommended_change": 73000000,
-  "fee_usd": 5.346440000000001e-05,
-  "recommended_fee_usd": 0.00015103693
+  "recommended_fee": 117000000,
+  "recommended_change": 4000000,
+  "overcharge": 29482092,
+  "overcharge_pct": 35.3003238538973,
+  "overcharge_usd": 0.00003940605898812001,
+  "fee_usd": 0.00015103693,
+  "recommended_fee_usd": 0.00015638337
 }
 {
   "method_name": "btc_caller_send",
-  "fee": 130000000000,
-  "cycles_balance_before": 11259885286326,
-  "cycles_balance_after": 11295882862880,
-  "diff": 35997576554,
-  "typical_cost": 94002423446,
-  "cost_plus": 131603392824.4,
+  "fee": 132000000000,
+  "cycles_balance_before": 11758996570842,
+  "cycles_balance_after": 11796951093823,
+  "diff": 37954522981,
+  "typical_cost": 94045477019,
+  "cost_plus": 131663667826.59999,
   "rounding": 1000000000,
   "recommended_fee": 132000000000,
-  "recommended_change": 2000000000,
-  "fee_usd": 0.1737593,
+  "recommended_change": 0,
+  "overcharge": 37954522981,
+  "overcharge_pct": 40.35762716513421,
+  "overcharge_usd": 0.050730394961634416,
+  "fee_usd": 0.17643252,
   "recommended_fee_usd": 0.17643252
 }
 {
+  "method_name": "btc_caller_sign",
+  "fee": 132000000000,
+  "cycles_balance_before": 11705611768188,
+  "cycles_balance_after": 11759001655149,
+  "diff": 53389886961,
+  "typical_cost": 78610113039,
+  "cost_plus": 110054158254.59999,
+  "rounding": 1000000000,
+  "recommended_fee": 111000000000,
+  "recommended_change": -21000000000,
+  "overcharge": 53389886961,
+  "overcharge_pct": 67.91732627901482,
+  "overcharge_usd": 0.07136145681094222,
+  "fee_usd": 0.17643252,
+  "recommended_fee_usd": 0.14836371
+}
+{
   "method_name": "eth_address",
-  "fee": 1000000000,
-  "cycles_balance_before": 11295879421034,
-  "cycles_balance_after": 11296824922006,
-  "diff": 945500972,
-  "typical_cost": 54499028,
-  "cost_plus": 76298639.19999999,
+  "fee": 77000000,
+  "cycles_balance_before": 11796946009516,
+  "cycles_balance_after": 11796965220361,
+  "diff": 19210845,
+  "typical_cost": 57789155,
+  "cost_plus": 80904817,
   "rounding": 1000000,
-  "recommended_fee": 77000000,
-  "recommended_change": -923000000,
-  "fee_usd": 0.00133661,
-  "recommended_fee_usd": 0.00010291897
+  "recommended_fee": 81000000,
+  "recommended_change": 4000000,
+  "overcharge": 19210845,
+  "overcharge_pct": 33.24299343016869,
+  "overcharge_usd": 0.00002567740753545,
+  "fee_usd": 0.00010291897,
+  "recommended_fee_usd": 0.00010826541000000001
 }
 {
   "method_name": "eth_personal_sign",
-  "fee": 40000000000,
-  "cycles_balance_before": 11296821448293,
-  "cycles_balance_after": 11310567310332,
-  "diff": 13745862039,
-  "typical_cost": 26254137961,
-  "cost_plus": 36755793145.399994,
+  "fee": 37000000000,
+  "cycles_balance_before": 11796960136054,
+  "cycles_balance_after": 11807707965511,
+  "diff": 10747829457,
+  "typical_cost": 26252170543,
+  "cost_plus": 36753038760.2,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
+  "recommended_change": 0,
+  "overcharge": 10747829457,
+  "overcharge_pct": 40.9407269368279,
+  "overcharge_usd": 0.014365656330520771,
+  "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
 {
   "method_name": "eth_sign_prehash",
-  "fee": 40000000000,
-  "cycles_balance_before": 11310563868486,
-  "cycles_balance_after": 11324279796589,
-  "diff": 13715928103,
-  "typical_cost": 26284071897,
-  "cost_plus": 36797700655.799995,
+  "fee": 37000000000,
+  "cycles_balance_before": 11807702849354,
+  "cycles_balance_after": 11818425960529,
+  "diff": 10723111175,
+  "typical_cost": 26276888825,
+  "cost_plus": 36787644355,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
+  "recommended_change": 0,
+  "overcharge": 10723111175,
+  "overcharge_pct": 40.80814607244509,
+  "overcharge_usd": 0.014332617627616749,
+  "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
 {
   "method_name": "eth_sign_transaction",
-  "fee": 40000000000,
-  "cycles_balance_before": 11324276322876,
-  "cycles_balance_after": 11337990255349,
-  "diff": 13713932473,
-  "typical_cost": 26286067527,
-  "cost_plus": 36800494537.799995,
+  "fee": 37000000000,
+  "cycles_balance_before": 11818420844372,
+  "cycles_balance_after": 11829167048046,
+  "diff": 10746203674,
+  "typical_cost": 26253796326,
+  "cost_plus": 36755314856.399994,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
+  "recommended_change": 0,
+  "overcharge": 10746203674,
+  "overcharge_pct": 40.9319990928614,
+  "overcharge_usd": 0.01436348329270514,
+  "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
 {
   "method_name": "generic_caller_ecdsa_public_key",
-  "fee": 1000000000,
-  "cycles_balance_before": 11337986813503,
-  "cycles_balance_after": 11338931963452,
-  "diff": 945149949,
-  "typical_cost": 54850051,
-  "cost_plus": 76790071.39999999,
+  "fee": 77000000,
+  "cycles_balance_before": 11829161963739,
+  "cycles_balance_after": 11829180861900,
+  "diff": 18898161,
+  "typical_cost": 58101839,
+  "cost_plus": 81342574.6,
   "rounding": 1000000,
-  "recommended_fee": 77000000,
-  "recommended_change": -923000000,
-  "fee_usd": 0.00133661,
-  "recommended_fee_usd": 0.00010291897
+  "recommended_fee": 82000000,
+  "recommended_change": 5000000,
+  "overcharge": 18898161,
+  "overcharge_pct": 32.52592572844381,
+  "overcharge_usd": 0.000025259470974210003,
+  "fee_usd": 0.00010291897,
+  "recommended_fee_usd": 0.00010960202000000001
 }
 {
   "method_name": "generic_sign_with_ecdsa",
-  "fee": 40000000000,
-  "cycles_balance_before": 11338928521606,
-  "cycles_balance_after": 11352719682700,
-  "diff": 13791161094,
-  "typical_cost": 26208838906,
-  "cost_plus": 36692374468.399994,
+  "fee": 37000000000,
+  "cycles_balance_before": 11829175777593,
+  "cycles_balance_after": 11839963671114,
+  "diff": 10787893521,
+  "typical_cost": 26212106479,
+  "cost_plus": 36696949070.6,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
+  "recommended_change": 0,
+  "overcharge": 10787893521,
+  "overcharge_pct": 41.15614870419816,
+  "overcharge_usd": 0.014419206359103811,
+  "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
 {
   "method_name": "schnorr_public_key",
-  "fee": 1000000000,
-  "cycles_balance_before": 11245238972675,
-  "cycles_balance_after": 11246184000028,
-  "diff": 945027353,
-  "typical_cost": 54972647,
-  "cost_plus": 76961705.8,
+  "fee": 77000000,
+  "cycles_balance_before": 11694776095668,
+  "cycles_balance_after": 11694794817573,
+  "diff": 18721905,
+  "typical_cost": 58278095,
+  "cost_plus": 81589333,
   "rounding": 1000000,
-  "recommended_fee": 77000000,
-  "recommended_change": -923000000,
-  "fee_usd": 0.00133661,
-  "recommended_fee_usd": 0.00010291897
+  "recommended_fee": 82000000,
+  "recommended_change": 5000000,
+  "overcharge": 18721905,
+  "overcharge_pct": 32.125114933835775,
+  "overcharge_usd": 0.000025023885442050003,
+  "fee_usd": 0.00010291897,
+  "recommended_fee_usd": 0.00010960202000000001
 }
 {
   "method_name": "schnorr_sign",
-  "fee": 40000000000,
-  "cycles_balance_before": 11246180558182,
-  "cycles_balance_after": 11259971620565,
-  "diff": 13791062383,
-  "typical_cost": 26208937617,
-  "cost_plus": 36692512663.799995,
+  "fee": 37000000000,
+  "cycles_balance_before": 11694789701416,
+  "cycles_balance_after": 11705577536031,
+  "diff": 10787834615,
+  "typical_cost": 26212165385,
+  "cost_plus": 36697031539,
   "rounding": 1000000000,
   "recommended_fee": 37000000000,
-  "recommended_change": -3000000000,
-  "fee_usd": 0.0534644,
+  "recommended_change": 0,
+  "overcharge": 10787834615,
+  "overcharge_pct": 41.155831487212325,
+  "overcharge_usd": 0.01441912762475515,
+  "fee_usd": 0.04945457,
   "recommended_fee_usd": 0.04945457
 }
 ```
 
 ### Conclusion
 
-Ethereum signing prices can be reduced slightly. `btc_caller_address` and `btc_caller_balance` prices need to be increased.
+Fees that should be **increased**: `btc_caller_address`, `btc_caller_balance`, `eth_address`, `generic_caller_ecdsa_public_key`, `schnorr_public_key`.
+
+Fees that can be **reduced**: `btc_caller_sign`.
+
+No change needed: `btc_caller_send`, `eth_personal_sign`, `eth_sign_prehash`, `eth_sign_transaction`, `generic_sign_with_ecdsa`, `schnorr_sign`.
+
+## Addendum
+
+It seems we have a larger amount of cycles in the CFS, and the amopunt is increasing.
+Maybe we decrease the margin of currently 40%. I made quick export of the methods and the impact of adding a 40%, 20% or 10% margin on the check run outcome.
+
+<img width="1609" height="313" alt="image" src="https://github.com/user-attachments/assets/b23d1c82-3223-45f8-80d0-a516e16a58a0" />
