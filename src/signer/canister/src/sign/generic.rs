@@ -2,12 +2,10 @@
 use candid::Principal;
 use ic_cdk::api::msg_caller;
 use ic_cdk_management_canister::{
-    ecdsa_public_key,
-    schnorr_public_key as management_schnorr_public_key,
-    sign_with_ecdsa as management_sign_with_ecdsa,
-    sign_with_schnorr, EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs,
-    SchnorrPublicKeyResult, SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs,
-    SignWithSchnorrResult,
+    ecdsa_public_key, schnorr_public_key as management_schnorr_public_key,
+    sign_with_ecdsa as management_sign_with_ecdsa, sign_with_schnorr, EcdsaPublicKeyArgs,
+    EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult, SignWithEcdsaArgs,
+    SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
 };
 pub use ic_chain_fusion_signer_api::types::generic::{
     GenericCallerEcdsaPublicKeyError, GenericSignWithEcdsaError,

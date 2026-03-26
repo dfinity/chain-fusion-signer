@@ -238,7 +238,7 @@ pub(crate) struct EthAddressResponse {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EthAddressError {
-    SigningError(RejectionCode1, String),
+    SigningError(String),
     PaymentError(PaymentError),
 }
 pub(crate) type Result4 = std::result::Result<EthAddressResponse, EthAddressError>;

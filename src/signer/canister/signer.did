@@ -44,7 +44,7 @@ type EcdsaPublicKeyArgument = record {
 };
 type EcdsaPublicKeyResponse = record { public_key : blob; chain_code : blob };
 type EthAddressError = variant {
-  SigningError : record { RejectionCode_1; text };
+  SigningError : text;
   PaymentError : PaymentError;
 };
 type EthAddressRequest = record { "principal" : opt principal };
@@ -118,15 +118,6 @@ type PaymentType = variant {
   PatronPaysIcrc2Cycles : Account;
 };
 type RejectionCode = variant {
-  NoError;
-  CanisterError;
-  SysTransient;
-  DestinationInvalid;
-  Unknown;
-  SysFatal;
-  CanisterReject;
-};
-type RejectionCode_1 = variant {
   NoError;
   CanisterError;
   SysTransient;
@@ -212,7 +203,7 @@ type WithdrawFromError = variant {
   TooOld;
   FailedToWithdrawFrom : record {
     withdraw_from_block : opt nat;
-    rejection_code : RejectionCode_1;
+    rejection_code : RejectionCode;
     refund_block : opt nat;
     approval_refund_block : opt nat;
     rejection_reason : text;
