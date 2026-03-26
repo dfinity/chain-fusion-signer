@@ -1,7 +1,11 @@
 type Account = record { owner : principal; subaccount : opt blob };
 type Arg = variant { Upgrade; Init : InitArg };
+// # Bip341 variant of Schnorr Aux.
+type Bip341 = record {
+  // Merkle tree root hash.
+  merkle_root_hash : blob;
+};
 type BitcoinAddressType = variant { P2WPKH };
-type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type BtcTxOutput = record { destination_address : text; sent_satoshis : nat64 };
 type BuildP2wpkhTxError = variant {
   NotEnoughFunds : record { available : nat64; required : nat64 };
@@ -11,6 +15,7 @@ type BuildP2wpkhTxError = variant {
   InvalidSourceAddress : GetAddressResponse;
 };
 type CallerPaysIcrc2Tokens = record { ledger : principal };
+// Copy of the synonymous Rosetta type.
 type CanisterStatusResultV2 = record {
   controller : principal;
   status : CanisterStatusType;
@@ -22,12 +27,27 @@ type CanisterStatusResultV2 = record {
   idle_cycles_burned_per_day : nat;
   module_hash : opt blob;
 };
-type CanisterStatusType = variant { stopped; stopping; running };
+// # Canister Status Type
+// 
+// Status of a canister.
+// 
+// See [`CanisterStatusResult::status`].
+type CanisterStatusType = variant {
+  // The canister is stopped.
+  stopped;
+  // The canister is stopping.
+  stopping;
+  // The canister is running.
+  running;
+};
 type Config = record {
   ecdsa_key_name : text;
+  // Root of trust for checking canister signatures.
   ic_root_key_raw : opt blob;
+  // Payment canister ID.
   cycles_ledger : principal;
 };
+// Copy of synonymous Rosetta type.
 type DefiniteCanisterSettingsArgs = record {
   controller : principal;
   freezing_threshold : nat;
@@ -35,20 +55,54 @@ type DefiniteCanisterSettingsArgs = record {
   memory_allocation : nat;
   compute_allocation : nat;
 };
-type EcdsaCurve = variant { secp256k1 };
-type EcdsaKeyId = record { name : text; curve : EcdsaCurve };
-type EcdsaPublicKeyArgument = record {
+// # ECDSA Curve.
+type EcdsaCurve = variant {
+  // secp256k1
+  secp256k1;
+};
+// # ECDSA Key ID.
+// 
+// See [`EcdsaPublicKeyArgs::key_id`] and [`SignWithEcdsaArgs::key_id`].
+type EcdsaKeyId = record {
+  // Name of the key.
+  name : text;
+  // Curve of the key.
+  curve : EcdsaCurve;
+};
+// # ECDSA Public Key Args.
+// 
+// Argument type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
+type EcdsaPublicKeyArgs = record {
+  // The key ID.
   key_id : EcdsaKeyId;
+  // Canister id, default to the canister id of the caller if `None`.
   canister_id : opt principal;
+  // A vector of variable length byte strings.
   derivation_path : vec blob;
 };
-type EcdsaPublicKeyResponse = record { public_key : blob; chain_code : blob };
+// # ECDSA Public Key Result.
+// 
+// Result type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
+type EcdsaPublicKeyResult = record {
+  // An ECDSA public key encoded in SEC1 compressed form.
+  public_key : blob;
+  // Can be used to deterministically derive child keys of the [`public_key`](Self::public_key).
+  chain_code : blob;
+};
 type EthAddressError = variant {
+  // An inter-canister call error from the threshold signature API.
   SigningError : text;
+  // Payment failed.
   PaymentError : PaymentError;
 };
-type EthAddressRequest = record { "principal" : opt principal };
-type EthAddressResponse = record { address : text };
+type EthAddressRequest = record {
+  // The principal owning the Ethereum address.  Default: The caller.
+  "principal" : opt principal;
+};
+type EthAddressResponse = record {
+  // The Ethereum address.
+  address : text;
+};
 type EthPersonalSignRequest = record { message : text };
 type EthPersonalSignResponse = record { signature : text };
 type EthSignPrehashRequest = record { hash : text };
@@ -68,20 +122,26 @@ type GetAddressError = variant {
   PaymentError : PaymentError;
 };
 type GetAddressRequest = record {
-  network : BitcoinNetwork;
+  network : Network;
   address_type : BitcoinAddressType;
 };
 type GetAddressResponse = record { address : text };
 type GetBalanceRequest = record {
-  network : BitcoinNetwork;
+  network : Network;
   address_type : BitcoinAddressType;
   min_confirmations : opt nat32;
 };
 type GetBalanceResponse = record { balance : nat64 };
 type HttpRequest = record {
+  // The requested path and query string, for example `/some/path?foo=bar`.
+  // 
+  // Note: This does NOT contain the domain, port or protocol.
   url : text;
+  // The HTTP method of the request, such as `GET` or `POST`.
   method : text;
+  // The complete body of the HTTP request
   body : blob;
+  // The HTTP request headers
   headers : vec record { text; text };
 };
 type HttpResponse = record {
@@ -91,10 +151,27 @@ type HttpResponse = record {
 };
 type InitArg = record {
   ecdsa_key_name : text;
+  // Root of trust for checking canister signatures.
   ic_root_key_der : opt blob;
+  // Payment canister ID.
   cycles_ledger : opt principal;
 };
-type Outpoint = record { txid : blob; vout : nat32 };
+type Network = variant {
+  // Bitcoin Mainnet.
+  mainnet;
+  // Bitcoin Regtest.
+  regtest;
+  // Bitcoin Testnet4.
+  testnet;
+};
+// A reference to a transaction output.
+type OutPoint = record {
+  // A cryptographic hash of the transaction.
+  // A transaction can output multiple UTXOs.
+  txid : blob;
+  // The index of the output within the transaction.
+  vout : nat32;
+};
 type PatronPaysIcrc2Tokens = record { ledger : principal; patron : Account };
 type PaymentError = variant {
   LedgerWithdrawFromError : record {
@@ -108,13 +185,23 @@ type PaymentError = variant {
     ledger : principal;
   };
   UnsupportedPaymentType;
-  InsufficientFunds : record { needed : nat64; available : nat64 };
+  InsufficientFunds : record { needed : nat; available : nat };
 };
+// How a caller states that they will pay.
 type PaymentType = variant {
+  // A patron is paying, on behalf of the caller, from an account on the specified ledger.
   PatronPaysIcrc2Tokens : PatronPaysIcrc2Tokens;
+  // The caller is paying with cycles attached to the call.
+  // 
+  // Note: This is available to inter-canister aclls only; not to ingress messages.
+  // 
+  // Note: The API does not require additional arguments to support this payment type.
   AttachedCycles;
+  // The caller is paying with cycles from their main account on the cycles ledger.
   CallerPaysIcrc2Cycles;
+  // The caller is paying with tokens from their main account on the specified ledger.
   CallerPaysIcrc2Tokens : CallerPaysIcrc2Tokens;
+  // A patron is paying with cycles on behalf of the caller.
   PatronPaysIcrc2Cycles : Account;
 };
 type RejectionCode = variant {
@@ -129,7 +216,7 @@ type RejectionCode = variant {
 type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
 type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
 type Result_10 = variant {
-  Ok : record { SignWithEcdsaResponse };
+  Ok : record { SignWithEcdsaResult };
   Err : EthAddressError;
 };
 type Result_2 = variant { Ok : SendBtcResponse; Err : SendBtcError };
@@ -138,22 +225,44 @@ type Result_4 = variant { Ok : EthAddressResponse; Err : EthAddressError };
 type Result_5 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
 type Result_6 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
 type Result_7 = variant {
-  Ok : record { EcdsaPublicKeyResponse };
+  Ok : record { EcdsaPublicKeyResult };
   Err : EthAddressError;
 };
 type Result_8 = variant {
-  Ok : record { SignWithEcdsaResponse };
+  Ok : record { SignWithEcdsaResult };
   Err : EthAddressError;
 };
 type Result_9 = variant {
-  Ok : record { EcdsaPublicKeyResponse };
+  Ok : record { EcdsaPublicKeyResult };
   Err : EthAddressError;
 };
-type SchnorrAlgorithm = variant { ed25519; bip340secp256k1 };
-type SchnorrKeyId = record { algorithm : SchnorrAlgorithm; name : text };
-type SchnorrPublicKeyArgument = record {
+// # Schnorr Algorithm.
+// 
+// See [`SchnorrKeyId::algorithm`].
+type SchnorrAlgorithm = variant {
+  // ed25519.
+  ed25519;
+  // BIP-340 secp256k1.
+  bip340secp256k1;
+};
+// # Schnorr Aux.
+type SchnorrAux = variant { bip341 : Bip341 };
+// # Schnorr Key ID.
+type SchnorrKeyId = record {
+  // Algorithm of the key.
+  algorithm : SchnorrAlgorithm;
+  // Name of the key.
+  name : text;
+};
+// # Schnorr Public Key Args.
+// 
+// Argument type of [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key).
+type SchnorrPublicKeyArgs = record {
+  // The key ID.
   key_id : SchnorrKeyId;
+  // Canister id, default to the canister id of the caller if `None`.
   canister_id : opt principal;
+  // A vector of variable length byte strings.
   derivation_path : vec blob;
 };
 type SendBtcError = variant {
@@ -163,22 +272,42 @@ type SendBtcError = variant {
 };
 type SendBtcRequest = record {
   fee_satoshis : opt nat64;
-  network : BitcoinNetwork;
+  network : Network;
   utxos_to_spend : vec Utxo;
   address_type : BitcoinAddressType;
   outputs : vec BtcTxOutput;
 };
 type SendBtcResponse = record { txid : text };
 type SignBtcResponse = record { txid : text; signed_transaction_hex : text };
-type SignWithEcdsaArgument = record {
+// # Sign With ECDSA Args.
+// 
+// Argument type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
+type SignWithEcdsaArgs = record {
+  // The key ID.
   key_id : EcdsaKeyId;
+  // A vector of variable length byte strings.
   derivation_path : vec blob;
+  // Hash of the message with length of 32 bytes.
   message_hash : blob;
 };
-type SignWithEcdsaResponse = record { signature : blob };
-type SignWithSchnorrArgument = record {
+// # Sign With ECDSA Result.
+// 
+// Result type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
+type SignWithEcdsaResult = record {
+  // Encoded as the concatenation of the SEC1 encodings of the two values `r` and `s`.
+  signature : blob;
+};
+// # Sign With Schnorr Args.
+// 
+// Argument type of [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr).
+type SignWithSchnorrArgs = record {
+  // Schnorr auxiliary inputs.
+  aux : opt SchnorrAux;
+  // The key ID.
   key_id : SchnorrKeyId;
+  // A vector of variable length byte strings.
   derivation_path : vec blob;
+  // Message to be signed.
   message : blob;
 };
 type TransferFromError = variant {
@@ -192,7 +321,8 @@ type TransferFromError = variant {
   TooOld;
   InsufficientFunds : record { balance : nat };
 };
-type Utxo = record { height : nat32; value : nat64; outpoint : Outpoint };
+// An unspent transaction output.
+type Utxo = record { height : nat32; value : nat64; outpoint : OutPoint };
 type WithdrawFromError = variant {
   GenericError : record { message : text; error_code : nat };
   TemporarilyUnavailable;
@@ -354,10 +484,9 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  generic_caller_ecdsa_public_key : (
-      EcdsaPublicKeyArgument,
-      opt PaymentType,
-    ) -> (Result_7);
+  generic_caller_ecdsa_public_key : (EcdsaPublicKeyArgs, opt PaymentType) -> (
+      Result_7,
+    );
   // Signs a message using the caller's ECDSA key.
   // 
   // Note: This is an exact dual of the canister [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa) method.  The argument and response types are also the same.
@@ -372,9 +501,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgument) -> (
-      Result_8,
-    );
+  generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgs) -> (Result_8);
   // API method to get cycle balance and burn rate.
   get_canister_status : () -> (CanisterStatusResultV2);
   // Processes external HTTP requests.
@@ -384,8 +511,8 @@ service : (Arg) -> {
   // Note: This is an exact dual of the canister [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key) method.  The argument and response types are also the same.
   // 
   // # Arguments
-  // - `arg`: The same `SchnorrPublicKeyArgument` as the management canister argument.  The semantics
-  // are identical but the meaning of the fields in the new context deserve some explanation.
+  // - `arg`: The same `SchnorrPublicKeyArgs` as the management canister argument.  The semantics are
+  // identical but the meaning of the fields in the new context deserve some explanation.
   // - `arg.canister_id`: The principal of the canister or user for which the Chain Fusion Signer
   // has issued the public key.  If `None`, the caller's public key is returned.
   // - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
@@ -411,16 +538,14 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  schnorr_public_key : (SchnorrPublicKeyArgument, opt PaymentType) -> (
-      Result_9,
-    );
+  schnorr_public_key : (SchnorrPublicKeyArgs, opt PaymentType) -> (Result_9);
   // Signs a message using the caller's Schnorr key.
   // 
   // Note: This is an exact dual of the canister [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr) method.  The argument and response types are also the same.
   // 
   // # Arguments
-  // - `arg`: The same `SignWithSchnorrArgument` as the management canister argument.  The semantics
-  // are identical but the meaning of the fields in the new context deserve some explanation.
+  // - `arg`: The same `SignWithSchnorrArgs` as the management canister argument.  The semantics are
+  // identical but the meaning of the fields in the new context deserve some explanation.
   // - `arg.message`: The data to sign.  Note that if you have a large amount of data, you are
   // probably better off hashing the data and then signing the hash.
   // - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
@@ -446,5 +571,5 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  schnorr_sign : (SignWithSchnorrArgument, opt PaymentType) -> (Result_10);
+  schnorr_sign : (SignWithSchnorrArgs, opt PaymentType) -> (Result_10);
 }
