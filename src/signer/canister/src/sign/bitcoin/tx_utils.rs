@@ -6,7 +6,7 @@ use bitcoin::{
     OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use candid::Principal;
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo};
+use ic_cdk_bitcoin_canister::{Network, OutPoint as IcCdkOutPoint, Utxo};
 use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
 use crate::{
@@ -85,7 +85,7 @@ fn calculate_remaining_amount(
 
 pub fn build_p2wpkh_transaction(
     source_address: &str,
-    network: BitcoinNetwork,
+    network: Network,
     utxos_to_spend: &[Utxo],
     fee: u64,
     request_outputs: &[BtcTxOutput],
@@ -105,7 +105,7 @@ pub fn build_p2wpkh_transaction(
         .iter()
         .map(|utxo| TxIn {
             previous_output: BitcoinOutPoint {
-                txid: Txid::from_raw_hash(Hash::from_slice(&utxo.outpoint.txid).unwrap()),
+                txid: Txid::from_raw_hash(Hash::from_slice(utxo.outpoint.txid.as_ref()).unwrap()),
                 vout: utxo.outpoint.vout,
             },
             sequence: Sequence(0xFFFF_FFFF),
@@ -161,7 +161,7 @@ pub fn build_p2wpkh_transaction(
 
 fn is_same_outpoint(txin_outpoint: &BitcoinOutPoint, utxo_outpout: &IcCdkOutPoint) -> bool {
     txin_outpoint.vout == utxo_outpout.vout
-        && txin_outpoint.txid.as_byte_array()[..] == utxo_outpout.txid[..]
+        && txin_outpoint.txid.as_byte_array()[..] == utxo_outpout.txid.as_ref()[..]
 }
 
 fn get_input_value(input: &TxIn, outputs: &[Utxo]) -> Option<Amount> {
@@ -183,7 +183,7 @@ pub async fn btc_sign_transaction(
     mut transaction: Transaction,
     utxos: &[Utxo],
     source_address: String,
-    network: BitcoinNetwork,
+    network: Network,
 ) -> Result<SignedTransaction, String> {
     let derivation_path = Schema::Btc.derivation_path(principal);
     let txclone = transaction.clone();
@@ -240,9 +240,7 @@ mod tests {
     use bitcoin::{
         hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
     };
-    use ic_cdk::api::management_canister::bitcoin::{
-        BitcoinNetwork, Outpoint as IcCdkOutPoint, Utxo,
-    };
+    use ic_cdk_bitcoin_canister::{Network, OutPoint as IcCdkOutPoint, Txid as BtcIfTxid, Utxo};
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
     use super::{build_p2wpkh_transaction, get_input_value, DUST_THRESHOLD};
@@ -265,7 +263,7 @@ mod tests {
         let txid4 = Txid::from_str(TXID4).unwrap();
         let utxo1: Utxo = Utxo {
             outpoint: IcCdkOutPoint {
-                txid: txid1.as_byte_array().to_vec(),
+                txid: BtcIfTxid::from(*txid1.as_byte_array()),
                 vout: 0,
             },
             value: 1000,
@@ -273,7 +271,7 @@ mod tests {
         };
         let utxo2: Utxo = Utxo {
             outpoint: IcCdkOutPoint {
-                txid: txid2.as_byte_array().to_vec(),
+                txid: BtcIfTxid::from(*txid2.as_byte_array()),
                 vout: 1,
             },
             value: 2000,
@@ -281,7 +279,7 @@ mod tests {
         };
         let utxo3: Utxo = Utxo {
             outpoint: IcCdkOutPoint {
-                txid: txid3.as_byte_array().to_vec(),
+                txid: BtcIfTxid::from(*txid3.as_byte_array()),
                 vout: 2,
             },
             value: 3000,
@@ -289,7 +287,7 @@ mod tests {
         };
         let utxo4: Utxo = Utxo {
             outpoint: IcCdkOutPoint {
-                txid: txid4.as_byte_array().to_vec(),
+                txid: BtcIfTxid::from(*txid4.as_byte_array()),
                 vout: 3,
             },
             value: 4000,
@@ -372,7 +370,7 @@ mod tests {
 
         let result = build_p2wpkh_transaction(
             source_address,
-            BitcoinNetwork::Mainnet,
+            Network::Mainnet,
             &utxos,
             tx_fee,
             &vec![BtcTxOutput {
@@ -398,7 +396,7 @@ mod tests {
         let invalid_address = "invalid_address";
 
         let result =
-            build_p2wpkh_transaction(invalid_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
+            build_p2wpkh_transaction(invalid_address, Network::Mainnet, &[], 10, &vec![]);
 
         match result {
             Err(BuildP2wpkhTxError::InvalidSourceAddress { address }) => {
@@ -414,7 +412,7 @@ mod tests {
 
         let result = build_p2wpkh_transaction(
             source_address,
-            BitcoinNetwork::Testnet, // Incorrect network for the address
+            Network::Testnet, // Incorrect network for the address
             &[],
             10,
             &vec![],
@@ -433,7 +431,7 @@ mod tests {
 
         let result = build_p2wpkh_transaction(
             source_address,
-            BitcoinNetwork::Mainnet,
+            Network::Mainnet,
             &[],
             10,
             &vec![BtcTxOutput {
@@ -455,7 +453,7 @@ mod tests {
         let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH address, not P2WPKH
 
         let result =
-            build_p2wpkh_transaction(source_address, BitcoinNetwork::Mainnet, &[], 10, &vec![]);
+            build_p2wpkh_transaction(source_address, Network::Mainnet, &[], 10, &vec![]);
 
         match result {
             // Expect this error:
@@ -487,7 +485,7 @@ mod tests {
 
         let result = build_p2wpkh_transaction(
             source_address,
-            BitcoinNetwork::Mainnet,
+            Network::Mainnet,
             &utxos,
             tx_fee,
             &request_outputs,
