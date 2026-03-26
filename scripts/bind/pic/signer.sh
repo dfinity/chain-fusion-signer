@@ -6,5 +6,5 @@ didc bind -t rs "$(jq -r .canisters.$CANISTER.candid dfx.json)" --config "script
 # didc generates `type Result = ...` which shadows std::result::Result,
 # breaking the `Result<T, String>` return types in the generated impl block.
 sed -e 's/^pub(crate) type Result = /pub(crate) type Result_ = /' \
-    -e 's/Result<Result,/Result<Result_,/' \
-    "$OUTPUT" > "$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT"
+  -e 's/Result<Result,/Result<Result_,/' \
+  "$OUTPUT" >"$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT"
