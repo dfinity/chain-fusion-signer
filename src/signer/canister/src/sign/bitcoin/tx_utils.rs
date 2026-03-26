@@ -395,8 +395,7 @@ mod tests {
     fn test_build_p2wpkh_transaction_invalid_source_address() {
         let invalid_address = "invalid_address";
 
-        let result =
-            build_p2wpkh_transaction(invalid_address, Network::Mainnet, &[], 10, &vec![]);
+        let result = build_p2wpkh_transaction(invalid_address, Network::Mainnet, &[], 10, &vec![]);
 
         match result {
             Err(BuildP2wpkhTxError::InvalidSourceAddress { address }) => {
@@ -452,8 +451,7 @@ mod tests {
     fn test_build_p2wpkh_transaction_not_p2wpkh_source_address() {
         let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH address, not P2WPKH
 
-        let result =
-            build_p2wpkh_transaction(source_address, Network::Mainnet, &[], 10, &vec![]);
+        let result = build_p2wpkh_transaction(source_address, Network::Mainnet, &[], 10, &vec![]);
 
         match result {
             // Expect this error:

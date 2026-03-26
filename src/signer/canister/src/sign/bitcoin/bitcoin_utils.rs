@@ -2,9 +2,7 @@
 use bitcoin::{Address, CompressedPublicKey, Network};
 use candid::Principal;
 use ic_cdk_bitcoin_canister::Network as BitcoinNetwork;
-use ic_cdk_management_canister::{
-    ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs,
-};
+use ic_cdk_management_canister::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs};
 
 use crate::{derivation_path::Schema, state::read_config};
 

@@ -29,12 +29,12 @@ pub async fn get_balance(
 ///
 /// Relies on the `bitcoin_get_current_fee_percentiles` endpoint.
 /// See [Bitcoin API](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-bitcoin_get_current_fee_percentiles)
-async fn get_current_fee_percentiles(
-    network: Network,
-) -> Result<Vec<MillisatoshiPerByte>, String> {
-    let res = bitcoin_get_current_fee_percentiles(&GetCurrentFeePercentilesRequest { network: network.into() })
-        .await
-        .map_err(|err| format!("{err:?}"))?;
+async fn get_current_fee_percentiles(network: Network) -> Result<Vec<MillisatoshiPerByte>, String> {
+    let res = bitcoin_get_current_fee_percentiles(&GetCurrentFeePercentilesRequest {
+        network: network.into(),
+    })
+    .await
+    .map_err(|err| format!("{err:?}"))?;
 
     Ok(res)
 }
