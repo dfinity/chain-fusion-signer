@@ -84,7 +84,7 @@ fn can_get_public_key_of_onymous_users_only() {
     // Approve payment for the API calls with ICRC-2.
     test_env
         .ledger
-        .icrc_2_approve(
+        .icrc2_approve(
             test_env.user,
             &ApproveArgs::new(
                 cycles_ledger::Account {
@@ -174,7 +174,7 @@ fn getting_public_key_requires_payment() {
         if let Some(approved_sum) = approved_sum {
             test_env
                 .ledger
-                .icrc_2_approve(
+                .icrc2_approve(
                     test_env.user,
                     &ApproveArgs::new(
                         cycles_ledger::Account {
@@ -256,7 +256,7 @@ fn signing_requires_payment() {
         if let Some(approved_sum) = approved_sum {
             test_env
                 .ledger
-                .icrc_2_approve(
+                .icrc2_approve(
                     test_env.user,
                     &ApproveArgs::new(
                         cycles_ledger::Account {
@@ -333,7 +333,7 @@ fn public_keys_are_different() {
             name: "dfx_test_key".to_string(),
         },
         SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            algorithm: SchnorrAlgorithm::Bip340secp256k1,
             name: "dfx_test_key".to_string(),
         },
     ];
@@ -352,7 +352,7 @@ fn public_keys_are_different() {
         // the focus.
         test_env
             .ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 test_env.user,
                 &ApproveArgs::new(
                     cycles_ledger::Account {
@@ -415,7 +415,7 @@ fn signatures_can_be_verified() {
             name: "dfx_test_key".to_string(),
         },
         SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            algorithm: SchnorrAlgorithm::Bip340secp256k1,
             name: "dfx_test_key".to_string(),
         },
     ];
@@ -434,7 +434,7 @@ fn signatures_can_be_verified() {
         // Approve funds for the user.  `test_env.user` will act as patron.
         test_env
             .ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 test_env.user,
                 &ApproveArgs::new(
                     cycles_ledger::Account {
@@ -513,7 +513,7 @@ fn schnorr_signature_verifier(
     algorithm: &SchnorrAlgorithm,
 ) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
     match algorithm {
-        SchnorrAlgorithm::Bip340Secp256K1 => verify_schnorr_bip340_secp256k1_signature,
+        SchnorrAlgorithm::Bip340secp256k1 => verify_schnorr_bip340_secp256k1_signature,
         SchnorrAlgorithm::Ed25519 => verify_schnorr_ed25519_signature,
     }
 }

@@ -36,7 +36,7 @@ mod caller_balance {
         let amount: u128 = SignerMethods::BtcCallerBalance.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
@@ -54,7 +54,7 @@ mod caller_balance {
             test_env.user,
             &GetBalanceRequest {
                 network: Network::Regtest,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
                 min_confirmations: None,
             },
         )
@@ -82,7 +82,7 @@ mod address {
         let amount: u128 = SignerMethods::BtcCallerAddress.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
@@ -100,7 +100,7 @@ mod address {
             test_env.user,
             &GetAddressRequest {
                 network: Network::Mainnet,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
         )
         .expect("Failed to call testnet btc address.")
@@ -123,7 +123,7 @@ mod address {
             test_env.user,
             &GetAddressRequest {
                 network: Network::Testnet,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
         )
         .expect("Failed to call testnet btc address.")
@@ -146,7 +146,7 @@ mod address {
             test_env.user,
             &GetAddressRequest {
                 network: Network::Regtest,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
         )
         .expect("Failed to call testnet btc address.")
@@ -168,7 +168,7 @@ mod address {
             Principal::anonymous(),
             &GetAddressRequest {
                 network: Network::Testnet,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
             &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
@@ -189,7 +189,7 @@ mod address {
             test_env.user,
             &GetAddressRequest {
                 network: Network::Testnet,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
         )
         .expect("Failed to call testnet btc address.")
@@ -201,7 +201,7 @@ mod address {
             test_env.user,
             &GetAddressRequest {
                 network: Network::Regtest,
-                address_type: BitcoinAddressType::P2Wpkh,
+                address_type: BitcoinAddressType::P2WPKH,
             },
         )
         .expect("Failed to call testnet btc address.")
@@ -218,7 +218,7 @@ mod caller_sign {
     fn make_test_send_request(network: Network) -> SendBtcRequest {
         SendBtcRequest {
             network,
-            address_type: BitcoinAddressType::P2Wpkh,
+            address_type: BitcoinAddressType::P2WPKH,
             utxos_to_spend: vec![Utxo {
                 height: 100,
                 value: 100_000,
@@ -253,7 +253,7 @@ mod caller_sign {
         let amount: u128 = SignerMethods::BtcCallerSign.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 

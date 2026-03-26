@@ -193,7 +193,7 @@ impl TestSetup {
     /// Gets the user balance
     pub fn user_balance(&self) -> Nat {
         self.ledger
-            .icrc_1_balance_of(
+            .icrc1_balance_of(
                 self.user,
                 &Account {
                     owner: self.user,
@@ -216,7 +216,7 @@ impl TestSetup {
         T: Into<Nat>,
     {
         self.ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 self.user,
                 &ApproveArgs::new(
                     Account {
