@@ -53,10 +53,7 @@ pub struct State {
 pub fn set_config(arg: InitArg) {
     let config = Config::from(arg);
     mutate_state(|state| {
-        state
-            .config
-            .set(Some(Candid(config)))
-            .expect("setting config should succeed");
+        state.config.set(Some(Candid(config)));
     });
 }
 
