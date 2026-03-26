@@ -90,7 +90,7 @@ fn can_get_public_key_of_onymous_users_only() {
                     owner: test_env.signer.canister_id,
                     subaccount: Some(principal2account(&test_env.user)),
                 },
-                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE)
                     * test_vectors.len(),
             ),
         )
@@ -148,19 +148,19 @@ fn getting_public_key_requires_payment() {
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE,
             )),
             can_get_public_key: true,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 - 1,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE - 1,
             )),
             can_get_public_key: false,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 + 1,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE + 1,
             )),
             can_get_public_key: true,
         },
@@ -235,19 +235,19 @@ fn signing_requires_payment() {
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64,
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE,
             )),
             can_sign: true,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 - 1,
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE - 1,
             )),
             can_sign: false,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 + 1,
+                SignerMethods::SchnorrSign.fee() + LEDGER_FEE + 1,
             )),
             can_sign: true,
         },
@@ -364,7 +364,7 @@ fn public_keys_are_different() {
                         owner: test_env.signer.canister_id,
                         subaccount: Some(principal2account(&user)),
                     },
-                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE)
                         * derivation_paths.len()
                         * key_types.len(),
                 ),
@@ -430,8 +430,8 @@ fn signatures_can_be_verified() {
         let num_tests = derivation_paths.len() * key_types.len();
         let cost_per_test = SignerMethods::SchnorrPublicKey.fee()
             + SignerMethods::SchnorrSign.fee()
-            + 2 * LEDGER_FEE as u64;
-        num_tests as u64 * cost_per_test
+            + 2 * LEDGER_FEE;
+        num_tests as u128 * cost_per_test
     });
 
     let message = ByteBuf::from("pokemon");

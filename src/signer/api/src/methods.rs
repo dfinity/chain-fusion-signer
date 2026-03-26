@@ -17,8 +17,8 @@ pub enum SignerMethods {
 impl SignerMethods {
     /// The cost, in cycles, of every paid chain fusion signer API method.
     #[must_use]
-    #[allow(clippy::match_same_arms)] // Entries are sorted by method, as this makes them easier to manage.
-    pub fn fee(&self) -> u64 {
+    #[allow(clippy::match_same_arms)]
+    pub fn fee(&self) -> u128 {
         // Note: Fees are determined with the aid of scripts/check-pricing
         match self {
             SignerMethods::BtcCallerAddress => 79_000_000,

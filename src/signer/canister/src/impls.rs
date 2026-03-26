@@ -16,6 +16,10 @@ where
         Cow::Owned(candid::encode_one(&self.0).expect("encoding should always succeed"))
     }
 
+    fn into_bytes(self) -> Vec<u8> {
+        candid::encode_one(&self.0).expect("encoding should always succeed")
+    }
+
     fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Self(candid::decode_one(bytes.as_ref()).expect("decoding should succeed"))
     }

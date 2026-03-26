@@ -33,7 +33,7 @@ mod caller_balance {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::BtcCallerBalance.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::BtcCallerBalance.fee() + LEDGER_FEE;
         test_env
             .ledger
             .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
@@ -79,7 +79,7 @@ mod address {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::BtcCallerAddress.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::BtcCallerAddress.fee() + LEDGER_FEE;
         test_env
             .ledger
             .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
@@ -250,7 +250,7 @@ mod caller_sign {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::BtcCallerSign.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::BtcCallerSign.fee() + LEDGER_FEE;
         test_env
             .ledger
             .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
