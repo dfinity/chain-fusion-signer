@@ -10,7 +10,7 @@ use serde_bytes::ByteBuf;
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
-        signer::{self, PaymentType, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgument},
+        signer::{self, PaymentType, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs},
     },
     utils::test_environment::{TestSetup, LEDGER_FEE},
 };
@@ -22,7 +22,8 @@ fn anonymous_user_cannot_sign() {
     let message = ByteBuf::from("pokemon");
     let signature = test_env.signer.schnorr_sign(
         Principal::anonymous(),
-        &signer::SignWithSchnorrArgument {
+        &signer::SignWithSchnorrArgs {
+            aux: None,
             key_id: SchnorrKeyId {
                 algorithm: SchnorrAlgorithm::Ed25519,
                 name: "dfx_test_key".to_string(),
@@ -108,7 +109,7 @@ fn can_get_public_key_of_onymous_users_only() {
     {
         let public_key = test_env.signer.schnorr_public_key(
             *user,
-            &SchnorrPublicKeyArgument {
+            &SchnorrPublicKeyArgs {
                 key_id: SchnorrKeyId {
                     algorithm: SchnorrAlgorithm::Ed25519,
                     name: "dfx_test_key".to_string(),
@@ -191,7 +192,7 @@ fn getting_public_key_requires_payment() {
             .signer
             .schnorr_public_key(
                 user,
-                &SchnorrPublicKeyArgument {
+                &SchnorrPublicKeyArgs {
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
                         name: "dfx_test_key".to_string(),
@@ -273,7 +274,8 @@ fn signing_requires_payment() {
             .signer
             .schnorr_sign(
                 user,
-                &signer::SignWithSchnorrArgument {
+                &signer::SignWithSchnorrArgs {
+                    aux: None,
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
                         name: "dfx_test_key".to_string(),
@@ -371,7 +373,7 @@ fn public_keys_are_different() {
                     .signer
                     .schnorr_public_key(
                         *user,
-                        &SchnorrPublicKeyArgument {
+                        &SchnorrPublicKeyArgs {
                             key_id: key_id.clone(),
                             canister_id: None,
                             derivation_path: derivation_path.clone(),
@@ -451,7 +453,7 @@ fn signatures_can_be_verified() {
                     .signer
                     .schnorr_public_key(
                         *user,
-                        &SchnorrPublicKeyArgument {
+                        &SchnorrPublicKeyArgs {
                             key_id: key_type.clone(),
                             canister_id: None,
                             derivation_path: derivation_path.clone(),
@@ -471,7 +473,8 @@ fn signatures_can_be_verified() {
                     .signer
                     .schnorr_sign(
                         *user,
-                        &signer::SignWithSchnorrArgument {
+                        &signer::SignWithSchnorrArgs {
+                            aux: None,
                             key_id: key_type.clone(),
                             derivation_path: derivation_path.clone(),
                             message: message.clone(),

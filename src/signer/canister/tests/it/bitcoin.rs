@@ -5,9 +5,9 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            BitcoinAddressType, BitcoinNetwork, BtcTxOutput, GetAddressError, GetAddressRequest,
-            GetAddressResponse, GetBalanceRequest, GetBalanceResponse, Outpoint, PaymentType,
-            SendBtcError, SendBtcRequest, SignBtcResponse, Utxo,
+            BitcoinAddressType, BtcTxOutput, GetAddressError, GetAddressRequest,
+            GetAddressResponse, GetBalanceRequest, GetBalanceResponse, Network, OutPoint,
+            PaymentType, SendBtcError, SendBtcRequest, SignBtcResponse, Utxo,
         },
     },
     utils::{
@@ -53,7 +53,7 @@ mod caller_balance {
             &test_env,
             test_env.user,
             &GetBalanceRequest {
-                network: BitcoinNetwork::Regtest,
+                network: Network::Regtest,
                 address_type: BitcoinAddressType::P2Wpkh,
                 min_confirmations: None,
             },
@@ -99,7 +99,7 @@ mod address {
             &test_env,
             test_env.user,
             &GetAddressRequest {
-                network: BitcoinNetwork::Mainnet,
+                network: Network::Mainnet,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
         )
@@ -122,7 +122,7 @@ mod address {
             &test_env,
             test_env.user,
             &GetAddressRequest {
-                network: BitcoinNetwork::Testnet,
+                network: Network::Testnet,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
         )
@@ -145,7 +145,7 @@ mod address {
             &test_env,
             test_env.user,
             &GetAddressRequest {
-                network: BitcoinNetwork::Regtest,
+                network: Network::Regtest,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
         )
@@ -167,7 +167,7 @@ mod address {
         let response = test_env.signer.btc_caller_address(
             Principal::anonymous(),
             &GetAddressRequest {
-                network: BitcoinNetwork::Testnet,
+                network: Network::Testnet,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
             &Some(PaymentType::CallerPaysIcrc2Cycles),
@@ -188,7 +188,7 @@ mod address {
             &test_env,
             test_env.user,
             &GetAddressRequest {
-                network: BitcoinNetwork::Testnet,
+                network: Network::Testnet,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
         )
@@ -200,7 +200,7 @@ mod address {
             &test_env,
             test_env.user,
             &GetAddressRequest {
-                network: BitcoinNetwork::Regtest,
+                network: Network::Regtest,
                 address_type: BitcoinAddressType::P2Wpkh,
             },
         )
@@ -215,14 +215,14 @@ mod address {
 mod caller_sign {
     use super::*;
 
-    fn make_test_send_request(network: BitcoinNetwork) -> SendBtcRequest {
+    fn make_test_send_request(network: Network) -> SendBtcRequest {
         SendBtcRequest {
             network,
             address_type: BitcoinAddressType::P2Wpkh,
             utxos_to_spend: vec![Utxo {
                 height: 100,
                 value: 100_000,
-                outpoint: Outpoint {
+                outpoint: OutPoint {
                     txid: serde_bytes::ByteBuf::from(vec![
                         0x36, 0xf3, 0xa7, 0xfc, 0xb6, 0xb5, 0xeb, 0xd9, 0xfa, 0x40, 0x41, 0x92,
                         0x8d, 0xa8, 0x9c, 0xd4, 0x23, 0x66, 0x2f, 0x9c, 0x5c, 0x12, 0xe4, 0x1c,
@@ -268,7 +268,7 @@ mod caller_sign {
 
         let response = test_env.signer.btc_caller_sign(
             Principal::anonymous(),
-            &make_test_send_request(BitcoinNetwork::Regtest),
+            &make_test_send_request(Network::Regtest),
             &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
 
@@ -286,7 +286,7 @@ mod caller_sign {
         let response = paid_caller_sign(
             &test_env,
             test_env.user,
-            &make_test_send_request(BitcoinNetwork::Regtest),
+            &make_test_send_request(Network::Regtest),
         )
         .expect("Failed to call btc_caller_sign")
         .expect("Failed to get successful sign response");

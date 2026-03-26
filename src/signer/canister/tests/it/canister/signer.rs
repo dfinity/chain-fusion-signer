@@ -10,7 +10,9 @@ use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct InitArg {
     pub(crate) ecdsa_key_name: String,
+    /// Root of trust for checking canister signatures.
     pub(crate) ic_root_key_der: Option<serde_bytes::ByteBuf>,
+    /// Payment canister ID.
     pub(crate) cycles_ledger: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -19,11 +21,14 @@ pub(crate) enum Arg {
     Init(InitArg),
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum BitcoinNetwork {
+pub(crate) enum Network {
+    /// Bitcoin Mainnet.
     #[serde(rename = "mainnet")]
     Mainnet,
+    /// Bitcoin Regtest.
     #[serde(rename = "regtest")]
     Regtest,
+    /// Bitcoin Testnet4.
     #[serde(rename = "testnet")]
     Testnet,
 }
@@ -34,7 +39,7 @@ pub(crate) enum BitcoinAddressType {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetAddressRequest {
-    pub(crate) network: BitcoinNetwork,
+    pub(crate) network: Network,
     pub(crate) address_type: BitcoinAddressType,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -51,12 +56,22 @@ pub(crate) struct PatronPaysIcrc2Tokens {
 pub(crate) struct CallerPaysIcrc2Tokens {
     pub(crate) ledger: Principal,
 }
+/// How a caller states that they will pay.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum PaymentType {
+    /// A patron is paying, on behalf of the caller, from an account on the specified ledger.
     PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens),
+    /// The caller is paying with cycles attached to the call.
+    ///
+    /// Note: This is available to inter-canister aclls only; not to ingress messages.
+    ///
+    /// Note: The API does not require additional arguments to support this payment type.
     AttachedCycles,
+    /// The caller is paying with cycles from their main account on the cycles ledger.
     CallerPaysIcrc2Cycles,
+    /// The caller is paying with tokens from their main account on the specified ledger.
     CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens),
+    /// A patron is paying with cycles on behalf of the caller.
     PatronPaysIcrc2Cycles(Account),
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -64,7 +79,7 @@ pub(crate) struct GetAddressResponse {
     pub(crate) address: String,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum RejectionCode1 {
+pub(crate) enum RejectionCode {
     NoError,
     CanisterError,
     SysTransient,
@@ -95,7 +110,7 @@ pub(crate) enum WithdrawFromError {
     TooOld,
     FailedToWithdrawFrom {
         withdraw_from_block: Option<candid::Nat>,
-        rejection_code: RejectionCode1,
+        rejection_code: RejectionCode,
         refund_block: Option<candid::Nat>,
         approval_refund_block: Option<candid::Nat>,
         rejection_reason: String,
@@ -145,8 +160,8 @@ pub(crate) enum PaymentError {
     },
     UnsupportedPaymentType,
     InsufficientFunds {
-        needed: u64,
-        available: u64,
+        needed: candid::Nat,
+        available: candid::Nat,
     },
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -157,7 +172,7 @@ pub(crate) enum GetAddressError {
 pub(crate) type Result_ = std::result::Result<GetAddressResponse, GetAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBalanceRequest {
-    pub(crate) network: BitcoinNetwork,
+    pub(crate) network: Network,
     pub(crate) address_type: BitcoinAddressType,
     pub(crate) min_confirmations: Option<u32>,
 }
@@ -166,16 +181,21 @@ pub(crate) struct GetBalanceResponse {
     pub(crate) balance: u64,
 }
 pub(crate) type Result1 = std::result::Result<GetBalanceResponse, GetAddressError>;
+/// A reference to a transaction output.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct Outpoint {
+pub(crate) struct OutPoint {
+    /// A cryptographic hash of the transaction.
+    /// A transaction can output multiple UTXOs.
     pub(crate) txid: serde_bytes::ByteBuf,
+    /// The index of the output within the transaction.
     pub(crate) vout: u32,
 }
+/// An unspent transaction output.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Utxo {
     pub(crate) height: u32,
     pub(crate) value: u64,
-    pub(crate) outpoint: Outpoint,
+    pub(crate) outpoint: OutPoint,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct BtcTxOutput {
@@ -185,7 +205,7 @@ pub(crate) struct BtcTxOutput {
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SendBtcRequest {
     pub(crate) fee_satoshis: Option<u64>,
-    pub(crate) network: BitcoinNetwork,
+    pub(crate) network: Network,
     pub(crate) utxos_to_spend: Vec<Utxo>,
     pub(crate) address_type: BitcoinAddressType,
     pub(crate) outputs: Vec<BtcTxOutput>,
@@ -225,7 +245,9 @@ pub(crate) type Result3 = std::result::Result<SignBtcResponse, SendBtcError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Config {
     pub(crate) ecdsa_key_name: String,
+    /// Root of trust for checking canister signatures.
     pub(crate) ic_root_key_raw: Option<serde_bytes::ByteBuf>,
+    /// Payment canister ID.
     pub(crate) cycles_ledger: Principal,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -234,11 +256,14 @@ pub(crate) struct EthAddressRequest {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthAddressResponse {
+    /// The Ethereum address.
     pub(crate) address: String,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EthAddressError {
+    /// An inter-canister call error from the threshold signature API.
     SigningError(String),
+    /// Payment failed.
     PaymentError(PaymentError),
 }
 pub(crate) type Result4 = std::result::Result<EthAddressResponse, EthAddressError>;
@@ -271,48 +296,85 @@ pub(crate) struct EthSignTransactionRequest {
     pub(crate) chain_id: candid::Nat,
     pub(crate) nonce: candid::Nat,
 }
+/// # ECDSA Curve.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EcdsaCurve {
+    /// secp256k1
     #[serde(rename = "secp256k1")]
     Secp256K1,
 }
+/// # ECDSA Key ID.
+///
+/// See [`EcdsaPublicKeyArgs::key_id`] and [`SignWithEcdsaArgs::key_id`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaKeyId {
+    /// Name of the key.
     pub(crate) name: String,
+    /// Curve of the key.
     pub(crate) curve: EcdsaCurve,
 }
+/// # ECDSA Public Key Args.
+///
+/// Argument type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EcdsaPublicKeyArgument {
+pub(crate) struct EcdsaPublicKeyArgs {
+    /// The key ID.
     pub(crate) key_id: EcdsaKeyId,
+    /// Canister id, default to the canister id of the caller if `None`.
     pub(crate) canister_id: Option<Principal>,
+    /// A vector of variable length byte strings.
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
+/// # ECDSA Public Key Result.
+///
+/// Result type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EcdsaPublicKeyResponse {
+pub(crate) struct EcdsaPublicKeyResult {
+    /// An ECDSA public key encoded in SEC1 compressed form.
     pub(crate) public_key: serde_bytes::ByteBuf,
+    /// Can be used to deterministically derive child keys of the [`public_key`](Self::public_key).
     pub(crate) chain_code: serde_bytes::ByteBuf,
 }
-pub(crate) type Result7 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
+pub(crate) type Result7 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
+/// # Sign With ECDSA Args.
+///
+/// Argument type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct SignWithEcdsaArgument {
+pub(crate) struct SignWithEcdsaArgs {
+    /// The key ID.
     pub(crate) key_id: EcdsaKeyId,
+    /// A vector of variable length byte strings.
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// Hash of the message with length of 32 bytes.
     pub(crate) message_hash: serde_bytes::ByteBuf,
 }
+/// # Sign With ECDSA Result.
+///
+/// Result type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct SignWithEcdsaResponse {
+pub(crate) struct SignWithEcdsaResult {
+    /// Encoded as the concatenation of the SEC1 encodings of the two values `r` and `s`.
     pub(crate) signature: serde_bytes::ByteBuf,
 }
-pub(crate) type Result8 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result8 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
+/// # Canister Status Type
+///
+/// Status of a canister.
+///
+/// See [`CanisterStatusResult::status`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CanisterStatusType {
+    /// The canister is stopped.
     #[serde(rename = "stopped")]
     Stopped,
+    /// The canister is stopping.
     #[serde(rename = "stopping")]
     Stopping,
+    /// The canister is running.
     #[serde(rename = "running")]
     Running,
 }
+/// Copy of synonymous Rosetta type.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DefiniteCanisterSettingsArgs {
     pub(crate) controller: Principal,
@@ -321,6 +383,7 @@ pub(crate) struct DefiniteCanisterSettingsArgs {
     pub(crate) memory_allocation: candid::Nat,
     pub(crate) compute_allocation: candid::Nat,
 }
+/// Copy of the synonymous Rosetta type.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CanisterStatusResultV2 {
     pub(crate) controller: Principal,
@@ -335,9 +398,15 @@ pub(crate) struct CanisterStatusResultV2 {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpRequest {
+    /// The requested path and query string, for example `/some/path?foo=bar`.
+    ///
+    /// Note: This does NOT contain the domain, port or protocol.
     pub(crate) url: String,
+    /// The HTTP method of the request, such as `GET` or `POST`.
     pub(crate) method: String,
+    /// The complete body of the HTTP request
     pub(crate) body: serde_bytes::ByteBuf,
+    /// The HTTP request headers
     pub(crate) headers: Vec<(String, String)>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -346,32 +415,66 @@ pub(crate) struct HttpResponse {
     pub(crate) headers: Vec<(String, String)>,
     pub(crate) status_code: u16,
 }
+/// # Schnorr Algorithm.
+///
+/// See [`SchnorrKeyId::algorithm`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SchnorrAlgorithm {
+    /// ed25519.
     #[serde(rename = "ed25519")]
     Ed25519,
+    /// BIP-340 secp256k1.
     #[serde(rename = "bip340secp256k1")]
     Bip340Secp256K1,
 }
+/// # Schnorr Key ID.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SchnorrKeyId {
+    /// Algorithm of the key.
     pub(crate) algorithm: SchnorrAlgorithm,
+    /// Name of the key.
     pub(crate) name: String,
 }
+/// # Schnorr Public Key Args.
+///
+/// Argument type of [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct SchnorrPublicKeyArgument {
+pub(crate) struct SchnorrPublicKeyArgs {
+    /// The key ID.
     pub(crate) key_id: SchnorrKeyId,
+    /// Canister id, default to the canister id of the caller if `None`.
     pub(crate) canister_id: Option<Principal>,
+    /// A vector of variable length byte strings.
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-pub(crate) type Result9 = std::result::Result<(EcdsaPublicKeyResponse,), EthAddressError>;
+pub(crate) type Result9 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
+/// # Bip341 variant of Schnorr Aux.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct SignWithSchnorrArgument {
+pub(crate) struct Bip341 {
+    /// Merkle tree root hash.
+    pub(crate) merkle_root_hash: serde_bytes::ByteBuf,
+}
+/// # Schnorr Aux.
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum SchnorrAux {
+    #[serde(rename = "bip341")]
+    Bip341(Bip341),
+}
+/// # Sign With Schnorr Args.
+///
+/// Argument type of [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr).
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) struct SignWithSchnorrArgs {
+    /// Schnorr auxiliary inputs.
+    pub(crate) aux: Option<SchnorrAux>,
+    /// The key ID.
     pub(crate) key_id: SchnorrKeyId,
+    /// A vector of variable length byte strings.
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// Message to be signed.
     pub(crate) message: serde_bytes::ByteBuf,
 }
-pub(crate) type Result10 = std::result::Result<(SignWithEcdsaResponse,), EthAddressError>;
+pub(crate) type Result10 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,
@@ -476,7 +579,7 @@ impl SignerPic {
     pub fn generic_caller_ecdsa_public_key(
         &self,
         caller: Principal,
-        arg0: &EcdsaPublicKeyArgument,
+        arg0: &EcdsaPublicKeyArgs,
         arg1: &Option<PaymentType>,
     ) -> Result<Result7, String> {
         self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
@@ -485,7 +588,7 @@ impl SignerPic {
         &self,
         caller: Principal,
         arg0: &Option<PaymentType>,
-        arg1: &SignWithEcdsaArgument,
+        arg1: &SignWithEcdsaArgs,
     ) -> Result<Result8, String> {
         self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1))
     }
@@ -502,7 +605,7 @@ impl SignerPic {
     pub fn schnorr_public_key(
         &self,
         caller: Principal,
-        arg0: &SchnorrPublicKeyArgument,
+        arg0: &SchnorrPublicKeyArgs,
         arg1: &Option<PaymentType>,
     ) -> Result<Result9, String> {
         self.update(caller, "schnorr_public_key", (arg0, arg1))
@@ -510,7 +613,7 @@ impl SignerPic {
     pub fn schnorr_sign(
         &self,
         caller: Principal,
-        arg0: &SignWithSchnorrArgument,
+        arg0: &SignWithSchnorrArgs,
         arg1: &Option<PaymentType>,
     ) -> Result<Result10, String> {
         self.update(caller, "schnorr_sign", (arg0, arg1))
