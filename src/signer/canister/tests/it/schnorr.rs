@@ -90,8 +90,7 @@ fn can_get_public_key_of_onymous_users_only() {
                     owner: test_env.signer.canister_id,
                     subaccount: Some(principal2account(&test_env.user)),
                 },
-                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE)
-                    * test_vectors.len(),
+                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE) * test_vectors.len(),
             ),
         )
         .expect("Failed to call ledger canister")
@@ -234,21 +233,15 @@ fn signing_requires_payment() {
             can_sign: false,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE)),
             can_sign: true,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE - 1,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE - 1)),
             can_sign: false,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE + 1,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE + 1)),
             can_sign: true,
         },
     ];
