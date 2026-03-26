@@ -10,7 +10,7 @@ export default defineConfig({
 		emptyOutDir: true
 	},
 	optimizeDeps: {
-		esbuildOptions: {
+		rolldownOptions: {
 			define: {
 				global: 'globalThis'
 			}

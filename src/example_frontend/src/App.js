@@ -1,5 +1,5 @@
-import { Actor, HttpAgent } from '@dfinity/agent';
-import { AuthClient } from '@dfinity/auth-client';
+import { Actor, HttpAgent } from '@icp-sdk/core/agent';
+import { AuthClient } from '@icp-sdk/auth/client';
 import {
 	example_backend,
 	idlFactory as exampleBackendIdlFactory
