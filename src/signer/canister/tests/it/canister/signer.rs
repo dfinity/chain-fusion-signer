@@ -7,425 +7,474 @@ use pocket_ic::PocketIc;
 
 use crate::utils::pic_canister::{PicCanister, PicCanisterTrait};
 
-
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct InitArg {
-  pub(crate) ecdsa_key_name: String,
-  /// Root of trust for checking canister signatures.
-  pub(crate) ic_root_key_der: Option<serde_bytes::ByteBuf>,
-  /// Payment canister ID.
-  pub(crate) cycles_ledger: Option<Principal>,
+    pub(crate) ecdsa_key_name: String,
+    /// Root of trust for checking canister signatures.
+    pub(crate) ic_root_key_der: Option<serde_bytes::ByteBuf>,
+    /// Payment canister ID.
+    pub(crate) cycles_ledger: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum Arg { Upgrade, Init(InitArg) }
+pub(crate) enum Arg {
+    Upgrade,
+    Init(InitArg),
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum Network {
-  /// Bitcoin Mainnet.
-  #[serde(rename="mainnet")]
-  Mainnet,
-  /// Bitcoin Regtest.
-  #[serde(rename="regtest")]
-  Regtest,
-  /// Bitcoin Testnet4.
-  #[serde(rename="testnet")]
-  Testnet,
+    /// Bitcoin Mainnet.
+    #[serde(rename = "mainnet")]
+    Mainnet,
+    /// Bitcoin Regtest.
+    #[serde(rename = "regtest")]
+    Regtest,
+    /// Bitcoin Testnet4.
+    #[serde(rename = "testnet")]
+    Testnet,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum BitcoinAddressType { #[serde(rename="P2WPKH")] P2Wpkh }
+pub(crate) enum BitcoinAddressType {
+    #[serde(rename = "P2WPKH")]
+    P2Wpkh,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetAddressRequest {
-  pub(crate) network: Network,
-  pub(crate) address_type: BitcoinAddressType,
+    pub(crate) network: Network,
+    pub(crate) address_type: BitcoinAddressType,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Account {
-  pub(crate) owner: Principal,
-  pub(crate) subaccount: Option<serde_bytes::ByteBuf>,
+    pub(crate) owner: Principal,
+    pub(crate) subaccount: Option<serde_bytes::ByteBuf>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct PatronPaysIcrc2Tokens {
-  pub(crate) ledger: Principal,
-  pub(crate) patron: Account,
+    pub(crate) ledger: Principal,
+    pub(crate) patron: Account,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct CallerPaysIcrc2Tokens { pub(crate) ledger: Principal }
+pub(crate) struct CallerPaysIcrc2Tokens {
+    pub(crate) ledger: Principal,
+}
 /// How a caller states that they will pay.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum PaymentType {
-  /// A patron is paying, on behalf of the caller, from an account on the specified ledger.
-  PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens),
-  /// The caller is paying with cycles attached to the call.
-  /// 
-  /// Note: This is available to inter-canister aclls only; not to ingress messages.
-  /// 
-  /// Note: The API does not require additional arguments to support this payment type.
-  AttachedCycles,
-  /// The caller is paying with cycles from their main account on the cycles ledger.
-  CallerPaysIcrc2Cycles,
-  /// The caller is paying with tokens from their main account on the specified ledger.
-  CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens),
-  /// A patron is paying with cycles on behalf of the caller.
-  PatronPaysIcrc2Cycles(Account),
+    /// A patron is paying, on behalf of the caller, from an account on the specified ledger.
+    PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens),
+    /// The caller is paying with cycles attached to the call.
+    ///
+    /// Note: This is available to inter-canister aclls only; not to ingress messages.
+    ///
+    /// Note: The API does not require additional arguments to support this payment type.
+    AttachedCycles,
+    /// The caller is paying with cycles from their main account on the cycles ledger.
+    CallerPaysIcrc2Cycles,
+    /// The caller is paying with tokens from their main account on the specified ledger.
+    CallerPaysIcrc2Tokens(CallerPaysIcrc2Tokens),
+    /// A patron is paying with cycles on behalf of the caller.
+    PatronPaysIcrc2Cycles(Account),
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct GetAddressResponse { pub(crate) address: String }
+pub(crate) struct GetAddressResponse {
+    pub(crate) address: String,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum RejectionCode {
-  NoError,
-  CanisterError,
-  SysTransient,
-  DestinationInvalid,
-  Unknown,
-  SysFatal,
-  CanisterReject,
+    NoError,
+    CanisterError,
+    SysTransient,
+    DestinationInvalid,
+    Unknown,
+    SysFatal,
+    CanisterReject,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum WithdrawFromError {
-  GenericError{ message: String, error_code: candid::Nat },
-  TemporarilyUnavailable,
-  InsufficientAllowance{ allowance: candid::Nat },
-  Duplicate{ duplicate_of: candid::Nat },
-  InvalidReceiver{ receiver: Principal },
-  CreatedInFuture{ ledger_time: u64 },
-  TooOld,
-  FailedToWithdrawFrom{
-    withdraw_from_block: Option<candid::Nat>,
-    rejection_code: RejectionCode,
-    refund_block: Option<candid::Nat>,
-    approval_refund_block: Option<candid::Nat>,
-    rejection_reason: String,
-  },
-  InsufficientFunds{ balance: candid::Nat },
+    GenericError {
+        message: String,
+        error_code: candid::Nat,
+    },
+    TemporarilyUnavailable,
+    InsufficientAllowance {
+        allowance: candid::Nat,
+    },
+    Duplicate {
+        duplicate_of: candid::Nat,
+    },
+    InvalidReceiver {
+        receiver: Principal,
+    },
+    CreatedInFuture {
+        ledger_time: u64,
+    },
+    TooOld,
+    FailedToWithdrawFrom {
+        withdraw_from_block: Option<candid::Nat>,
+        rejection_code: RejectionCode,
+        refund_block: Option<candid::Nat>,
+        approval_refund_block: Option<candid::Nat>,
+        rejection_reason: String,
+    },
+    InsufficientFunds {
+        balance: candid::Nat,
+    },
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum TransferFromError {
-  GenericError{ message: String, error_code: candid::Nat },
-  TemporarilyUnavailable,
-  InsufficientAllowance{ allowance: candid::Nat },
-  BadBurn{ min_burn_amount: candid::Nat },
-  Duplicate{ duplicate_of: candid::Nat },
-  BadFee{ expected_fee: candid::Nat },
-  CreatedInFuture{ ledger_time: u64 },
-  TooOld,
-  InsufficientFunds{ balance: candid::Nat },
+    GenericError {
+        message: String,
+        error_code: candid::Nat,
+    },
+    TemporarilyUnavailable,
+    InsufficientAllowance {
+        allowance: candid::Nat,
+    },
+    BadBurn {
+        min_burn_amount: candid::Nat,
+    },
+    Duplicate {
+        duplicate_of: candid::Nat,
+    },
+    BadFee {
+        expected_fee: candid::Nat,
+    },
+    CreatedInFuture {
+        ledger_time: u64,
+    },
+    TooOld,
+    InsufficientFunds {
+        balance: candid::Nat,
+    },
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum PaymentError {
-  LedgerWithdrawFromError{ error: WithdrawFromError, ledger: Principal },
-  LedgerUnreachable(CallerPaysIcrc2Tokens),
-  InvalidPatron,
-  LedgerTransferFromError{ error: TransferFromError, ledger: Principal },
-  UnsupportedPaymentType,
-  InsufficientFunds{ needed: candid::Nat, available: candid::Nat },
+    LedgerWithdrawFromError {
+        error: WithdrawFromError,
+        ledger: Principal,
+    },
+    LedgerUnreachable(CallerPaysIcrc2Tokens),
+    InvalidPatron,
+    LedgerTransferFromError {
+        error: TransferFromError,
+        ledger: Principal,
+    },
+    UnsupportedPaymentType,
+    InsufficientFunds {
+        needed: candid::Nat,
+        available: candid::Nat,
+    },
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum GetAddressError {
-  InternalError{ msg: String },
-  PaymentError(PaymentError),
+    InternalError { msg: String },
+    PaymentError(PaymentError),
 }
-pub(crate) type Result_ = std::result::Result<
-  GetAddressResponse, GetAddressError
->;
+pub(crate) type Result_ = std::result::Result<GetAddressResponse, GetAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBalanceRequest {
-  pub(crate) network: Network,
-  pub(crate) address_type: BitcoinAddressType,
-  pub(crate) min_confirmations: Option<u32>,
+    pub(crate) network: Network,
+    pub(crate) address_type: BitcoinAddressType,
+    pub(crate) min_confirmations: Option<u32>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct GetBalanceResponse { pub(crate) balance: u64 }
-pub(crate) type Result1 = std::result::Result<
-  GetBalanceResponse, GetAddressError
->;
+pub(crate) struct GetBalanceResponse {
+    pub(crate) balance: u64,
+}
+pub(crate) type Result1 = std::result::Result<GetBalanceResponse, GetAddressError>;
 /// A reference to a transaction output.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct OutPoint {
-  /// A cryptographic hash of the transaction.
-  /// A transaction can output multiple UTXOs.
-  pub(crate) txid: serde_bytes::ByteBuf,
-  /// The index of the output within the transaction.
-  pub(crate) vout: u32,
+    /// A cryptographic hash of the transaction.
+    /// A transaction can output multiple UTXOs.
+    pub(crate) txid: serde_bytes::ByteBuf,
+    /// The index of the output within the transaction.
+    pub(crate) vout: u32,
 }
 /// An unspent transaction output.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Utxo {
-  pub(crate) height: u32,
-  pub(crate) value: u64,
-  pub(crate) outpoint: OutPoint,
+    pub(crate) height: u32,
+    pub(crate) value: u64,
+    pub(crate) outpoint: OutPoint,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct BtcTxOutput {
-  pub(crate) destination_address: String,
-  pub(crate) sent_satoshis: u64,
+    pub(crate) destination_address: String,
+    pub(crate) sent_satoshis: u64,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SendBtcRequest {
-  pub(crate) fee_satoshis: Option<u64>,
-  pub(crate) network: Network,
-  pub(crate) utxos_to_spend: Vec<Utxo>,
-  pub(crate) address_type: BitcoinAddressType,
-  pub(crate) outputs: Vec<BtcTxOutput>,
+    pub(crate) fee_satoshis: Option<u64>,
+    pub(crate) network: Network,
+    pub(crate) utxos_to_spend: Vec<Utxo>,
+    pub(crate) address_type: BitcoinAddressType,
+    pub(crate) outputs: Vec<BtcTxOutput>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct SendBtcResponse { pub(crate) txid: String }
+pub(crate) struct SendBtcResponse {
+    pub(crate) txid: String,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BuildP2WpkhTxError {
-  NotEnoughFunds{ available: u64, required: u64 },
-  WrongBitcoinNetwork,
-  #[serde(rename="NotP2WPKHSourceAddress")]
-  NotP2WpkhSourceAddress,
-  InvalidDestinationAddress(GetAddressResponse),
-  InvalidSourceAddress(GetAddressResponse),
+    NotEnoughFunds {
+        available: u64,
+        required: u64,
+    },
+    WrongBitcoinNetwork,
+    #[serde(rename = "NotP2WPKHSourceAddress")]
+    NotP2WpkhSourceAddress,
+    InvalidDestinationAddress(GetAddressResponse),
+    InvalidSourceAddress(GetAddressResponse),
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SendBtcError {
-  #[serde(rename="BuildP2wpkhError")]
-  BuildP2WpkhError(BuildP2WpkhTxError),
-  InternalError{ msg: String },
-  PaymentError(PaymentError),
+    #[serde(rename = "BuildP2wpkhError")]
+    BuildP2WpkhError(BuildP2WpkhTxError),
+    InternalError {
+        msg: String,
+    },
+    PaymentError(PaymentError),
 }
 pub(crate) type Result2 = std::result::Result<SendBtcResponse, SendBtcError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignBtcResponse {
-  pub(crate) txid: String,
-  pub(crate) signed_transaction_hex: String,
+    pub(crate) txid: String,
+    pub(crate) signed_transaction_hex: String,
 }
 pub(crate) type Result3 = std::result::Result<SignBtcResponse, SendBtcError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Config {
-  pub(crate) ecdsa_key_name: String,
-  /// Root of trust for checking canister signatures.
-  pub(crate) ic_root_key_raw: Option<serde_bytes::ByteBuf>,
-  /// Payment canister ID.
-  pub(crate) cycles_ledger: Principal,
+    pub(crate) ecdsa_key_name: String,
+    /// Root of trust for checking canister signatures.
+    pub(crate) ic_root_key_raw: Option<serde_bytes::ByteBuf>,
+    /// Payment canister ID.
+    pub(crate) cycles_ledger: Principal,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EthAddressRequest { pub(crate) principal: Option<Principal> }
+pub(crate) struct EthAddressRequest {
+    pub(crate) principal: Option<Principal>,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthAddressResponse {
-  /// The Ethereum address.
-  pub(crate) address: String,
+    /// The Ethereum address.
+    pub(crate) address: String,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EthAddressError {
-  /// An inter-canister call error from the threshold signature API.
-  SigningError(String),
-  /// Payment failed.
-  PaymentError(PaymentError),
+    /// An inter-canister call error from the threshold signature API.
+    SigningError(String),
+    /// Payment failed.
+    PaymentError(PaymentError),
 }
-pub(crate) type Result4 = std::result::Result<
-  EthAddressResponse, EthAddressError
->;
+pub(crate) type Result4 = std::result::Result<EthAddressResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EthPersonalSignRequest { pub(crate) message: String }
+pub(crate) struct EthPersonalSignRequest {
+    pub(crate) message: String,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EthPersonalSignResponse { pub(crate) signature: String }
-pub(crate) type Result5 = std::result::Result<
-  EthPersonalSignResponse, EthAddressError
->;
+pub(crate) struct EthPersonalSignResponse {
+    pub(crate) signature: String,
+}
+pub(crate) type Result5 = std::result::Result<EthPersonalSignResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EthSignPrehashRequest { pub(crate) hash: String }
+pub(crate) struct EthSignPrehashRequest {
+    pub(crate) hash: String,
+}
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) struct EthSignPrehashResponse { pub(crate) signature: String }
-pub(crate) type Result6 = std::result::Result<
-  EthSignPrehashResponse, EthAddressError
->;
+pub(crate) struct EthSignPrehashResponse {
+    pub(crate) signature: String,
+}
+pub(crate) type Result6 = std::result::Result<EthSignPrehashResponse, EthAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EthSignTransactionRequest {
-  pub(crate) to: String,
-  pub(crate) gas: candid::Nat,
-  pub(crate) value: candid::Nat,
-  pub(crate) max_priority_fee_per_gas: candid::Nat,
-  pub(crate) data: Option<String>,
-  pub(crate) max_fee_per_gas: candid::Nat,
-  pub(crate) chain_id: candid::Nat,
-  pub(crate) nonce: candid::Nat,
+    pub(crate) to: String,
+    pub(crate) gas: candid::Nat,
+    pub(crate) value: candid::Nat,
+    pub(crate) max_priority_fee_per_gas: candid::Nat,
+    pub(crate) data: Option<String>,
+    pub(crate) max_fee_per_gas: candid::Nat,
+    pub(crate) chain_id: candid::Nat,
+    pub(crate) nonce: candid::Nat,
 }
 /// # ECDSA Curve.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EcdsaCurve {
-  /// secp256k1
-  #[serde(rename="secp256k1")]
-  Secp256K1,
+    /// secp256k1
+    #[serde(rename = "secp256k1")]
+    Secp256K1,
 }
 /// # ECDSA Key ID.
-/// 
+///
 /// See [`EcdsaPublicKeyArgs::key_id`] and [`SignWithEcdsaArgs::key_id`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaKeyId {
-  /// Name of the key.
-  pub(crate) name: String,
-  /// Curve of the key.
-  pub(crate) curve: EcdsaCurve,
+    /// Name of the key.
+    pub(crate) name: String,
+    /// Curve of the key.
+    pub(crate) curve: EcdsaCurve,
 }
 /// # ECDSA Public Key Args.
-/// 
+///
 /// Argument type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaPublicKeyArgs {
-  /// The key ID.
-  pub(crate) key_id: EcdsaKeyId,
-  /// Canister id, default to the canister id of the caller if `None`.
-  pub(crate) canister_id: Option<Principal>,
-  /// A vector of variable length byte strings.
-  pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// The key ID.
+    pub(crate) key_id: EcdsaKeyId,
+    /// Canister id, default to the canister id of the caller if `None`.
+    pub(crate) canister_id: Option<Principal>,
+    /// A vector of variable length byte strings.
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
 /// # ECDSA Public Key Result.
-/// 
+///
 /// Result type of [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct EcdsaPublicKeyResult {
-  /// An ECDSA public key encoded in SEC1 compressed form.
-  pub(crate) public_key: serde_bytes::ByteBuf,
-  /// Can be used to deterministically derive child keys of the [`public_key`](Self::public_key).
-  pub(crate) chain_code: serde_bytes::ByteBuf,
+    /// An ECDSA public key encoded in SEC1 compressed form.
+    pub(crate) public_key: serde_bytes::ByteBuf,
+    /// Can be used to deterministically derive child keys of the [`public_key`](Self::public_key).
+    pub(crate) chain_code: serde_bytes::ByteBuf,
 }
-pub(crate) type Result7 = std::result::Result<
-  (EcdsaPublicKeyResult,), EthAddressError
->;
+pub(crate) type Result7 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
 /// # Sign With ECDSA Args.
-/// 
+///
 /// Argument type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithEcdsaArgs {
-  /// The key ID.
-  pub(crate) key_id: EcdsaKeyId,
-  /// A vector of variable length byte strings.
-  pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
-  /// Hash of the message with length of 32 bytes.
-  pub(crate) message_hash: serde_bytes::ByteBuf,
+    /// The key ID.
+    pub(crate) key_id: EcdsaKeyId,
+    /// A vector of variable length byte strings.
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// Hash of the message with length of 32 bytes.
+    pub(crate) message_hash: serde_bytes::ByteBuf,
 }
 /// # Sign With ECDSA Result.
-/// 
+///
 /// Result type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithEcdsaResult {
-  /// Encoded as the concatenation of the SEC1 encodings of the two values `r` and `s`.
-  pub(crate) signature: serde_bytes::ByteBuf,
+    /// Encoded as the concatenation of the SEC1 encodings of the two values `r` and `s`.
+    pub(crate) signature: serde_bytes::ByteBuf,
 }
-pub(crate) type Result8 = std::result::Result<
-  (SignWithEcdsaResult,), EthAddressError
->;
+pub(crate) type Result8 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
 /// # Canister Status Type
-/// 
+///
 /// Status of a canister.
-/// 
+///
 /// See [`CanisterStatusResult::status`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum CanisterStatusType {
-  /// The canister is stopped.
-  #[serde(rename="stopped")]
-  Stopped,
-  /// The canister is stopping.
-  #[serde(rename="stopping")]
-  Stopping,
-  /// The canister is running.
-  #[serde(rename="running")]
-  Running,
+    /// The canister is stopped.
+    #[serde(rename = "stopped")]
+    Stopped,
+    /// The canister is stopping.
+    #[serde(rename = "stopping")]
+    Stopping,
+    /// The canister is running.
+    #[serde(rename = "running")]
+    Running,
 }
 /// Copy of synonymous Rosetta type.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct DefiniteCanisterSettingsArgs {
-  pub(crate) controller: Principal,
-  pub(crate) freezing_threshold: candid::Nat,
-  pub(crate) controllers: Vec<Principal>,
-  pub(crate) memory_allocation: candid::Nat,
-  pub(crate) compute_allocation: candid::Nat,
+    pub(crate) controller: Principal,
+    pub(crate) freezing_threshold: candid::Nat,
+    pub(crate) controllers: Vec<Principal>,
+    pub(crate) memory_allocation: candid::Nat,
+    pub(crate) compute_allocation: candid::Nat,
 }
 /// Copy of the synonymous Rosetta type.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct CanisterStatusResultV2 {
-  pub(crate) controller: Principal,
-  pub(crate) status: CanisterStatusType,
-  pub(crate) freezing_threshold: candid::Nat,
-  pub(crate) balance: Vec<(serde_bytes::ByteBuf,candid::Nat,)>,
-  pub(crate) memory_size: candid::Nat,
-  pub(crate) cycles: candid::Nat,
-  pub(crate) settings: DefiniteCanisterSettingsArgs,
-  pub(crate) idle_cycles_burned_per_day: candid::Nat,
-  pub(crate) module_hash: Option<serde_bytes::ByteBuf>,
+    pub(crate) controller: Principal,
+    pub(crate) status: CanisterStatusType,
+    pub(crate) freezing_threshold: candid::Nat,
+    pub(crate) balance: Vec<(serde_bytes::ByteBuf, candid::Nat)>,
+    pub(crate) memory_size: candid::Nat,
+    pub(crate) cycles: candid::Nat,
+    pub(crate) settings: DefiniteCanisterSettingsArgs,
+    pub(crate) idle_cycles_burned_per_day: candid::Nat,
+    pub(crate) module_hash: Option<serde_bytes::ByteBuf>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpRequest {
-  /// The requested path and query string, for example `/some/path?foo=bar`.
-  /// 
-  /// Note: This does NOT contain the domain, port or protocol.
-  pub(crate) url: String,
-  /// The HTTP method of the request, such as `GET` or `POST`.
-  pub(crate) method: String,
-  /// The complete body of the HTTP request
-  pub(crate) body: serde_bytes::ByteBuf,
-  /// The HTTP request headers
-  pub(crate) headers: Vec<(String,String,)>,
+    /// The requested path and query string, for example `/some/path?foo=bar`.
+    ///
+    /// Note: This does NOT contain the domain, port or protocol.
+    pub(crate) url: String,
+    /// The HTTP method of the request, such as `GET` or `POST`.
+    pub(crate) method: String,
+    /// The complete body of the HTTP request
+    pub(crate) body: serde_bytes::ByteBuf,
+    /// The HTTP request headers
+    pub(crate) headers: Vec<(String, String)>,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct HttpResponse {
-  pub(crate) body: serde_bytes::ByteBuf,
-  pub(crate) headers: Vec<(String,String,)>,
-  pub(crate) status_code: u16,
+    pub(crate) body: serde_bytes::ByteBuf,
+    pub(crate) headers: Vec<(String, String)>,
+    pub(crate) status_code: u16,
 }
 /// # Schnorr Algorithm.
-/// 
+///
 /// See [`SchnorrKeyId::algorithm`].
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SchnorrAlgorithm {
-  /// ed25519.
-  #[serde(rename="ed25519")]
-  Ed25519,
-  /// BIP-340 secp256k1.
-  #[serde(rename="bip340secp256k1")]
-  Bip340Secp256K1,
+    /// ed25519.
+    #[serde(rename = "ed25519")]
+    Ed25519,
+    /// BIP-340 secp256k1.
+    #[serde(rename = "bip340secp256k1")]
+    Bip340Secp256K1,
 }
 /// # Schnorr Key ID.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SchnorrKeyId {
-  /// Algorithm of the key.
-  pub(crate) algorithm: SchnorrAlgorithm,
-  /// Name of the key.
-  pub(crate) name: String,
+    /// Algorithm of the key.
+    pub(crate) algorithm: SchnorrAlgorithm,
+    /// Name of the key.
+    pub(crate) name: String,
 }
 /// # Schnorr Public Key Args.
-/// 
+///
 /// Argument type of [`schnorr_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-schnorr_public_key).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SchnorrPublicKeyArgs {
-  /// The key ID.
-  pub(crate) key_id: SchnorrKeyId,
-  /// Canister id, default to the canister id of the caller if `None`.
-  pub(crate) canister_id: Option<Principal>,
-  /// A vector of variable length byte strings.
-  pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// The key ID.
+    pub(crate) key_id: SchnorrKeyId,
+    /// Canister id, default to the canister id of the caller if `None`.
+    pub(crate) canister_id: Option<Principal>,
+    /// A vector of variable length byte strings.
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-pub(crate) type Result9 = std::result::Result<
-  (EcdsaPublicKeyResult,), EthAddressError
->;
+pub(crate) type Result9 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
 /// # Bip341 variant of Schnorr Aux.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Bip341 {
-  /// Merkle tree root hash.
-  pub(crate) merkle_root_hash: serde_bytes::ByteBuf,
+    /// Merkle tree root hash.
+    pub(crate) merkle_root_hash: serde_bytes::ByteBuf,
 }
 /// # Schnorr Aux.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum SchnorrAux { #[serde(rename="bip341")] Bip341(Bip341) }
+pub(crate) enum SchnorrAux {
+    #[serde(rename = "bip341")]
+    Bip341(Bip341),
+}
 /// # Sign With Schnorr Args.
-/// 
+///
 /// Argument type of [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr).
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct SignWithSchnorrArgs {
-  /// Schnorr auxiliary inputs.
-  pub(crate) aux: Option<SchnorrAux>,
-  /// The key ID.
-  pub(crate) key_id: SchnorrKeyId,
-  /// A vector of variable length byte strings.
-  pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
-  /// Message to be signed.
-  pub(crate) message: serde_bytes::ByteBuf,
+    /// Schnorr auxiliary inputs.
+    pub(crate) aux: Option<SchnorrAux>,
+    /// The key ID.
+    pub(crate) key_id: SchnorrKeyId,
+    /// A vector of variable length byte strings.
+    pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
+    /// Message to be signed.
+    pub(crate) message: serde_bytes::ByteBuf,
 }
-pub(crate) type Result10 = std::result::Result<
-  (SignWithEcdsaResult,), EthAddressError
->;
-
+pub(crate) type Result10 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,
@@ -453,53 +502,120 @@ impl PicCanisterTrait for SignerPic {
 }
 
 impl SignerPic {
-  pub fn btc_caller_address(&self, caller: Principal, arg0: &GetAddressRequest, arg1: &Option<PaymentType>) -> Result<Result_, String> {
-      self.update(caller, "btc_caller_address", (arg0, arg1, ))
-  }
-  pub fn btc_caller_balance(&self, caller: Principal, arg0: &GetBalanceRequest, arg1: &Option<PaymentType>) -> Result<Result1, String> {
-      self.update(caller, "btc_caller_balance", (arg0, arg1, ))
-  }
-  pub fn btc_caller_send(&self, caller: Principal, arg0: &SendBtcRequest, arg1: &Option<PaymentType>) -> Result<Result2, String> {
-      self.update(caller, "btc_caller_send", (arg0, arg1, ))
-  }
-  pub fn btc_caller_sign(&self, caller: Principal, arg0: &SendBtcRequest, arg1: &Option<PaymentType>) -> Result<Result3, String> {
-      self.update(caller, "btc_caller_sign", (arg0, arg1, ))
-  }
-  pub fn config(&self, caller: Principal) -> Result<Config, String> {
-      self.update(caller, "config", ())
-  }
-  pub fn eth_address(&self, caller: Principal, arg0: &EthAddressRequest, arg1: &Option<PaymentType>) -> Result<Result4, String> {
-      self.update(caller, "eth_address", (arg0, arg1, ))
-  }
-  pub fn eth_address_of_caller(&self, caller: Principal, arg0: &Option<PaymentType>) -> Result<Result4, String> {
-      self.update(caller, "eth_address_of_caller", (arg0, ))
-  }
-  pub fn eth_personal_sign(&self, caller: Principal, arg0: &EthPersonalSignRequest, arg1: &Option<PaymentType>) -> Result<Result5, String> {
-      self.update(caller, "eth_personal_sign", (arg0, arg1, ))
-  }
-  pub fn eth_sign_prehash(&self, caller: Principal, arg0: &EthSignPrehashRequest, arg1: &Option<PaymentType>) -> Result<Result6, String> {
-      self.update(caller, "eth_sign_prehash", (arg0, arg1, ))
-  }
-  pub fn eth_sign_transaction(&self, caller: Principal, arg0: &EthSignTransactionRequest, arg1: &Option<PaymentType>) -> Result<Result6, String> {
-      self.update(caller, "eth_sign_transaction", (arg0, arg1, ))
-  }
-  pub fn generic_caller_ecdsa_public_key(&self, caller: Principal, arg0: &EcdsaPublicKeyArgs, arg1: &Option<PaymentType>) -> Result<Result7, String> {
-      self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1, ))
-  }
-  pub fn generic_sign_with_ecdsa(&self, caller: Principal, arg0: &Option<PaymentType>, arg1: &SignWithEcdsaArgs) -> Result<Result8, String> {
-      self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1, ))
-  }
-  pub fn get_canister_status(&self, caller: Principal) -> Result<CanisterStatusResultV2, String> {
-      self.update(caller, "get_canister_status", ())
-  }
-  pub fn http_request(&self, caller: Principal, arg0: &HttpRequest) -> Result<HttpResponse, String> {
-      self.update(caller, "http_request", (arg0, ))
-  }
-  pub fn schnorr_public_key(&self, caller: Principal, arg0: &SchnorrPublicKeyArgs, arg1: &Option<PaymentType>) -> Result<Result9, String> {
-      self.update(caller, "schnorr_public_key", (arg0, arg1, ))
-  }
-  pub fn schnorr_sign(&self, caller: Principal, arg0: &SignWithSchnorrArgs, arg1: &Option<PaymentType>) -> Result<Result10, String> {
-      self.update(caller, "schnorr_sign", (arg0, arg1, ))
-  }
+    pub fn btc_caller_address(
+        &self,
+        caller: Principal,
+        arg0: &GetAddressRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result_, String> {
+        self.update(caller, "btc_caller_address", (arg0, arg1))
+    }
+    pub fn btc_caller_balance(
+        &self,
+        caller: Principal,
+        arg0: &GetBalanceRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result1, String> {
+        self.update(caller, "btc_caller_balance", (arg0, arg1))
+    }
+    pub fn btc_caller_send(
+        &self,
+        caller: Principal,
+        arg0: &SendBtcRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result2, String> {
+        self.update(caller, "btc_caller_send", (arg0, arg1))
+    }
+    pub fn btc_caller_sign(
+        &self,
+        caller: Principal,
+        arg0: &SendBtcRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result3, String> {
+        self.update(caller, "btc_caller_sign", (arg0, arg1))
+    }
+    pub fn config(&self, caller: Principal) -> Result<Config, String> {
+        self.update(caller, "config", ())
+    }
+    pub fn eth_address(
+        &self,
+        caller: Principal,
+        arg0: &EthAddressRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result4, String> {
+        self.update(caller, "eth_address", (arg0, arg1))
+    }
+    pub fn eth_address_of_caller(
+        &self,
+        caller: Principal,
+        arg0: &Option<PaymentType>,
+    ) -> Result<Result4, String> {
+        self.update(caller, "eth_address_of_caller", (arg0,))
+    }
+    pub fn eth_personal_sign(
+        &self,
+        caller: Principal,
+        arg0: &EthPersonalSignRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result5, String> {
+        self.update(caller, "eth_personal_sign", (arg0, arg1))
+    }
+    pub fn eth_sign_prehash(
+        &self,
+        caller: Principal,
+        arg0: &EthSignPrehashRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result6, String> {
+        self.update(caller, "eth_sign_prehash", (arg0, arg1))
+    }
+    pub fn eth_sign_transaction(
+        &self,
+        caller: Principal,
+        arg0: &EthSignTransactionRequest,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result6, String> {
+        self.update(caller, "eth_sign_transaction", (arg0, arg1))
+    }
+    pub fn generic_caller_ecdsa_public_key(
+        &self,
+        caller: Principal,
+        arg0: &EcdsaPublicKeyArgs,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result7, String> {
+        self.update(caller, "generic_caller_ecdsa_public_key", (arg0, arg1))
+    }
+    pub fn generic_sign_with_ecdsa(
+        &self,
+        caller: Principal,
+        arg0: &Option<PaymentType>,
+        arg1: &SignWithEcdsaArgs,
+    ) -> Result<Result8, String> {
+        self.update(caller, "generic_sign_with_ecdsa", (arg0, arg1))
+    }
+    pub fn get_canister_status(&self, caller: Principal) -> Result<CanisterStatusResultV2, String> {
+        self.update(caller, "get_canister_status", ())
+    }
+    pub fn http_request(
+        &self,
+        caller: Principal,
+        arg0: &HttpRequest,
+    ) -> Result<HttpResponse, String> {
+        self.update(caller, "http_request", (arg0,))
+    }
+    pub fn schnorr_public_key(
+        &self,
+        caller: Principal,
+        arg0: &SchnorrPublicKeyArgs,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result9, String> {
+        self.update(caller, "schnorr_public_key", (arg0, arg1))
+    }
+    pub fn schnorr_sign(
+        &self,
+        caller: Principal,
+        arg0: &SignWithSchnorrArgs,
+        arg1: &Option<PaymentType>,
+    ) -> Result<Result10, String> {
+        self.update(caller, "schnorr_sign", (arg0, arg1))
+    }
 }
-
