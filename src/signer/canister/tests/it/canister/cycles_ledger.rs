@@ -498,92 +498,92 @@ impl CyclesLedgerPic {
     ) -> Result<HttpResponse, String> {
         self.update(caller, "http_request", (arg0,))
     }
-    pub fn icrc_1_balance_of(
+    pub fn icrc1_balance_of(
         &self,
         caller: Principal,
         arg0: &Account,
     ) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_balance_of", (arg0,))
     }
-    pub fn icrc_1_decimals(&self, caller: Principal) -> Result<u8, String> {
+    pub fn icrc1_decimals(&self, caller: Principal) -> Result<u8, String> {
         self.update(caller, "icrc1_decimals", ())
     }
-    pub fn icrc_1_fee(&self, caller: Principal) -> Result<candid::Nat, String> {
+    pub fn icrc1_fee(&self, caller: Principal) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_fee", ())
     }
-    pub fn icrc_1_metadata(
+    pub fn icrc1_metadata(
         &self,
         caller: Principal,
     ) -> Result<Vec<(String, MetadataValue)>, String> {
         self.update(caller, "icrc1_metadata", ())
     }
-    pub fn icrc_1_minting_account(&self, caller: Principal) -> Result<Option<Account>, String> {
+    pub fn icrc1_minting_account(&self, caller: Principal) -> Result<Option<Account>, String> {
         self.update(caller, "icrc1_minting_account", ())
     }
-    pub fn icrc_1_name(&self, caller: Principal) -> Result<String, String> {
+    pub fn icrc1_name(&self, caller: Principal) -> Result<String, String> {
         self.update(caller, "icrc1_name", ())
     }
-    pub fn icrc_1_supported_standards(
+    pub fn icrc1_supported_standards(
         &self,
         caller: Principal,
     ) -> Result<Vec<SupportedStandard>, String> {
         self.update(caller, "icrc1_supported_standards", ())
     }
-    pub fn icrc_1_symbol(&self, caller: Principal) -> Result<String, String> {
+    pub fn icrc1_symbol(&self, caller: Principal) -> Result<String, String> {
         self.update(caller, "icrc1_symbol", ())
     }
-    pub fn icrc_1_total_supply(&self, caller: Principal) -> Result<candid::Nat, String> {
+    pub fn icrc1_total_supply(&self, caller: Principal) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_total_supply", ())
     }
-    pub fn icrc_1_transfer(
+    pub fn icrc1_transfer(
         &self,
         caller: Principal,
         arg0: &TransferArgs,
     ) -> Result<std::result::Result<BlockIndex, TransferError>, String> {
         self.update(caller, "icrc1_transfer", (arg0,))
     }
-    pub fn icrc_2_allowance(
+    pub fn icrc2_allowance(
         &self,
         caller: Principal,
         arg0: &AllowanceArgs,
     ) -> Result<Allowance, String> {
         self.update(caller, "icrc2_allowance", (arg0,))
     }
-    pub fn icrc_2_approve(
+    pub fn icrc2_approve(
         &self,
         caller: Principal,
         arg0: &ApproveArgs,
     ) -> Result<std::result::Result<candid::Nat, ApproveError>, String> {
         self.update(caller, "icrc2_approve", (arg0,))
     }
-    pub fn icrc_2_transfer_from(
+    pub fn icrc2_transfer_from(
         &self,
         caller: Principal,
         arg0: &TransferFromArgs,
     ) -> Result<std::result::Result<candid::Nat, TransferFromError>, String> {
         self.update(caller, "icrc2_transfer_from", (arg0,))
     }
-    pub fn icrc_3_get_archives(
+    pub fn icrc3_get_archives(
         &self,
         caller: Principal,
         arg0: &GetArchivesArgs,
     ) -> Result<GetArchivesResult, String> {
         self.update(caller, "icrc3_get_archives", (arg0,))
     }
-    pub fn icrc_3_get_blocks(
+    pub fn icrc3_get_blocks(
         &self,
         caller: Principal,
         arg0: &GetBlocksArgs,
     ) -> Result<GetBlocksResult, String> {
         self.update(caller, "icrc3_get_blocks", (arg0,))
     }
-    pub fn icrc_3_get_tip_certificate(
+    pub fn icrc3_get_tip_certificate(
         &self,
         caller: Principal,
     ) -> Result<Option<DataCertificate>, String> {
         self.update(caller, "icrc3_get_tip_certificate", ())
     }
-    pub fn icrc_3_supported_block_types(
+    pub fn icrc3_supported_block_types(
         &self,
         caller: Principal,
     ) -> Result<Vec<SupportedBlockType>, String> {

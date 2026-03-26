@@ -34,8 +34,7 @@ pub(crate) enum Network {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BitcoinAddressType {
-    #[serde(rename = "P2WPKH")]
-    P2Wpkh,
+    P2WPKH,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetAddressRequest {
@@ -169,7 +168,7 @@ pub(crate) enum GetAddressError {
     InternalError { msg: String },
     PaymentError(PaymentError),
 }
-pub(crate) type Result_ = std::result::Result<GetAddressResponse, GetAddressError>;
+pub(crate) type Result = std::result::Result<GetAddressResponse, GetAddressError>;
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct GetBalanceRequest {
     pub(crate) network: Network,
@@ -215,24 +214,17 @@ pub(crate) struct SendBtcResponse {
     pub(crate) txid: String,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub(crate) enum BuildP2WpkhTxError {
-    NotEnoughFunds {
-        available: u64,
-        required: u64,
-    },
+pub(crate) enum BuildP2wpkhTxError {
+    NotEnoughFunds { available: u64, required: u64 },
     WrongBitcoinNetwork,
-    #[serde(rename = "NotP2WPKHSourceAddress")]
-    NotP2WpkhSourceAddress,
+    NotP2WPKHSourceAddress,
     InvalidDestinationAddress(GetAddressResponse),
     InvalidSourceAddress(GetAddressResponse),
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum SendBtcError {
-    #[serde(rename = "BuildP2wpkhError")]
-    BuildP2WpkhError(BuildP2WpkhTxError),
-    InternalError {
-        msg: String,
-    },
+    BuildP2wpkhError(BuildP2wpkhTxError),
+    InternalError { msg: String },
     PaymentError(PaymentError),
 }
 pub(crate) type Result2 = std::result::Result<SendBtcResponse, SendBtcError>;
@@ -301,7 +293,7 @@ pub(crate) struct EthSignTransactionRequest {
 pub(crate) enum EcdsaCurve {
     /// secp256k1
     #[serde(rename = "secp256k1")]
-    Secp256K1,
+    Secp256k1,
 }
 /// # ECDSA Key ID.
 ///
@@ -425,7 +417,7 @@ pub(crate) enum SchnorrAlgorithm {
     Ed25519,
     /// BIP-340 secp256k1.
     #[serde(rename = "bip340secp256k1")]
-    Bip340Secp256K1,
+    Bip340secp256k1,
 }
 /// # Schnorr Key ID.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -507,7 +499,7 @@ impl SignerPic {
         caller: Principal,
         arg0: &GetAddressRequest,
         arg1: &Option<PaymentType>,
-    ) -> Result<Result_, String> {
+    ) -> Result<Result, String> {
         self.update(caller, "btc_caller_address", (arg0, arg1))
     }
     pub fn btc_caller_balance(
