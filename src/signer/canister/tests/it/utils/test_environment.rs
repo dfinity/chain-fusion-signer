@@ -210,6 +210,7 @@ impl TestSetup {
         assert_eq!(self.user_balance(), expected_balance.into(), "{}", message);
     }
     /// User sends an ICRC2 approval with the paid service as spender.
+    #[allow(dead_code)]
     pub fn user_approves_payment_for_paid_service<T>(&self, amount: T)
     where
         T: Into<Nat>,
