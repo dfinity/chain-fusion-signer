@@ -7,8 +7,9 @@ resolver = "2"
 
 [workspace.dependencies]
 assert_matches = "1.5.0"
-ic-cdk = "0.18.7"
-ic-cdk-macros = "0.18.7"
+ic-cdk = "0.20.0"
+ic-cdk-management-canister = "0.1.1"
+ic-cdk-bitcoin-canister = "0.2.0"
 ic-stable-structures = "0.7.2"
 ic-metrics-encoder = "1.1.1"
 ic-canister-sig-creation = "1.3.1"
@@ -27,12 +28,12 @@ bitcoin = "0.32.8"
 strum = "0.26.3"
 strum_macros = "0.27.2"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
-ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "86c2593dced84f885c35a64fcccae8f2ab2a82d2" }
-ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "86c2593dced84f885c35a64fcccae8f2ab2a82d2" }
+ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "a102b459e2a7ab17de247ab68025428ea68c12e5" }
+ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "a102b459e2a7ab17de247ab68025428ea68c12e5" }
 ed25519-dalek = "2.2.0"
 signature = "2.2"
 
 # START papi dependencies
 ic-ledger-types = "0.16.0"
-ic-cycles-ledger-client = { git = "https://github.com/dfinity/papi", rev = "86c2593dced84f885c35a64fcccae8f2ab2a82d2" }
+ic-cycles-ledger-client = { git = "https://github.com/dfinity/papi", rev = "a102b459e2a7ab17de247ab68025428ea68c12e5" }
 # END papi dependencies
