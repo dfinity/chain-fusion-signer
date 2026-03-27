@@ -19,7 +19,7 @@ thread_local! {
 
     static STATE: RefCell<State> = RefCell::new(
         MEMORY_MANAGER.with(|mm| State {
-            config: ConfigCell::init(mm.borrow().get(CONFIG_MEMORY_ID), None).expect("config cell initialization should succeed"),
+            config: ConfigCell::init(mm.borrow().get(CONFIG_MEMORY_ID), None),
         })
     );
 }
@@ -53,10 +53,7 @@ pub struct State {
 pub fn set_config(arg: InitArg) {
     let config = Config::from(arg);
     mutate_state(|state| {
-        state
-            .config
-            .set(Some(Candid(config)))
-            .expect("setting config should succeed");
+        state.config.set(Some(Candid(config)));
     });
 }
 

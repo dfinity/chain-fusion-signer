@@ -119,6 +119,7 @@ impl PicCanisterTrait for PicCanister {
 
 impl PicCanister {
     /// Creates a new canister.
+    #[allow(dead_code)]
     pub fn new(pic: Arc<PocketIc>, wasm_path: &str) -> Self {
         PicCanisterBuilder::default()
             .with_wasm(wasm_path)

@@ -193,7 +193,7 @@ impl TestSetup {
     /// Gets the user balance
     pub fn user_balance(&self) -> Nat {
         self.ledger
-            .icrc_1_balance_of(
+            .icrc1_balance_of(
                 self.user,
                 &Account {
                     owner: self.user,
@@ -210,12 +210,13 @@ impl TestSetup {
         assert_eq!(self.user_balance(), expected_balance.into(), "{}", message);
     }
     /// User sends an ICRC2 approval with the paid service as spender.
+    #[allow(dead_code)]
     pub fn user_approves_payment_for_paid_service<T>(&self, amount: T)
     where
         T: Into<Nat>,
     {
         self.ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 self.user,
                 &ApproveArgs::new(
                     Account {

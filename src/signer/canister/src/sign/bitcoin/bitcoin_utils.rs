@@ -1,17 +1,15 @@
 //! Code for signing Bitcoin transactions.
 use bitcoin::{Address, CompressedPublicKey, Network};
 use candid::Principal;
-use ic_cdk::api::management_canister::{
-    bitcoin::BitcoinNetwork,
-    ecdsa::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgument},
-};
+use ic_cdk_bitcoin_canister::Network as BitcoinNetwork;
+use ic_cdk_management_canister::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs};
 
 use crate::{derivation_path::Schema, state::read_config};
 
 /// Computes the public key of the specified principal.
 async fn ecdsa_pubkey_of(principal: &Principal) -> Result<Vec<u8>, String> {
     let name = read_config(|s| s.ecdsa_key_name.clone());
-    if let Ok((key,)) = ecdsa_public_key(EcdsaPublicKeyArgument {
+    if let Ok(key) = ecdsa_public_key(&EcdsaPublicKeyArgs {
         canister_id: None,
         derivation_path: Schema::Btc.derivation_path(principal),
         key_id: EcdsaKeyId {

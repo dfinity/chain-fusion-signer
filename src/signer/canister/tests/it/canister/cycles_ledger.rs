@@ -35,7 +35,9 @@ pub(crate) struct SubnetFilter {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) enum SubnetSelection {
+    /// Choose a random subnet that satisfies the specified properties.
     Filter(SubnetFilter),
+    /// / Choose a specific subnet
     Subnet { subnet: Principal },
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -48,7 +50,11 @@ pub(crate) struct CanisterSettings {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct CmcCreateCanisterArgs {
+    /// Optional instructions to select on which subnet the new canister will be created on.
     pub(crate) subnet_selection: Option<SubnetSelection>,
+    /// Optional canister settings that, if set, are applied to the newly created canister.
+    /// If not specified, the caller is the controller of the canister and the other settings are
+    /// set to default values.
     pub(crate) settings: Option<CanisterSettings>,
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -73,6 +79,8 @@ pub(crate) enum CreateCanisterError {
     TemporarilyUnavailable,
     Duplicate {
         duplicate_of: candid::Nat,
+        /// If the original transaction created a canister then this field will contain the
+        /// canister id.
         canister_id: Option<Principal>,
     },
     CreatedInFuture {
@@ -130,6 +138,8 @@ pub(crate) enum CreateCanisterFromError {
     },
     Duplicate {
         duplicate_of: candid::Nat,
+        /// If the original transaction created a canister then this field will contain the
+        /// canister id.
         canister_id: Option<Principal>,
     },
     CreatedInFuture {
@@ -295,12 +305,19 @@ pub(crate) enum TransferFromError {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetArchivesArgs {
+    /// The last archive seen by the client.
+    /// The ledger will return archives coming
+    /// after this one if set, otherwise it
+    /// will return the first archives.
     pub(crate) from: Option<Principal>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetArchivesResultItem {
+    /// The last block in the archive
     pub(crate) end: candid::Nat,
+    /// The id of the archive
     pub(crate) canister_id: Principal,
+    /// The first block in the archive
     pub(crate) start: candid::Nat,
 }
 pub(crate) type GetArchivesResult = Vec<GetArchivesResultItem>;
@@ -335,13 +352,19 @@ pub(crate) struct GetBlocksResultArchivedBlocksItem {
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct GetBlocksResult {
+    /// Total number of blocks in the
+    /// block log.
     pub(crate) log_length: candid::Nat,
     pub(crate) blocks: Vec<GetBlocksResultBlocksItem>,
+    /// The archived_blocks vector is always going to be empty
+    /// for this ledger because there is no archive node.
     pub(crate) archived_blocks: Vec<GetBlocksResultArchivedBlocksItem>,
 }
 #[derive(CandidType, Deserialize, Debug)]
 pub(crate) struct DataCertificate {
+    /// See https://internetcomputer.org/docs/current/references/ic-interface-spec#certification
     pub(crate) certificate: serde_bytes::ByteBuf,
+    /// CBOR encoded hash_tree
     pub(crate) hash_tree: serde_bytes::ByteBuf,
 }
 #[derive(CandidType, Deserialize, Debug)]
@@ -475,92 +498,92 @@ impl CyclesLedgerPic {
     ) -> Result<HttpResponse, String> {
         self.update(caller, "http_request", (arg0,))
     }
-    pub fn icrc_1_balance_of(
+    pub fn icrc1_balance_of(
         &self,
         caller: Principal,
         arg0: &Account,
     ) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_balance_of", (arg0,))
     }
-    pub fn icrc_1_decimals(&self, caller: Principal) -> Result<u8, String> {
+    pub fn icrc1_decimals(&self, caller: Principal) -> Result<u8, String> {
         self.update(caller, "icrc1_decimals", ())
     }
-    pub fn icrc_1_fee(&self, caller: Principal) -> Result<candid::Nat, String> {
+    pub fn icrc1_fee(&self, caller: Principal) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_fee", ())
     }
-    pub fn icrc_1_metadata(
+    pub fn icrc1_metadata(
         &self,
         caller: Principal,
     ) -> Result<Vec<(String, MetadataValue)>, String> {
         self.update(caller, "icrc1_metadata", ())
     }
-    pub fn icrc_1_minting_account(&self, caller: Principal) -> Result<Option<Account>, String> {
+    pub fn icrc1_minting_account(&self, caller: Principal) -> Result<Option<Account>, String> {
         self.update(caller, "icrc1_minting_account", ())
     }
-    pub fn icrc_1_name(&self, caller: Principal) -> Result<String, String> {
+    pub fn icrc1_name(&self, caller: Principal) -> Result<String, String> {
         self.update(caller, "icrc1_name", ())
     }
-    pub fn icrc_1_supported_standards(
+    pub fn icrc1_supported_standards(
         &self,
         caller: Principal,
     ) -> Result<Vec<SupportedStandard>, String> {
         self.update(caller, "icrc1_supported_standards", ())
     }
-    pub fn icrc_1_symbol(&self, caller: Principal) -> Result<String, String> {
+    pub fn icrc1_symbol(&self, caller: Principal) -> Result<String, String> {
         self.update(caller, "icrc1_symbol", ())
     }
-    pub fn icrc_1_total_supply(&self, caller: Principal) -> Result<candid::Nat, String> {
+    pub fn icrc1_total_supply(&self, caller: Principal) -> Result<candid::Nat, String> {
         self.update(caller, "icrc1_total_supply", ())
     }
-    pub fn icrc_1_transfer(
+    pub fn icrc1_transfer(
         &self,
         caller: Principal,
         arg0: &TransferArgs,
     ) -> Result<std::result::Result<BlockIndex, TransferError>, String> {
         self.update(caller, "icrc1_transfer", (arg0,))
     }
-    pub fn icrc_2_allowance(
+    pub fn icrc2_allowance(
         &self,
         caller: Principal,
         arg0: &AllowanceArgs,
     ) -> Result<Allowance, String> {
         self.update(caller, "icrc2_allowance", (arg0,))
     }
-    pub fn icrc_2_approve(
+    pub fn icrc2_approve(
         &self,
         caller: Principal,
         arg0: &ApproveArgs,
     ) -> Result<std::result::Result<candid::Nat, ApproveError>, String> {
         self.update(caller, "icrc2_approve", (arg0,))
     }
-    pub fn icrc_2_transfer_from(
+    pub fn icrc2_transfer_from(
         &self,
         caller: Principal,
         arg0: &TransferFromArgs,
     ) -> Result<std::result::Result<candid::Nat, TransferFromError>, String> {
         self.update(caller, "icrc2_transfer_from", (arg0,))
     }
-    pub fn icrc_3_get_archives(
+    pub fn icrc3_get_archives(
         &self,
         caller: Principal,
         arg0: &GetArchivesArgs,
     ) -> Result<GetArchivesResult, String> {
         self.update(caller, "icrc3_get_archives", (arg0,))
     }
-    pub fn icrc_3_get_blocks(
+    pub fn icrc3_get_blocks(
         &self,
         caller: Principal,
         arg0: &GetBlocksArgs,
     ) -> Result<GetBlocksResult, String> {
         self.update(caller, "icrc3_get_blocks", (arg0,))
     }
-    pub fn icrc_3_get_tip_certificate(
+    pub fn icrc3_get_tip_certificate(
         &self,
         caller: Principal,
     ) -> Result<Option<DataCertificate>, String> {
         self.update(caller, "icrc3_get_tip_certificate", ())
     }
-    pub fn icrc_3_supported_block_types(
+    pub fn icrc3_supported_block_types(
         &self,
         caller: Principal,
     ) -> Result<Vec<SupportedBlockType>, String> {

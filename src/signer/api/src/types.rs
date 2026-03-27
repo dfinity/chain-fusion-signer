@@ -50,7 +50,7 @@ pub mod transaction {
 
 pub mod bitcoin {
     use candid::{CandidType, Deserialize};
-    use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+    use ic_cdk_bitcoin_canister::{Network as BitcoinNetwork, Utxo};
     use ic_papi_api::PaymentError;
 
     #[derive(CandidType, Deserialize, Debug)]

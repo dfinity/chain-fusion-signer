@@ -10,7 +10,7 @@ use serde_bytes::ByteBuf;
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
-        signer::{self, PaymentType, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgument},
+        signer::{self, PaymentType, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs},
     },
     utils::test_environment::{TestSetup, LEDGER_FEE},
 };
@@ -22,7 +22,8 @@ fn anonymous_user_cannot_sign() {
     let message = ByteBuf::from("pokemon");
     let signature = test_env.signer.schnorr_sign(
         Principal::anonymous(),
-        &signer::SignWithSchnorrArgument {
+        &signer::SignWithSchnorrArgs {
+            aux: None,
             key_id: SchnorrKeyId {
                 algorithm: SchnorrAlgorithm::Ed25519,
                 name: "dfx_test_key".to_string(),
@@ -83,15 +84,14 @@ fn can_get_public_key_of_onymous_users_only() {
     // Approve payment for the API calls with ICRC-2.
     test_env
         .ledger
-        .icrc_2_approve(
+        .icrc2_approve(
             test_env.user,
             &ApproveArgs::new(
                 cycles_ledger::Account {
                     owner: test_env.signer.canister_id,
                     subaccount: Some(principal2account(&test_env.user)),
                 },
-                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
-                    * test_vectors.len(),
+                Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE) * test_vectors.len(),
             ),
         )
         .expect("Failed to call ledger canister")
@@ -109,7 +109,7 @@ fn can_get_public_key_of_onymous_users_only() {
     {
         let public_key = test_env.signer.schnorr_public_key(
             *user,
-            &SchnorrPublicKeyArgument {
+            &SchnorrPublicKeyArgs {
                 key_id: SchnorrKeyId {
                     algorithm: SchnorrAlgorithm::Ed25519,
                     name: "dfx_test_key".to_string(),
@@ -148,19 +148,19 @@ fn getting_public_key_requires_payment() {
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE,
             )),
             can_get_public_key: true,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 - 1,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE - 1,
             )),
             can_get_public_key: false,
         },
         TestVector {
             approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64 + 1,
+                SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE + 1,
             )),
             can_get_public_key: true,
         },
@@ -174,7 +174,7 @@ fn getting_public_key_requires_payment() {
         if let Some(approved_sum) = approved_sum {
             test_env
                 .ledger
-                .icrc_2_approve(
+                .icrc2_approve(
                     test_env.user,
                     &ApproveArgs::new(
                         cycles_ledger::Account {
@@ -192,7 +192,7 @@ fn getting_public_key_requires_payment() {
             .signer
             .schnorr_public_key(
                 user,
-                &SchnorrPublicKeyArgument {
+                &SchnorrPublicKeyArgs {
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
                         name: "dfx_test_key".to_string(),
@@ -234,21 +234,15 @@ fn signing_requires_payment() {
             can_sign: false,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE)),
             can_sign: true,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 - 1,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE - 1)),
             can_sign: false,
         },
         TestVector {
-            approved_sum: Some(Nat::from(
-                SignerMethods::SchnorrSign.fee() + LEDGER_FEE as u64 + 1,
-            )),
+            approved_sum: Some(Nat::from(SignerMethods::SchnorrSign.fee() + LEDGER_FEE + 1)),
             can_sign: true,
         },
     ];
@@ -262,7 +256,7 @@ fn signing_requires_payment() {
         if let Some(approved_sum) = approved_sum {
             test_env
                 .ledger
-                .icrc_2_approve(
+                .icrc2_approve(
                     test_env.user,
                     &ApproveArgs::new(
                         cycles_ledger::Account {
@@ -280,7 +274,8 @@ fn signing_requires_payment() {
             .signer
             .schnorr_sign(
                 user,
-                &signer::SignWithSchnorrArgument {
+                &signer::SignWithSchnorrArgs {
+                    aux: None,
                     key_id: SchnorrKeyId {
                         algorithm: SchnorrAlgorithm::Ed25519,
                         name: "dfx_test_key".to_string(),
@@ -338,7 +333,7 @@ fn public_keys_are_different() {
             name: "dfx_test_key".to_string(),
         },
         SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            algorithm: SchnorrAlgorithm::Bip340secp256k1,
             name: "dfx_test_key".to_string(),
         },
     ];
@@ -357,14 +352,14 @@ fn public_keys_are_different() {
         // the focus.
         test_env
             .ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 test_env.user,
                 &ApproveArgs::new(
                     cycles_ledger::Account {
                         owner: test_env.signer.canister_id,
                         subaccount: Some(principal2account(&user)),
                     },
-                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE as u64)
+                    Nat::from(SignerMethods::SchnorrPublicKey.fee() + LEDGER_FEE)
                         * derivation_paths.len()
                         * key_types.len(),
                 ),
@@ -378,7 +373,7 @@ fn public_keys_are_different() {
                     .signer
                     .schnorr_public_key(
                         *user,
-                        &SchnorrPublicKeyArgument {
+                        &SchnorrPublicKeyArgs {
                             key_id: key_id.clone(),
                             canister_id: None,
                             derivation_path: derivation_path.clone(),
@@ -420,7 +415,7 @@ fn signatures_can_be_verified() {
             name: "dfx_test_key".to_string(),
         },
         SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Bip340Secp256K1,
+            algorithm: SchnorrAlgorithm::Bip340secp256k1,
             name: "dfx_test_key".to_string(),
         },
     ];
@@ -430,8 +425,8 @@ fn signatures_can_be_verified() {
         let num_tests = derivation_paths.len() * key_types.len();
         let cost_per_test = SignerMethods::SchnorrPublicKey.fee()
             + SignerMethods::SchnorrSign.fee()
-            + 2 * LEDGER_FEE as u64;
-        num_tests as u64 * cost_per_test
+            + 2 * LEDGER_FEE;
+        num_tests as u128 * cost_per_test
     });
 
     let message = ByteBuf::from("pokemon");
@@ -439,7 +434,7 @@ fn signatures_can_be_verified() {
         // Approve funds for the user.  `test_env.user` will act as patron.
         test_env
             .ledger
-            .icrc_2_approve(
+            .icrc2_approve(
                 test_env.user,
                 &ApproveArgs::new(
                     cycles_ledger::Account {
@@ -458,7 +453,7 @@ fn signatures_can_be_verified() {
                     .signer
                     .schnorr_public_key(
                         *user,
-                        &SchnorrPublicKeyArgument {
+                        &SchnorrPublicKeyArgs {
                             key_id: key_type.clone(),
                             canister_id: None,
                             derivation_path: derivation_path.clone(),
@@ -478,7 +473,8 @@ fn signatures_can_be_verified() {
                     .signer
                     .schnorr_sign(
                         *user,
-                        &signer::SignWithSchnorrArgument {
+                        &signer::SignWithSchnorrArgs {
+                            aux: None,
                             key_id: key_type.clone(),
                             derivation_path: derivation_path.clone(),
                             message: message.clone(),
@@ -517,7 +513,7 @@ fn schnorr_signature_verifier(
     algorithm: &SchnorrAlgorithm,
 ) -> impl Fn(&[u8], &[u8], &[u8]) -> signature::Result<()> {
     match algorithm {
-        SchnorrAlgorithm::Bip340Secp256K1 => verify_schnorr_bip340_secp256k1_signature,
+        SchnorrAlgorithm::Bip340secp256k1 => verify_schnorr_bip340_secp256k1_signature,
         SchnorrAlgorithm::Ed25519 => verify_schnorr_ed25519_signature,
     }
 }

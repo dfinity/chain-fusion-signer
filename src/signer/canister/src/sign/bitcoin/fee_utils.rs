@@ -1,4 +1,4 @@
-use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+use ic_cdk_bitcoin_canister::{Network, Utxo};
 
 use super::bitcoin_api;
 
@@ -39,7 +39,7 @@ fn estimate_fee(
 
 async fn get_default_fee(
     utxos: &[Utxo],
-    network: BitcoinNetwork,
+    network: Network,
     output_count: u64,
 ) -> Result<u64, String> {
     let fee_per_byte = bitcoin_api::get_fee_per_byte(network).await?;
@@ -49,7 +49,7 @@ async fn get_default_fee(
 pub async fn calculate_fee(
     maybe_fee: Option<u64>,
     utxos: &[Utxo],
-    network: BitcoinNetwork,
+    network: Network,
     output_count: u64,
 ) -> Result<u64, String> {
     match maybe_fee {

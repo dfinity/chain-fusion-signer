@@ -52,10 +52,10 @@ mod sign_transaction {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::EthSignTransaction.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
@@ -123,10 +123,10 @@ mod personal_sign {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::EthPersonalSign.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::EthPersonalSign.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
@@ -198,10 +198,10 @@ mod eth_address {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u64 = SignerMethods::EthAddress.fee() + LEDGER_FEE as u64;
+        let amount: u128 = SignerMethods::EthAddress.fee() + LEDGER_FEE;
         test_env
             .ledger
-            .icrc_2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
             .expect("Failed to call ledger canister")
             .expect("Failed to approve payment");
 
