@@ -1,2 +1,12 @@
 #!/usr/bin/env bash
-didc bind -t rs .dfx/local/canisters/cycles_ledger/cycles_ledger.did --config scripts/bind/pic/cycles_ledger.toml >src/signer/canister/tests/it/canister/cycles_ledger.rs
+CANISTER=cycles_ledger
+CANDID="$(jq -r ".canisters.$CANISTER.candid" dfx.json)"
+
+if [[ "$CANDID" == http* ]]; then
+  TMPFILE="$(mktemp)"
+  trap 'rm -f "$TMPFILE"' EXIT
+  curl -sSfL "$CANDID" -o "$TMPFILE"
+  CANDID="$TMPFILE"
+fi
+
+didc bind -t rs "$CANDID" --config "scripts/bind/pic/$CANISTER.toml" >"src/signer/canister/tests/it/canister/$CANISTER.rs"
