@@ -782,7 +782,7 @@ dependencies = [
  "rlp",
  "serde",
  "serde_json",
- "strum",
+ "strum 0.26.3",
  "tempfile",
  "thiserror 1.0.69",
  "tiny-keccak",
@@ -1358,7 +1358,7 @@ dependencies = [
  "ic-papi-api",
  "serde",
  "serde_bytes",
- "strum",
+ "strum 0.28.0",
  "strum_macros 0.28.0",
 ]
 
@@ -1380,7 +1380,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbeeb3d91aa179d6496d7293becdacedfc413c825cac79fd54ea1906f003ee55"
 dependencies = [
  "serde",
- "strum",
+ "strum 0.26.3",
  "strum_macros 0.26.4",
 ]
 
@@ -2065,7 +2065,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "slog",
- "strum",
+ "strum 0.26.3",
  "strum_macros 0.26.4",
  "tempfile",
  "thiserror 2.0.18",
@@ -2968,6 +2968,12 @@ checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
 dependencies = [
  "strum_macros 0.26.4",
 ]
+
+[[package]]
+name = "strum"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9628de9b8791db39ceda2b119bbe13134770b56c138ec1d3af810d045c04f9bd"
 
 [[package]]
 name = "strum_macros"
