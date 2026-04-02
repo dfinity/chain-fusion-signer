@@ -21,7 +21,7 @@
 		"vitest": "^4.1.2"
 	},
 	"dependencies": {
-		"@icp-sdk/core": "^5.2.0",
+		"@icp-sdk/core": "^5.2.1",
 		"lit-html": "^3.3.2"
 	}
 }
