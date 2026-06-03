@@ -149,13 +149,12 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "0.32.9"
+version = "0.32.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf93e61f2dbc3e3c41234ca26a65e2c0b0975c52e0f069ab9893ebbede584d3"
+checksum = "39581299241111285f3268ba75ddf372746fd041620918b145c1af9d75e91b6c"
 dependencies = [
  "base58ck",
  "bech32",
- "bitcoin-internals",
  "bitcoin-io",
  "bitcoin-units",
  "bitcoin_hashes",
@@ -178,12 +177,9 @@ checksum = "2dee39a0ee5b4095224a0cfc6bf4cc1baf0f9624b96b367e53b66d974e51d953"
 
 [[package]]
 name = "bitcoin-units"
-version = "0.1.2"
+version = "0.1.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5285c8bcaa25876d07f37e3d30c303f2609179716e11d688f51e8f1fe70063e2"
-dependencies = [
- "bitcoin-internals",
-]
+checksum = "57bad157b78d0d1b22c4cbb6a35a566211fc4d14866a37f2c780652b50f3b845"
 
 [[package]]
 name = "bitcoin_hashes"
@@ -251,9 +247,9 @@ dependencies = [
 
 [[package]]
 name = "candid"
-version = "0.10.26"
+version = "0.10.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "846adba6d1b4a00eeb8d4a0e4b88dfab570c25ad150cd52e51dfdc4f9d0a66cd"
+checksum = "f8f781afa4a1303e3eab4ada0720a874942bcfa936ce01b816ac6378945c43a9"
 dependencies = [
  "anyhow",
  "binread",
@@ -274,9 +270,9 @@ dependencies = [
 
 [[package]]
 name = "candid_derive"
-version = "0.10.26"
+version = "0.10.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c367110b158be2edc335a4ad70f3467fa588d5c5675e149ef38638a8e281fc4"
+checksum = "ad6ae8e7944dd0035651bc0e7b3a3e4cb16f5fc43f8ae4fd76b36ff2cd52759f"
 dependencies = [
  "lazy_static",
  "proc-macro2",
