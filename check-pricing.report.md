@@ -52,7 +52,7 @@ The base fee in cycles charged for each method is:
             SignerMethods::SchnorrSign => 37_000_000_000,
 ```
 
-For `BtcCallerSign` and `BtcCallerSend` the value above is the per-call base. Each method also charges a per-input fee of `37_000_000_000` cycles via `SignerMethods::per_input_fee()`; the total fee for a call processing `N` inputs is `fee() + N * per_input_fee()`.
+For `BtcCallerSign` and `BtcCallerSend` the value above is the per-call base. Each method also charges a per-input fee of `37_000_000_000` cycles via `SignerMethods::btc_per_input_fee()`; the total fee for a call processing `N` inputs is `fee() + N * btc_per_input_fee()` (use the `SignerMethods::btc_fee_for_inputs(n)` helper).
 
 The measurements in *Check results* and *Analysis* below were taken against the previous flat-fee structure and will be regenerated on the next `scripts/check-pricing beta` run after this change is deployed to the beta canister.
 

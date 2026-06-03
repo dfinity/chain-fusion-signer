@@ -558,7 +558,7 @@ pub async fn btc_caller_sign(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::BtcCallerSign.fee_for_inputs(n_inputs),
+            SignerMethods::BtcCallerSign.btc_fee_for_inputs(n_inputs),
         )
         .await?;
     match params.address_type {
@@ -596,7 +596,7 @@ pub async fn btc_caller_send(
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::BtcCallerSend.fee_for_inputs(n_inputs),
+            SignerMethods::BtcCallerSend.btc_fee_for_inputs(n_inputs),
         )
         .await?;
     match params.address_type {
