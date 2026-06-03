@@ -35,13 +35,13 @@ scripts/check-pricing --analyze <jsonl-file>
 
 ## Current fees
 
-The fee in cycles charged for each method is:
+The base fee in cycles charged for each method is:
 
 ```
             SignerMethods::BtcCallerAddress => 79_000_000,
             SignerMethods::BtcCallerBalance => 113_000_000,
-            SignerMethods::BtcCallerSend => 132_000_000_000,
-            SignerMethods::BtcCallerSign => 132_000_000_000,
+            SignerMethods::BtcCallerSend => 95_000_000_000,
+            SignerMethods::BtcCallerSign => 74_000_000_000,
             SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
             SignerMethods::EthPersonalSign => 37_000_000_000,
             SignerMethods::EthSignPrehash => 37_000_000_000,
@@ -51,6 +51,10 @@ The fee in cycles charged for each method is:
             SignerMethods::SchnorrPublicKey => 77_000_000,
             SignerMethods::SchnorrSign => 37_000_000_000,
 ```
+
+For `BtcCallerSign` and `BtcCallerSend` the value above is the per-call base. Each method also charges a per-input fee of `37_000_000_000` cycles via `SignerMethods::per_input_fee()`; the total fee for a call processing `N` inputs is `fee() + N * per_input_fee()`.
+
+The measurements in *Check results* and *Analysis* below were taken against the previous flat-fee structure and will be regenerated on the next `scripts/check-pricing beta` run after this change is deployed to the beta canister.
 
 ## Check results
 
