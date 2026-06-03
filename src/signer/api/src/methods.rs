@@ -15,13 +15,18 @@ pub enum SignerMethods {
 }
 
 impl SignerMethods {
-    /// The fixed-component cost, in cycles, of every paid chain fusion signer API method.
+    /// The cost, in cycles, of every paid chain fusion signer API method.
     ///
-    /// For `BtcCallerSign` and `BtcCallerSend`, the underlying work scales with the
-    /// number of transaction inputs (one `sign_with_ecdsa` per input). The value
-    /// returned here is the per-call overhead only; the actual fee charged is
-    /// `fee() + n_inputs * btc_per_input_fee()`. Use [`Self::btc_fee_for_inputs`] to
-    /// compute the total in one call.
+    /// For most methods this is the exact fee deducted by the canister.
+    ///
+    /// For `BtcCallerSign` and `BtcCallerSend` the deducted fee depends on the number
+    /// of transaction inputs (one `sign_with_ecdsa` per input). The value returned here
+    /// is a **grace-period default** sized for a 2-input transaction; it is intended
+    /// to give existing callers (who pre-approve a single cycle amount) a soft landing
+    /// while they migrate. The canister itself deducts the precise amount
+    /// `btc_base_fee() + n_inputs * btc_per_input_fee()`. Callers that handle BTC sign
+    /// or send should compute the total with [`Self::btc_fee_for_inputs`] rather than
+    /// relying on `fee()`.
     #[must_use]
     #[allow(clippy::match_same_arms)]
     pub fn fee(&self) -> u128 {
@@ -29,8 +34,12 @@ impl SignerMethods {
         match self {
             SignerMethods::BtcCallerAddress => 79_000_000,
             SignerMethods::BtcCallerBalance => 113_000_000,
-            SignerMethods::BtcCallerSend => 95_000_000_000,
-            SignerMethods::BtcCallerSign => 74_000_000_000,
+            // Grace-period default sized for a 2-input transaction:
+            // btc_base_fee() + 2 * btc_per_input_fee() = 95 B + 2 * 37 B = 169 B
+            SignerMethods::BtcCallerSend => 169_000_000_000,
+            // Grace-period default sized for a 2-input transaction:
+            // btc_base_fee() + 2 * btc_per_input_fee() = 74 B + 2 * 37 B = 148 B
+            SignerMethods::BtcCallerSign => 148_000_000_000,
             SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
             SignerMethods::EthPersonalSign => 37_000_000_000,
             SignerMethods::EthSignPrehash => 37_000_000_000,
@@ -39,6 +48,20 @@ impl SignerMethods {
             SignerMethods::GenericSignWithEcdsa => 37_000_000_000,
             SignerMethods::SchnorrPublicKey => 77_000_000,
             SignerMethods::SchnorrSign => 37_000_000_000,
+        }
+    }
+
+    /// The per-call base fee, in cycles, for BTC sign/send methods.
+    ///
+    /// Returns the fixed per-call overhead for `BtcCallerSign` (74 B) and
+    /// `BtcCallerSend` (95 B). For all other methods the base fee equals
+    /// [`Self::fee`].
+    #[must_use]
+    pub fn btc_base_fee(&self) -> u128 {
+        match self {
+            SignerMethods::BtcCallerSign => 74_000_000_000,
+            SignerMethods::BtcCallerSend => 95_000_000_000,
+            _ => self.fee(),
         }
     }
 
@@ -62,6 +85,6 @@ impl SignerMethods {
     /// `BtcCallerSign` and `BtcCallerSend`.
     #[must_use]
     pub fn btc_fee_for_inputs(&self, n_inputs: u64) -> u128 {
-        self.fee() + u128::from(n_inputs) * self.btc_per_input_fee()
+        self.btc_base_fee() + u128::from(n_inputs) * self.btc_per_input_fee()
     }
 }
