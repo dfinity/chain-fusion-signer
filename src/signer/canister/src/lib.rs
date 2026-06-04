@@ -554,10 +554,11 @@ pub async fn btc_caller_sign(
     params: SendBtcRequest,
     payment: Option<PaymentType>,
 ) -> Result<SignBtcResponse, SendBtcError> {
+    let n_inputs = params.utxos_to_spend.len() as u64;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::BtcCallerSign.fee(),
+            SignerMethods::BtcCallerSign.btc_fee_for_inputs(n_inputs),
         )
         .await?;
     match params.address_type {
@@ -591,10 +592,11 @@ pub async fn btc_caller_send(
     params: SendBtcRequest,
     payment: Option<PaymentType>,
 ) -> Result<SendBtcResponse, SendBtcError> {
+    let n_inputs = params.utxos_to_spend.len() as u64;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::BtcCallerSend.fee(),
+            SignerMethods::BtcCallerSend.btc_fee_for_inputs(n_inputs),
         )
         .await?;
     match params.address_type {

@@ -35,13 +35,13 @@ scripts/check-pricing --analyze <jsonl-file>
 
 ## Current fees
 
-The fee in cycles charged for each method is:
+The value returned by `SignerMethods::fee()` for each method is:
 
 ```
             SignerMethods::BtcCallerAddress => 79_000_000,
             SignerMethods::BtcCallerBalance => 113_000_000,
-            SignerMethods::BtcCallerSend => 132_000_000_000,
-            SignerMethods::BtcCallerSign => 132_000_000_000,
+            SignerMethods::BtcCallerSend => 169_000_000_000,
+            SignerMethods::BtcCallerSign => 148_000_000_000,
             SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
             SignerMethods::EthPersonalSign => 37_000_000_000,
             SignerMethods::EthSignPrehash => 37_000_000_000,
@@ -51,6 +51,14 @@ The fee in cycles charged for each method is:
             SignerMethods::SchnorrPublicKey => 77_000_000,
             SignerMethods::SchnorrSign => 37_000_000_000,
 ```
+
+For `BtcCallerSign` and `BtcCallerSend` the value above is a grace-period default sized for a 2-input transaction. The canister deducts the precise per-call amount `btc_base_fee() + N * btc_per_input_fee()`:
+
+- `SignerMethods::btc_base_fee()`: 74 B (sign), 95 B (send)
+- `SignerMethods::btc_per_input_fee()`: 37 B
+- `SignerMethods::btc_fee_for_inputs(n)`: helper returning the total above
+
+The measurements in _Check results_ and _Analysis_ below were taken against the previous flat-fee structure and will be regenerated on the next `scripts/check-pricing beta` run after this change is deployed to the beta canister.
 
 ## Check results
 
