@@ -58,7 +58,7 @@ For `BtcCallerSign` and `BtcCallerSend` the value above is a grace-period defaul
 - `SignerMethods::btc_per_input_fee()`: 37 B
 - `SignerMethods::btc_fee_for_inputs(n)`: helper returning the total above
 
-The measurements in *Check results* and *Analysis* below were taken against the previous flat-fee structure and will be regenerated on the next `scripts/check-pricing beta` run after this change is deployed to the beta canister.
+The measurements in _Check results_ and _Analysis_ below were taken against the previous flat-fee structure and will be regenerated on the next `scripts/check-pricing beta` run after this change is deployed to the beta canister.
 
 ## Check results
 
