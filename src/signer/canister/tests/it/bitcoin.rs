@@ -250,7 +250,8 @@ mod caller_sign {
             owner: test_env.signer.canister_id(),
             subaccount: None,
         };
-        let amount: u128 = SignerMethods::BtcCallerSign.fee() + LEDGER_FEE;
+        let n_inputs = request.utxos_to_spend.len() as u64;
+        let amount: u128 = SignerMethods::BtcCallerSign.btc_fee_for_inputs(n_inputs) + LEDGER_FEE;
         test_env
             .ledger
             .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
