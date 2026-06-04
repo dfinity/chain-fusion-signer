@@ -7,7 +7,7 @@ resolver = "2"
 
 [workspace.dependencies]
 assert_matches = "1.5.0"
-ic-cdk = "0.20.0"
+ic-cdk = "0.20.1"
 ic-cdk-management-canister = "0.1.1"
 ic-cdk-bitcoin-canister = "0.2.0"
 ic-stable-structures = "0.7.2"
