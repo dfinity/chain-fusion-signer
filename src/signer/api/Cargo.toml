@@ -1,6 +1,6 @@
 [package]
 name = "ic-chain-fusion-signer-api"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [dependencies]
