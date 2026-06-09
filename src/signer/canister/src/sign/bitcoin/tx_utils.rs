@@ -215,12 +215,13 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{
-        hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
+        hashes::Hash, EcdsaSighashType, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn,
+        Txid, Witness,
     };
     use ic_cdk_bitcoin_canister::{Network, OutPoint as IcCdkOutPoint, Txid as BtcIfTxid, Utxo};
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
-    use super::{build_p2wpkh_transaction, get_input_value, DUST_THRESHOLD};
+    use super::{build_p2wpkh_transaction, get_input_value, sec1_to_der, DUST_THRESHOLD};
 
     const TXID1: &str = "36f3a7fcb6b5ebd9fa4041928da89cd423662f9c5c12e41c80e07a6559d178ef";
     const TXID2: &str = "d3f71b58d539fd97d2122f112d52dadb6a479ad3c47464978b3b0ce0046c1b50";
@@ -480,5 +481,80 @@ mod tests {
             }
             Err(e) => panic!("Expected successful transaction, got error: {:?}", e),
         }
+    }
+
+    /// Builds a 64-byte compact signature whose `r` and `s` are valid scalars
+    /// modulo the secp256k1 curve order. `r_top_byte` and `s_top_byte` choose
+    /// the first byte of each scalar so the test can exercise the various
+    /// strict-DER edge cases (leading zero, high bit set, etc).
+    fn compact_sig(r_top_byte: u8, s_top_byte: u8) -> [u8; 64] {
+        let mut sig = [0u8; 64];
+        sig[0] = r_top_byte;
+        // Fill the remaining bytes with a small non-zero pattern that keeps
+        // each scalar well below the secp256k1 group order.
+        for b in &mut sig[1..32] {
+            *b = 0x11;
+        }
+        sig[32] = s_top_byte;
+        for b in &mut sig[33..] {
+            *b = 0x22;
+        }
+        sig
+    }
+
+    /// Feeds a DER signature (plus the `SIGHASH_ALL` byte) through Bitcoin's
+    /// strict parser. Returns true if Bitcoin accepts it.
+    fn bitcoin_accepts(der: &[u8]) -> bool {
+        let mut with_sighash = der.to_vec();
+        with_sighash.push(EcdsaSighashType::All as u8);
+        bitcoin::ecdsa::Signature::from_slice(&with_sighash).is_ok()
+    }
+
+    #[test]
+    fn test_sec1_to_der_strips_unnecessary_leading_zero_in_r() {
+        // r starts with 0x00 followed by a byte whose high bit is clear:
+        // the leading 0x00 is *not* needed to keep the integer positive and
+        // must be stripped to satisfy strict DER (BIP-66).
+        let sig = compact_sig(0x00, 0x11);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose r has an unnecessary leading zero"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_strips_unnecessary_leading_zero_in_s() {
+        // Same case for s.
+        let sig = compact_sig(0x11, 0x00);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose s has an unnecessary leading zero"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_prepends_zero_when_high_bit_set() {
+        // r and s start with a byte whose high bit is set: a 0x00 must be
+        // prepended so the DER integer stays positive.
+        let sig = compact_sig(0x80, 0x80);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose r and s have the high bit set"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_handles_normal_scalars() {
+        // r and s are unambiguously positive 32-byte integers: no padding,
+        // no stripping.
+        let sig = compact_sig(0x11, 0x22);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a normal compact signature"
+        );
     }
 }
