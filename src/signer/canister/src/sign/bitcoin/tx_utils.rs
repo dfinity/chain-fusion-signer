@@ -21,43 +21,20 @@ const ECDSA_SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
 // Assume that any amount below this threshold is dust.
 const DUST_THRESHOLD: u64 = 1_000;
 
-// TODO: Add testing - https://dfinity.atlassian.net/browse/GIX-3013
-/// Converts a SEC1 ECDSA signature to the DER format.
-/// [Reference Bitcoin Example](https://github.com/dfinity/examples/blob/aac0602139a2b3b9c509a126ee707ac9316912b0/rust/basic_bitcoin/src/basic_bitcoin/src/bitcoin_wallet/p2pkh.rs#L229)
+/// Converts a 64-byte SEC1 compact ECDSA signature (`r || s`) into strict
+/// Bitcoin DER as required by BIP-66.
+///
+/// Delegates to `secp256k1`'s serializer, which produces the shortest valid
+/// encoding of each integer (prepending `0x00` when the high bit is set and
+/// stripping unnecessary leading zeroes when it is not). A hand-rolled
+/// encoder previously only handled the prepend case, which caused
+/// transactions to be rejected by Bitcoin's strict parser whenever `r` or
+/// `s` happened to fit in fewer than 32 bytes.
 fn sec1_to_der(sec1_signature: &[u8]) -> Vec<u8> {
-    let r: Vec<u8> = if sec1_signature[0] & 0x80 != 0 {
-        // r is negative. Prepend a zero byte.
-        let mut tmp = vec![0x00];
-        tmp.extend(sec1_signature[..32].to_vec());
-        tmp
-    } else {
-        // r is positive.
-        sec1_signature[..32].to_vec()
-    };
-
-    let s: Vec<u8> = if sec1_signature[32] & 0x80 != 0 {
-        // s is negative. Prepend a zero byte.
-        let mut tmp = vec![0x00];
-        tmp.extend(sec1_signature[32..].to_vec());
-        tmp
-    } else {
-        // s is positive.
-        sec1_signature[32..].to_vec()
-    };
-
-    let r_len = u8::try_from(r.len()).expect("Failed to convert r length to u8");
-    let s_len = u8::try_from(s.len()).expect("Failed to convert s length to u8");
-
-    // Convert signature to DER.
-    vec![
-        vec![0x30, 4 + r_len + s_len, 0x02, r_len],
-        r,
-        vec![0x02, s_len],
-        s,
-    ]
-    .into_iter()
-    .flatten()
-    .collect()
+    bitcoin::secp256k1::ecdsa::Signature::from_compact(sec1_signature)
+        .expect("threshold ECDSA returned a malformed 64-byte compact signature")
+        .serialize_der()
+        .to_vec()
 }
 
 /// The fee is set with leaving that amount of difference between the inputs and outputs values.
