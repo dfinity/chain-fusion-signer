@@ -215,8 +215,7 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{
-        hashes::Hash, EcdsaSighashType, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn,
-        Txid, Witness,
+        hashes::Hash, OutPoint as BitcoinOutPoint, ScriptBuf, Sequence, TxIn, Txid, Witness,
     };
     use ic_cdk_bitcoin_canister::{Network, OutPoint as IcCdkOutPoint, Txid as BtcIfTxid, Utxo};
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
@@ -506,7 +505,10 @@ mod tests {
     /// strict parser. Returns true if Bitcoin accepts it.
     fn bitcoin_accepts(der: &[u8]) -> bool {
         let mut with_sighash = der.to_vec();
-        with_sighash.push(EcdsaSighashType::All as u8);
+        with_sighash.push(
+            u8::try_from(super::ECDSA_SIG_HASH_TYPE.to_u32())
+                .expect("Error converting ECDSA_SIG_HASH_TYPE"),
+        );
         bitcoin::ecdsa::Signature::from_slice(&with_sighash).is_ok()
     }
 
