@@ -21,43 +21,20 @@ const ECDSA_SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
 // Assume that any amount below this threshold is dust.
 const DUST_THRESHOLD: u64 = 1_000;
 
-// TODO: Add testing - https://dfinity.atlassian.net/browse/GIX-3013
-/// Converts a SEC1 ECDSA signature to the DER format.
-/// [Reference Bitcoin Example](https://github.com/dfinity/examples/blob/aac0602139a2b3b9c509a126ee707ac9316912b0/rust/basic_bitcoin/src/basic_bitcoin/src/bitcoin_wallet/p2pkh.rs#L229)
+/// Converts a 64-byte SEC1 compact ECDSA signature (`r || s`) into strict
+/// Bitcoin DER as required by BIP-66.
+///
+/// Delegates to `secp256k1`'s serializer, which produces the shortest valid
+/// encoding of each integer (prepending `0x00` when the high bit is set and
+/// stripping unnecessary leading zeroes when it is not). A hand-rolled
+/// encoder previously only handled the prepend case, which caused
+/// transactions to be rejected by Bitcoin's strict parser whenever `r` or
+/// `s` happened to fit in fewer than 32 bytes.
 fn sec1_to_der(sec1_signature: &[u8]) -> Vec<u8> {
-    let r: Vec<u8> = if sec1_signature[0] & 0x80 != 0 {
-        // r is negative. Prepend a zero byte.
-        let mut tmp = vec![0x00];
-        tmp.extend(sec1_signature[..32].to_vec());
-        tmp
-    } else {
-        // r is positive.
-        sec1_signature[..32].to_vec()
-    };
-
-    let s: Vec<u8> = if sec1_signature[32] & 0x80 != 0 {
-        // s is negative. Prepend a zero byte.
-        let mut tmp = vec![0x00];
-        tmp.extend(sec1_signature[32..].to_vec());
-        tmp
-    } else {
-        // s is positive.
-        sec1_signature[32..].to_vec()
-    };
-
-    let r_len = u8::try_from(r.len()).expect("Failed to convert r length to u8");
-    let s_len = u8::try_from(s.len()).expect("Failed to convert s length to u8");
-
-    // Convert signature to DER.
-    vec![
-        vec![0x30, 4 + r_len + s_len, 0x02, r_len],
-        r,
-        vec![0x02, s_len],
-        s,
-    ]
-    .into_iter()
-    .flatten()
-    .collect()
+    bitcoin::secp256k1::ecdsa::Signature::from_compact(sec1_signature)
+        .expect("threshold ECDSA returned a malformed 64-byte compact signature")
+        .serialize_der()
+        .to_vec()
 }
 
 /// The fee is set with leaving that amount of difference between the inputs and outputs values.
@@ -243,7 +220,7 @@ mod tests {
     use ic_cdk_bitcoin_canister::{Network, OutPoint as IcCdkOutPoint, Txid as BtcIfTxid, Utxo};
     use ic_chain_fusion_signer_api::types::bitcoin::{BtcTxOutput, BuildP2wpkhTxError};
 
-    use super::{build_p2wpkh_transaction, get_input_value, DUST_THRESHOLD};
+    use super::{build_p2wpkh_transaction, get_input_value, sec1_to_der, DUST_THRESHOLD};
 
     const TXID1: &str = "36f3a7fcb6b5ebd9fa4041928da89cd423662f9c5c12e41c80e07a6559d178ef";
     const TXID2: &str = "d3f71b58d539fd97d2122f112d52dadb6a479ad3c47464978b3b0ce0046c1b50";
@@ -503,5 +480,83 @@ mod tests {
             }
             Err(e) => panic!("Expected successful transaction, got error: {:?}", e),
         }
+    }
+
+    /// Builds a 64-byte compact signature whose `r` and `s` are valid scalars
+    /// modulo the secp256k1 curve order. `r_top_byte` and `s_top_byte` choose
+    /// the first byte of each scalar so the test can exercise the various
+    /// strict-DER edge cases (leading zero, high bit set, etc).
+    fn compact_sig(r_top_byte: u8, s_top_byte: u8) -> [u8; 64] {
+        let mut sig = [0u8; 64];
+        sig[0] = r_top_byte;
+        // Fill the remaining bytes with a small non-zero pattern that keeps
+        // each scalar well below the secp256k1 group order.
+        for b in &mut sig[1..32] {
+            *b = 0x11;
+        }
+        sig[32] = s_top_byte;
+        for b in &mut sig[33..] {
+            *b = 0x22;
+        }
+        sig
+    }
+
+    /// Feeds a DER signature (plus the `SIGHASH_ALL` byte) through Bitcoin's
+    /// strict parser. Returns true if Bitcoin accepts it.
+    fn bitcoin_accepts(der: &[u8]) -> bool {
+        let mut with_sighash = der.to_vec();
+        with_sighash.push(
+            u8::try_from(super::ECDSA_SIG_HASH_TYPE.to_u32())
+                .expect("Error converting ECDSA_SIG_HASH_TYPE"),
+        );
+        bitcoin::ecdsa::Signature::from_slice(&with_sighash).is_ok()
+    }
+
+    #[test]
+    fn test_sec1_to_der_strips_unnecessary_leading_zero_in_r() {
+        // r starts with 0x00 followed by a byte whose high bit is clear:
+        // the leading 0x00 is *not* needed to keep the integer positive and
+        // must be stripped to satisfy strict DER (BIP-66).
+        let sig = compact_sig(0x00, 0x11);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose r has an unnecessary leading zero"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_strips_unnecessary_leading_zero_in_s() {
+        // Same case for s.
+        let sig = compact_sig(0x11, 0x00);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose s has an unnecessary leading zero"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_prepends_zero_when_high_bit_set() {
+        // r and s start with a byte whose high bit is set: a 0x00 must be
+        // prepended so the DER integer stays positive.
+        let sig = compact_sig(0x80, 0x80);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a compact signature whose r and s have the high bit set"
+        );
+    }
+
+    #[test]
+    fn test_sec1_to_der_handles_normal_scalars() {
+        // r and s are unambiguously positive 32-byte integers: no padding,
+        // no stripping.
+        let sig = compact_sig(0x11, 0x22);
+        let der = sec1_to_der(&sig);
+        assert!(
+            bitcoin_accepts(&der),
+            "Bitcoin must accept DER produced from a normal compact signature"
+        );
     }
 }
