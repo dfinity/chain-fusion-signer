@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: dfx build --ic signer
       - name: 'Upload Wasm module'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: signer-wasm-${{ matrix.os }}
           path: .dfx/ic/canisters/signer/signer.wasm.gz
@@ -53,7 +53,7 @@ jobs:
           mkdir -p hashes
           sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}.txt"
       - name: 'Upload hashes'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hashes_${{ matrix.os }}
           path: hashes/*.txt
@@ -63,7 +63,7 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Merge Hashes
-        uses: actions/upload-artifact/merge@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hashes
           pattern: hashes_*
