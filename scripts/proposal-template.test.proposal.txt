@@ -9,12 +9,14 @@ The chain fusion signer is a canister that makes the internet computer threshold
 
 ## Change Log
 
-### Features
+### v0.2.8
+
+##### Features
 - Add support for Schnorr signatures. This is useful for cross chain applications wishing to interact with blockchains using Schnorr ed25519.
   - A useful reference may be: http://ethanfast.com/top-crypto.html where curve25519 corresponds to chains that use Schnorr ed25519.
   - We can confirm that Solana transactions can be signed with this API. Other chains should work but have not yet been tested.
 
-### Maintenance
+##### Maintenance
 - Dependencies have been updated.
 - [Pocket-ic canister bindings](https://github.com/dfinity/chain-fusion-signer/tree/v0.2.8/src/signer/canister/tests/it/canister) are now generated automatically, for improved testing.
 - Tooling for creating and verifying NNS proposals has been added.

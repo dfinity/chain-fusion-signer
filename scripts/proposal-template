@@ -27,6 +27,48 @@ export DFX_NETWORK
 # If the currently deployed git ref is not specified, get it from the canister metadata.
 test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git:commit --network "$DFX_NETWORK")"
 
+# The release tags newly included by this upgrade: those reachable from the release
+# candidate but not already deployed (not ancestors of the production ref), oldest
+# first. This matters when releases were skipped, e.g. upgrading production straight
+# from v0.3.0 to v0.4.1 without ever deploying v0.4.0: the change log must then cover
+# every release in between, not just the release candidate.
+RELEASE_TAGS=()
+while IFS= read -r tag; do
+  [ -n "$tag" ] || continue
+  git merge-base --is-ancestor "$tag" "$PROD_REF" && continue # Already deployed.
+  RELEASE_TAGS+=("$tag")
+done < <(git tag --list 'v*' --merged "$RELEASE_CANDIDATE_TAG" --sort=creatordate)
+
+# The change log is the concatenation of the GitHub release notes of every newly
+# included release, oldest first.
+CHANGE_LOG="$(
+  for tag in "${RELEASE_TAGS[@]}"; do
+    printf '### %s\n\n' "$tag"
+    gh release view "$tag" --json body -q .body 2>/dev/null | tr -d "\r" | sed -E 's/^(#+)/###\1/' ||
+      printf '_No GitHub release notes found for %s._' "$tag"
+    printf '\n\n'
+  done
+)"
+
+# The rollback target is the version currently deployed, i.e. what we revert to if the
+# upgrade has to be undone. Prefer a version tag at that commit; other tags (e.g. "prod")
+# may also point there.
+ROLLBACK_REF="$(git rev-parse "$PROD_REF")"
+ROLLBACK_TAG="$(git tag --points-at "$ROLLBACK_REF" --list 'v*' --sort=-creatordate)"
+ROLLBACK_TAG="${ROLLBACK_TAG%%$'\n'*}"
+ROLLBACK_LABEL="${ROLLBACK_TAG:-$ROLLBACK_REF}"
+ROLLBACK_CHECKOUT="${ROLLBACK_TAG:+tags/$ROLLBACK_TAG}"
+ROLLBACK_CHECKOUT="${ROLLBACK_CHECKOUT:-$ROLLBACK_REF}"
+# Obtain the rollback Wasm hash from the deployed release's published Wasm, if available.
+ROLLBACK_WASM_SHA="(build the rollback Wasm to obtain its hash)"
+if [ -n "$ROLLBACK_TAG" ]; then
+  ROLLBACK_TMP="$(mktemp -d)"
+  if gh release download "$ROLLBACK_TAG" --pattern signer.wasm.gz --dir "$ROLLBACK_TMP" 2>/dev/null; then
+    ROLLBACK_WASM_SHA="$(sha256sum "$ROLLBACK_TMP/signer.wasm.gz" | awk '{print $1}')"
+  fi
+  rm -rf "$ROLLBACK_TMP"
+fi
+
 RELEASE_GITHUB_URL="$(gh release view "$RELEASE_CANDIDATE_TAG" --json url -q .url)"
 OUTPUT_PROPOSAL="release/PROPOSAL.md"
 OUTPUT_ROLLBACK="release/ROLLBACK.md"
@@ -65,7 +107,7 @@ The chain fusion signer is a canister that makes the internet computer threshold
 
 ## Change Log
 
-$(gh release view "$RELEASE_CANDIDATE_TAG" --json body -q .body | tr -d "\r" | sed -E 's/^#/##/g')
+${CHANGE_LOG}
 
 ## Commit Log
 
@@ -92,16 +134,19 @@ This will generate these files:
 EOF
 
 cat <<EOF >"$OUTPUT_ROLLBACK"
-# Downgrade frontend NNS Dapp canister to commit \`$(git rev-parse "$RELEASE_CANDIDATE_TAG")\`
-Wasm sha256 hash: \`${WASM_SHA}\` (\`${WASM}\`)
+# Roll back Chain Fusion Signer canister to \`${ROLLBACK_LABEL}\`
+Commit: \`${ROLLBACK_REF}\`
+Wasm sha256 hash: \`${ROLLBACK_WASM_SHA}\`
+
+This reverts the Chain Fusion Signer canister to the version that was deployed before ${RELEASE_CANDIDATE_TAG}.
 
 ## Wasm Verification
 
-To build the wasm module yourself and verify its hash, run the following commands from the root of the nns-dapp repo:
+To build the wasm module yourself and verify its hash, run the following commands from the root of the [Chain Fusion Signer repo](https://github.com/dfinity/chain-fusion-signer):
 
 \`\`\`
-git fetch  # to ensure you have the latest changes.
-git checkout "$(git rev-parse "$RELEASE_CANDIDATE_TAG")"
+git fetch --tags # to ensure you have the latest changes.
+git checkout ${ROLLBACK_CHECKOUT}
 ./scripts/docker-build
 \`\`\`
 
