@@ -1,17 +1,13 @@
 name: Tag on Merge from Release Branch
-
 on:
   pull_request:
     types: [closed]
     branches:
       - main
-
 permissions: {}
-
 defaults:
   run:
     shell: bash -euxlo pipefail {0}
-
 jobs:
   tag:
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/v')
@@ -25,20 +21,17 @@ jobs:
         with:
           app-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_APP_ID }}
           private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
-
       - name: Checkout merge commit
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           persist-credentials: false
-
       - name: Get version from Cargo metadata
         id: get_version
         run: |
           version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "signer") | .version')"
           echo "Version: $version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-
       - name: Create Git tag
         # Pushing the tag with the app token triggers the Release workflow,
         # which builds the artifacts and creates the GitHub release.
@@ -50,7 +43,6 @@ jobs:
         env:
           VERSION: ${{ steps.get_version.outputs.version }}
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
   call-deploy-staging:
     needs: tag
     if: needs.tag.result == 'success'

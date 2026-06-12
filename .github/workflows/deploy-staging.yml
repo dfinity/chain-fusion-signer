@@ -1,5 +1,4 @@
 name: Deploy to Staging
-
 on:
   workflow_dispatch:
   workflow_call:
@@ -12,20 +11,15 @@ on:
     secrets:
       DFX_DEPLOY_KEY_STAGING:
         required: true
-
 permissions: {}
-
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
-
 defaults:
   run:
     shell: bash -euxlo pipefail {0}
-
 env:
   DFX_WARNING: '-mainnet_plaintext_identity'
-
 jobs:
   deploy:
     runs-on: ubuntu-24.04
@@ -38,13 +32,10 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
-
       - name: Build reproducibly
         uses: ./.github/actions/build
-
       - name: Install dfx
         uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
-
       - name: Import deployment identity
         run: |
           key_pem=$(mktemp)
@@ -55,10 +46,8 @@ jobs:
           dfx identity get-principal
         env:
           DFX_DEPLOY_KEY: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
-
       - name: Deploy signer to staging
         run: dfx canister install signer --mode upgrade --upgrade-unchanged --network staging --yes
-
       - name: Verify deployment
         run: |
           sha256sum out/signer.wasm.gz

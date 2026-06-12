@@ -1,5 +1,4 @@
 name: Version Bump and Release Branch Creation
-
 on:
   workflow_dispatch:
     inputs:
@@ -15,13 +14,10 @@ on:
           - alpha
           - beta
           - rc
-
 permissions: {}
-
 defaults:
   run:
     shell: bash -euxlo pipefail {0}
-
 jobs:
   version_bump:
     runs-on: ubuntu-24.04
@@ -35,15 +31,12 @@ jobs:
         with:
           app-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_APP_ID }}
           private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
-
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-
       - name: Install build tools
         run: scripts/setup cargo-binstall cargo-edit
-
       - name: Bump version
         id: bump_version
         run: |
@@ -53,7 +46,6 @@ jobs:
           echo "Bumped to version: $new_version"
         env:
           VERSION_BUMP: ${{ github.event.inputs.version_bump }}
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
         with:

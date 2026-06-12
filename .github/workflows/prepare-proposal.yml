@@ -1,5 +1,4 @@
 name: Prepare Production Proposal
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,17 +6,13 @@ on:
         description: 'The release tag to prepare a proposal for, e.g. v0.4.1. The release must be published.'
         required: true
         type: string
-
 permissions: {}
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.tag }}
   cancel-in-progress: true
-
 defaults:
   run:
     shell: bash -euxlo pipefail {0}
-
 jobs:
   prepare:
     runs-on: ubuntu-24.04
@@ -34,13 +29,10 @@ jobs:
           ref: ${{ github.event.inputs.tag }}
           fetch-depth: 0
           persist-credentials: false
-
       - name: Get release assets
         run: ./scripts/proposal-assets -t "$TAG"
-
       - name: Build reproducibly
         uses: ./.github/actions/build
-
       - name: Verify that the release assets match the reproducible build
         run: |
           for asset in signer.wasm.gz signer.args.did signer.args.bin; do
@@ -52,13 +44,10 @@ jobs:
             fi
             echo "OK: $asset $release_hash"
           done
-
       - name: Install dfx
         uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
-
       - name: Create proposal template
         run: ./scripts/proposal-template -t "$TAG"
-
       - name: Summarize
         run: |
           {
@@ -70,7 +59,6 @@ jobs:
             echo
             echo "To submit, download the \`proposal-$TAG\` artifact into \`release/\`, install \`ic-admin\` with \`./scripts/setup ic-admin\` and run \`./scripts/propose\`."
           } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Upload proposal artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
