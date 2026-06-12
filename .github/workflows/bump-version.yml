@@ -1,0 +1,73 @@
+name: Version Bump and Release Branch Creation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - alpha
+          - beta
+          - rc
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -euxlo pipefail {0}
+
+jobs:
+  version_bump:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          app-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_APP_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Install build tools
+        run: scripts/setup cargo-binstall cargo-edit
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          ./scripts/version-bump "$VERSION_BUMP"
+          new_version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "signer") | .version')"
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "Bumped to version: $new_version"
+        env:
+          VERSION_BUMP: ${{ github.event.inputs.version_bump }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          base: main
+          branch: release/v${{ steps.bump_version.outputs.new_version }}
+          delete-branch: true
+          commit-message: 'chore(release): Bump version to ${{ steps.bump_version.outputs.new_version }}'
+          committer: GitHub <noreply@github.com>
+          title: 'chore(release): Bump version to ${{ steps.bump_version.outputs.new_version }}'
+          body: |
+            This PR prepares the release of version v${{ steps.bump_version.outputs.new_version }}.
+
+            On merge, the [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) workflow will:
+
+            - Tag the merge commit with `v${{ steps.bump_version.outputs.new_version }}`, which triggers the [Release](.github/workflows/release.yml) workflow to build and attach the release artifacts.
+            - Deploy the signer to `staging`.

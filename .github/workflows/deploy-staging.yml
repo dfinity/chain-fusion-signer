@@ -1,0 +1,66 @@
+name: Deploy to Staging
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git ref to build and deploy. Defaults to the ref that triggered the workflow.'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      DFX_DEPLOY_KEY_STAGING:
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash -euxlo pipefail {0}
+
+env:
+  DFX_WARNING: '-mainnet_plaintext_identity'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Build reproducibly
+        uses: ./.github/actions/build
+
+      - name: Install dfx
+        uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
+
+      - name: Import deployment identity
+        run: |
+          key_pem=$(mktemp)
+          printenv DFX_DEPLOY_KEY > "$key_pem"
+          dfx identity import --storage-mode=plaintext --force deploy "$key_pem"
+          rm "$key_pem"
+          dfx identity use deploy
+          dfx identity get-principal
+        env:
+          DFX_DEPLOY_KEY: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
+
+      - name: Deploy signer to staging
+        run: dfx canister install signer --mode upgrade --upgrade-unchanged --network staging --yes
+
+      - name: Verify deployment
+        run: |
+          sha256sum out/signer.wasm.gz
+          dfx canister info signer --network staging
+          dfx canister metadata signer git:commit --network staging
