@@ -51,18 +51,20 @@ CHANGE_LOG="$(
 )"
 
 # The rollback target is the version currently deployed, i.e. what we revert to if the
-# upgrade has to be undone.
+# upgrade has to be undone. Prefer a version tag at that commit; other tags (e.g. "prod")
+# may also point there.
 ROLLBACK_REF="$(git rev-parse "$PROD_REF")"
-ROLLBACK_TAG="$(git describe --tags --exact-match "$ROLLBACK_REF" 2>/dev/null || true)"
+ROLLBACK_TAG="$(git tag --points-at "$ROLLBACK_REF" --list 'v*' --sort=-creatordate)"
+ROLLBACK_TAG="${ROLLBACK_TAG%%$'\n'*}"
 ROLLBACK_LABEL="${ROLLBACK_TAG:-$ROLLBACK_REF}"
 ROLLBACK_CHECKOUT="${ROLLBACK_TAG:+tags/$ROLLBACK_TAG}"
 ROLLBACK_CHECKOUT="${ROLLBACK_CHECKOUT:-$ROLLBACK_REF}"
-# Obtain the rollback Wasm hash from the deployed release's published report, if available.
+# Obtain the rollback Wasm hash from the deployed release's published Wasm, if available.
 ROLLBACK_WASM_SHA="(build the rollback Wasm to obtain its hash)"
 if [ -n "$ROLLBACK_TAG" ]; then
   ROLLBACK_TMP="$(mktemp -d)"
-  if gh release download "$ROLLBACK_TAG" --pattern report.txt --dir "$ROLLBACK_TMP" 2>/dev/null; then
-    ROLLBACK_WASM_SHA="$(awk '/signer\.wasm\.gz/ {print $1; exit}' "$ROLLBACK_TMP/report.txt")"
+  if gh release download "$ROLLBACK_TAG" --pattern signer.wasm.gz --dir "$ROLLBACK_TMP" 2>/dev/null; then
+    ROLLBACK_WASM_SHA="$(sha256sum "$ROLLBACK_TMP/signer.wasm.gz" | awk '{print $1}')"
   fi
   rm -rf "$ROLLBACK_TMP"
 fi

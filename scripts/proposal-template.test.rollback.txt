@@ -1,13 +1,16 @@
-# Downgrade frontend NNS Dapp canister to commit `e1c36f468c7b78e851332cc7dae0bfce6bc8f886`
-Wasm sha256 hash: `9d76ee4646df62d1a4bddbdfb4fa78e43166c19a94595ba9e1f5f27b823c8192` (`release/ci/signer.wasm.gz`)
+# Roll back Chain Fusion Signer canister to `v0.2.7`
+Commit: `96ca9850a911396c05825bdbf343c2c57d3d0a5d`
+Wasm sha256 hash: `b3af9a002bd119ea8771bac4db924bb209f0a627a5a4e97d57cf4c0799d74225`
+
+This reverts the Chain Fusion Signer canister to the version that was deployed before v0.2.8.
 
 ## Wasm Verification
 
-To build the wasm module yourself and verify its hash, run the following commands from the root of the nns-dapp repo:
+To build the wasm module yourself and verify its hash, run the following commands from the root of the [Chain Fusion Signer repo](https://github.com/dfinity/chain-fusion-signer):
 
 ```
-git fetch  # to ensure you have the latest changes.
-git checkout "e1c36f468c7b78e851332cc7dae0bfce6bc8f886"
+git fetch --tags # to ensure you have the latest changes.
+git checkout tags/v0.2.7
 ./scripts/docker-build
 ```
 
