@@ -34,7 +34,7 @@ For a production release, the flow is automated by chained GitHub actions:
 - Review and merge the release PR.
 - On merge, the [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) workflow tags the merge commit with `v<version>`, which in turn triggers:
   - The [Release](.github/workflows/release.yml) workflow, which builds the artifacts and creates a draft GitHub release.
-  - The [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow, which deploys the new version to `staging` (see below).
+  - On completion of the Release workflow, the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow, which deploys the release artifacts to `staging` (see below).
 - Sanity check the release artifacts.
 - Write some release notes for the GitHub release, if you wish.
 - Make the release public.
@@ -56,7 +56,7 @@ The same can be done by hand:
 
 ## Deploy to `staging`
 
-Merging a release PR deploys the new version to `staging` automatically, via the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow. The same workflow can also be triggered manually from the GitHub Actions tab to deploy any ref. It makes a reproducible docker build and upgrades the canister with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
+Merging a release PR deploys the new version to `staging` automatically, via the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow. It runs when the [Release](.github/workflows/release.yml) workflow completes successfully for a `v*` tag and deploys exactly the artifacts built by that release. The workflow can also be triggered manually from the GitHub Actions tab to deploy any ref, in which case it makes a fresh reproducible docker build. Either way, the canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
 
 Alternatively, by hand: if you are a controller of the staging canister, a quick release can be made with:
 

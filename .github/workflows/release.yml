@@ -29,6 +29,14 @@ jobs:
         run: git tag --points-at HEAD
       - name: Build
         uses: ./.github/actions/build
+      - name: Upload build outputs
+        # Used by the "Deploy to Staging" workflow, so that it deploys
+        # exactly the artifacts that were released.
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-artifacts
+          path: out/
+          if-no-files-found: error
       - name: Release
         run: |
           for tag in $(git tag --points-at HEAD) ; do

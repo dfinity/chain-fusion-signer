@@ -34,7 +34,9 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Create Git tag
         # Pushing the tag with the app token triggers the Release workflow,
-        # which builds the artifacts and creates the GitHub release.
+        # which builds the artifacts and creates the GitHub release. When the
+        # Release workflow completes, the Deploy to Staging workflow deploys
+        # the release artifacts to staging.
         run: |
           git config url."https://github-actions:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
           git tag "v$VERSION"
@@ -43,13 +45,3 @@ jobs:
         env:
           VERSION: ${{ steps.get_version.outputs.version }}
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-  call-deploy-staging:
-    needs: tag
-    if: needs.tag.result == 'success'
-    permissions:
-      contents: read
-    uses: ./.github/workflows/deploy-staging.yml
-    with:
-      ref: ${{ github.event.pull_request.merge_commit_sha }}
-    secrets:
-      DFX_DEPLOY_KEY_STAGING: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
