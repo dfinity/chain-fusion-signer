@@ -38,6 +38,8 @@ jobs:
         # Release workflow completes, the Deploy to Staging workflow deploys
         # the release artifacts to staging.
         run: |
+          # Disable xtrace so that the token is not expanded into the logs.
+          set +x
           git config url."https://github-actions:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
           git tag "v$VERSION"
           git push origin "refs/tags/v$VERSION"

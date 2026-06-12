@@ -56,7 +56,7 @@ The same can be done by hand:
 
 ## Deploy to `staging`
 
-Merging a release PR deploys the new version to `staging` automatically, via the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow. It runs when the [Release](.github/workflows/release.yml) workflow completes successfully for a `v*` tag and deploys exactly the artifacts built by that release. The workflow can also be triggered manually from the GitHub Actions tab to deploy any ref, in which case it makes a fresh reproducible docker build. Either way, the canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
+Merging a release PR deploys the new version to `staging` automatically, via the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow. It runs when the [Release](.github/workflows/release.yml) workflow completes successfully for a `v*` tag and deploys exactly the Wasm built by that release. Note that the release artifacts are built for the `ic` network, so the workflow passes an explicit `Upgrade` argument to preserve the existing staging configuration instead of installing the `ic` init args. The workflow can also be triggered manually from the GitHub Actions tab to deploy any ref, in which case it makes a fresh reproducible docker build. Either way, the canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
 
 Alternatively, by hand: if you are a controller of the staging canister, a quick release can be made with:
 

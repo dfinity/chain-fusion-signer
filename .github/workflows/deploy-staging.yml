@@ -54,7 +54,11 @@ jobs:
         env:
           DFX_DEPLOY_KEY: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
       - name: Deploy signer to staging
-        run: dfx canister install signer --mode upgrade --upgrade-unchanged --network staging --yes
+        # The build artifacts contain the init args for DFX_NETWORK=ic, which
+        # do not apply to staging. Pass an explicit Upgrade argument so that
+        # post_upgrade preserves the existing staging configuration instead of
+        # applying the ic init args.
+        run: dfx canister install signer --mode upgrade --upgrade-unchanged --argument '(variant { Upgrade })' --network staging --yes
       - name: Verify deployment
         run: |
           sha256sum out/signer.wasm.gz
