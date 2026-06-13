@@ -66,7 +66,7 @@ dfx canister install signer --mode upgrade --upgrade-unchanged --argument '(null
 
 Note: the docker build produces `ic` install args, so pass `--argument '(null)'` to `dfx canister install` to preserve the existing staging configuration (an `Upgrade` argument), the same way the automated workflow does — installing the `ic` args would otherwise overwrite the staging key.
 
-If you are not a controller, you may request a canister upgrade via Orbit; contact Leon Tan for the latest Orbit deployment instructions.
+If you are not a controller, you may request a canister upgrade via Orbit; contact the Orbit team for the latest Orbit deployment instructions.
 
 ## 4. Upgrade production (NNS proposal)
 
