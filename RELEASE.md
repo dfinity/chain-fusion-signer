@@ -1,0 +1,59 @@
+# Release checklist
+
+A concise, end-to-end checklist for cutting a new release, deploying to `staging`, and upgrading production via an NNS proposal. See [HACKING.md](HACKING.md) for the detailed reference and the manual fallbacks.
+
+## 1. Cut the release
+
+- Trigger the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) workflow from the GitHub Actions tab, choosing the bump type (`patch | minor | major | alpha | beta | rc`).
+  - This runs `./scripts/version-bump`, which bumps `[workspace.package].version` in the root `Cargo.toml` and regenerates `Cargo.lock`, then opens a release PR from a `release/v*` branch.
+- Review and merge the release PR.
+
+## 2. Tag, build, and publish
+
+On merge, the following chain runs automatically:
+
+- [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) tags the merge commit with `v<version>`.
+- [Release](.github/workflows/release.yml) builds the artifacts and creates a **draft** GitHub release.
+- [Deploy to Staging](.github/workflows/deploy-staging.yml) deploys the release artifacts to `staging` (see step 3).
+
+Then, by hand:
+
+- Sanity check the draft release artifacts (the `report.txt` hashes and `commit.txt`).
+- Write the release notes.
+- Publish the release: `gh release edit v<version> --draft=false`.
+
+## 3. Deploy to `staging`
+
+- This happens **automatically** when the Release workflow completes for a `v*` tag.
+- Because the release artifacts are built for the `ic` network, the workflow passes an explicit `Upgrade` argument so the existing staging configuration (e.g. `ecdsa_key_name = "test_key_1"`) is preserved instead of installing the `ic` init args.
+- Verify the upgrade:
+  - `dfx canister info signer --network staging` — the module hash matches the release Wasm hash, and `git:tags` / `git:commit` metadata are correct.
+  - `dfx canister call signer config --network staging` — the config still shows the staging values.
+- To deploy a different ref or rebuild from scratch, trigger the Deploy to Staging workflow manually, or follow the by-hand steps in [HACKING.md](HACKING.md).
+
+## 4. Upgrade production (NNS proposal)
+
+- Ensure the GitHub release for the tag has been **published** (step 2).
+- Trigger the [Prepare Production Proposal](.github/workflows/prepare-proposal.yml) workflow with the release tag. It downloads the release assets, runs a reproducible docker build, verifies the Wasm and argument hashes match the release, generates `release/PROPOSAL.md` and `release/ROLLBACK.md`, and uploads everything as the `proposal-$TAG` workflow artifact.
+- On your machine (see prerequisites below):
+  - Check out the release commit.
+  - Delete any old `release/` directory and download the `proposal-$TAG` artifact into `release/`.
+  - Install `ic-admin`: `./scripts/setup ic-admin`.
+  - Review `release/PROPOSAL.md` and `release/ROLLBACK.md`.
+  - Run `./scripts/propose`, review the printed `ic-admin` command very carefully, then submit.
+- Schedule an appointment with trusted neurons to vote on the proposal.
+
+### Local prerequisites for submitting the proposal
+
+`./scripts/propose` runs `ic-admin` and signs the NNS submission with an HSM. Before running it, make sure:
+
+- **`ic-admin`** is installed for your platform. Note that `dev-tools.json` points at a Linux build; on macOS, fetch the `darwin` build of the pinned version from the [dfinity/ic releases](https://github.com/dfinity/ic/releases) into `~/.local/bin` (and ensure `~/.local/bin` is on your `PATH`).
+- The **HSM is connected** and you have its PIN. For the `ic` network, `propose` authenticates with `--use-hsm --key-id 01 --slot 0` and prompts for the PIN.
+- Your **NNS neuron ID** is ready. `propose` reads it from `~/.config/dfx/prod-neuron` if present, otherwise it prompts. The HSM identity must be a controller or hotkey of that neuron.
+- **`gh`** is authenticated (used to download release assets) and **`dfx`** is installed.
+
+### Running the proposal scripts by hand
+
+The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow (see [HACKING.md](HACKING.md) for the full sequence): `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5** (macOS ships bash 3.2; install a newer one with `brew install bash`), since `./scripts/docker-build` needs both.
+
+> Note: run the proposal scripts from an up-to-date `main` checkout rather than the release tag, so you pick up the latest tooling fixes (the scripts target the release via `-t v<version>` and do not need to be run from the release commit).

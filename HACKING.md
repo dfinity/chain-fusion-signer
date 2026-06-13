@@ -2,8 +2,11 @@
 
 This document lists information useful for development and deployment purpose.
 
+For a concise, end-to-end release checklist (version bump, staging, and the production NNS proposal), see [RELEASE.md](RELEASE.md).
+
 ## Table of content
 
+- [Release checklist](RELEASE.md)
 - [Demo](#demo)
 - [GitHub Release](#github-release)
 - [Deploy to `staging`](#deploy-to-staging)
