@@ -82,28 +82,15 @@ If you are not a controller, you may request a canister upgrade via Orbit; conta
 
 ### Local prerequisites for submitting the proposal
 
-`./scripts/propose` runs `ic-admin` and signs the NNS submission with an HSM. Before running it, make sure:
+`./scripts/propose` runs `ic-admin` and signs the NNS submission with an HSM. For installing the local tooling (`ic-admin`, Docker, bash), see [HACKING.md](HACKING.md#local-tooling). Before running it, make sure:
 
-- **`ic-admin`** is installed for your platform. The standard `./scripts/setup ic-admin` downloads a **Linux** binary, so on macOS fetch the `darwin` build of the pinned version (the `ic-admin` version in `dev-tools.json`) into `~/.local/bin` instead, and ensure `~/.local/bin` is on your `PATH`. From the repo root:
-
-  ```
-  mkdir -p ~/.local/bin
-  VERSION="$(jq -r '."ic-admin".version' dev-tools.json)"
-  curl -Lf "https://github.com/dfinity/ic/releases/download/$VERSION/ic-admin-x86_64-darwin.gz" | gunzip > ~/.local/bin/ic-admin
-  chmod 755 ~/.local/bin/ic-admin
-  ```
-
-  This is an x86_64 binary; on Apple Silicon it runs under Rosetta 2.
-
+- **`ic-admin`** is installed and on your `PATH` (macOS needs the `darwin` build — see the tooling notes linked above).
 - The **HSM is connected** and you have its PIN. For the `ic` network, `propose` authenticates with `--use-hsm --key-id 01 --slot 0` and prompts for the PIN.
 - Your **NNS neuron ID** is ready. `propose` reads it from `~/.config/dfx/prod-neuron` if present, otherwise it prompts. The HSM identity must be a controller or hotkey of that neuron.
 - **`gh`** is authenticated (used to download release assets) and **`dfx`** is installed.
 
 ### Running the proposal scripts by hand
 
-The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow: `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5**, since `./scripts/docker-build` needs both:
-
-- **Docker**: install with `brew install --cask docker-desktop`, then launch Docker.app once to start the daemon (the cask's final CLI symlink step needs `sudo`). On Apple Silicon, the reproducible build runs under `linux/amd64` emulation, so it is slower. A daemon-only alternative is Colima (`brew install docker colima && colima start`).
-- **bash >= 5**: macOS ships bash 3.2; install a newer one with `brew install bash`.
+The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow: `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5** (see the tooling notes linked above), since `./scripts/docker-build` needs both.
 
 > Note: run the proposal scripts from an up-to-date `main` checkout rather than the release tag, so you pick up the latest tooling fixes (the scripts target the release via `-t v<version>` and do not need to be run from the release commit).
