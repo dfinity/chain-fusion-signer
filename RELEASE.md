@@ -54,6 +54,9 @@ Then, by hand:
 
 ### Running the proposal scripts by hand
 
-The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow (see [HACKING.md](HACKING.md) for the full sequence): `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5** (macOS ships bash 3.2; install a newer one with `brew install bash`), since `./scripts/docker-build` needs both.
+The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow (see [HACKING.md](HACKING.md) for the full sequence): `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5**, since `./scripts/docker-build` needs both:
+
+- **Docker**: install with `brew install --cask docker-desktop`, then launch Docker.app once to start the daemon (the cask's final CLI symlink step needs `sudo`). On Apple Silicon, the reproducible build runs under `linux/amd64` emulation, so it is slower. A daemon-only alternative is Colima (`brew install docker colima && colima start`).
+- **bash >= 5**: macOS ships bash 3.2; install a newer one with `brew install bash`.
 
 > Note: run the proposal scripts from an up-to-date `main` checkout rather than the release tag, so you pick up the latest tooling fixes (the scripts target the release via `-t v<version>` and do not need to be run from the release commit).
