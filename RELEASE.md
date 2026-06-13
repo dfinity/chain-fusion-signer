@@ -1,6 +1,8 @@
 # Release checklist
 
-A concise, end-to-end checklist for cutting a new release, deploying to `staging`, and upgrading production via an NNS proposal. See [HACKING.md](HACKING.md) for the detailed reference and the manual fallbacks.
+A concise, end-to-end checklist for cutting a new release, deploying to `staging`, and upgrading production via an NNS proposal.
+
+For a throwaway **test release**, just push any tag and the [Release](.github/workflows/release.yml) workflow builds the artifacts and creates a release for that tag. The sections below describe a full **production release**.
 
 ## 1. Cut the release
 
@@ -22,14 +24,49 @@ Then, by hand:
 - Write the release notes.
 - Publish the release: `gh release edit v<version> --draft=false`.
 
+### By hand
+
+Sections 1 and 2 can also be done by hand:
+
+- Ensure the development tools in `dev-tools.json` are installed; in particular you may need `./scripts/setup cargo-edit`.
+- Create a release branch.
+- Bump the version with `./scripts/version-bump [patch | minor | major | alpha | beta | rc]` (default: `patch`), then merge the release branch.
+- Tag the merged commit with `./scripts/release`. This creates and pushes the tag; the Release GitHub action then builds the artifacts and creates the draft release.
+- Sanity check the artifacts, write the release notes, and publish the release (as above).
+
 ## 3. Deploy to `staging`
 
 - This happens **automatically** when the Release workflow completes for a `v*` tag.
 - Because the release artifacts are built for the `ic` network, the workflow passes an explicit `Upgrade` argument so the existing staging configuration (e.g. `ecdsa_key_name = "test_key_1"`) is preserved instead of installing the `ic` init args.
+- The canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
 - Verify the upgrade:
   - `dfx canister info signer --network staging` — the module hash matches the release Wasm hash, and `git:tags` / `git:commit` metadata are correct.
   - `dfx canister call signer config --network staging` — the config still shows the staging values.
-- To deploy a different ref or rebuild from scratch, trigger the Deploy to Staging workflow manually, or follow the by-hand steps in [HACKING.md](HACKING.md).
+- To deploy a different ref or rebuild from scratch, trigger the Deploy to Staging workflow manually from the GitHub Actions tab (it makes a fresh reproducible docker build).
+
+### By hand
+
+If you are a controller of the staging canister, you can deploy directly.
+
+A quick deploy (builds locally for the `staging` network, so it uses the correct staging args):
+
+```
+dfx deploy signer --network staging
+```
+
+Or deploy a reproducible docker build:
+
+```
+# Reproducible build; artifacts are placed in ./out/ (same location as `dfx build signer --ic`).
+./scripts/docker-build
+
+# Inspect the Wasm and install arguments in ./out/, then deploy:
+dfx canister install signer --mode upgrade --upgrade-unchanged --argument '(null)' --network staging
+```
+
+Note: the docker build produces `ic` install args, so pass `--argument '(null)'` to `dfx canister install` to preserve the existing staging configuration (an `Upgrade` argument), the same way the automated workflow does — installing the `ic` args would otherwise overwrite the staging key.
+
+If you are not a controller, you may request a canister upgrade via Orbit; contact Leon Tan for the latest Orbit deployment instructions.
 
 ## 4. Upgrade production (NNS proposal)
 
@@ -64,7 +101,7 @@ Then, by hand:
 
 ### Running the proposal scripts by hand
 
-The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow (see [HACKING.md](HACKING.md) for the full sequence): `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5**, since `./scripts/docker-build` needs both:
+The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow: `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5**, since `./scripts/docker-build` needs both:
 
 - **Docker**: install with `brew install --cask docker-desktop`, then launch Docker.app once to start the daemon (the cask's final CLI symlink step needs `sudo`). On Apple Silicon, the reproducible build runs under `linux/amd64` emulation, so it is slower. A daemon-only alternative is Colima (`brew install docker colima && colima start`).
 - **bash >= 5**: macOS ships bash 3.2; install a newer one with `brew install bash`.
