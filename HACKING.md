@@ -10,6 +10,7 @@ For a concise, end-to-end release checklist (version bump, staging, and the prod
 - [Demo](#demo)
 - [GitHub Release](#github-release)
 - [Deploy to `staging`](#deploy-to-staging)
+- [Deploy to Production](#deploy-to-production)
 
 ## Demo
 
