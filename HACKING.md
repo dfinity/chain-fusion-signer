@@ -1,6 +1,6 @@
 # Hacking
 
-This document lists information useful for development and deployment purpose.
+This document lists information useful for development purpose.
 
 For a concise, end-to-end release checklist (version bump, staging, and the production NNS proposal), see [RELEASE.md](RELEASE.md).
 
