@@ -1,12 +1,14 @@
 # Hacking
 
-This document lists information useful for development and deployment purpose.
+This document lists information useful for development purpose.
+
+For a concise, end-to-end release checklist (version bump, staging, and the production NNS proposal), see [RELEASE.md](RELEASE.md).
 
 ## Table of content
 
+- [Release checklist](RELEASE.md)
 - [Demo](#demo)
-- [GitHub Release](#github-release)
-- [Deploy to `staging`](#deploy-to-staging)
+- [Local tooling](#local-tooling)
 
 ## Demo
 
@@ -21,91 +23,27 @@ dfx deploy
 
 You can now visit the front end in your browser and sign messages!
 
-## GitHub Release
+## Local tooling
 
-Releases are created by a GitHub action.
+Most development tools are listed in `dev-tools.json` and can be installed with `./scripts/setup <tool>`. A few need extra steps, especially on macOS.
 
-For a test release, just push any tag and a release will be created for that tag.
+### ic-admin
 
-For a production release, the flow is automated by chained GitHub actions:
-
-- Trigger the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) workflow from the GitHub Actions tab, choosing the bump type (`patch|minor|major|alpha|beta|rc`).
-  - This runs `./scripts/version-bump` and opens a release PR from a `release/v*` branch.
-- Review and merge the release PR.
-- On merge, the [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) workflow tags the merge commit with `v<version>`, which in turn triggers:
-  - The [Release](.github/workflows/release.yml) workflow, which builds the artifacts and creates a draft GitHub release.
-  - On completion of the Release workflow, the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow, which deploys the release artifacts to `staging` (see below).
-- Sanity check the release artifacts.
-- Write some release notes for the GitHub release, if you wish.
-- Make the release public.
-
-### Manual release
-
-The same can be done by hand:
-
-- Ensure that you have the development tools listed in `dev-tools.json` installed on your machine. In particular, you may need:
-  - `./scripts/setup cargo-edit`
-- Create a release branch.
-- Update the version numbers in the git repository, with: `./scripts/version-bump [patch|minor|major|alpha|beta|rc]` (default: patch)
-- Merge the release branch.
-- Tag the merged code with: `scripts/release`.
-  - Note: This will create a tag and push it to GitHub. A GitHub action will then create a release.
-- Sanity check the release artifacts.
-- Write some release notes for the GitHub release, if you wish.
-- Make the release public.
-
-## Deploy to `staging`
-
-Merging a release PR deploys the new version to `staging` automatically, via the [Deploy to Staging](.github/workflows/deploy-staging.yml) workflow. It runs when the [Release](.github/workflows/release.yml) workflow completes successfully for a `v*` tag and deploys exactly the Wasm built by that release. Note that the release artifacts are built for the `ic` network, so the workflow passes an explicit `Upgrade` argument to preserve the existing staging configuration instead of installing the `ic` init args. The workflow can also be triggered manually from the GitHub Actions tab to deploy any ref, in which case it makes a fresh reproducible docker build. Either way, the canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
-
-Alternatively, by hand: if you are a controller of the staging canister, a quick release can be made with:
+`./scripts/setup ic-admin` downloads a **Linux** binary. On macOS, fetch the `darwin` build of the pinned version (the `ic-admin` version in `dev-tools.json`) into `~/.local/bin` instead, and ensure `~/.local/bin` is on your `PATH`. From the repo root:
 
 ```
-dfx deploy signer --network staging
+mkdir -p ~/.local/bin
+VERSION="$(jq -r '."ic-admin".version' dev-tools.json)"
+curl -Lf "https://github.com/dfinity/ic/releases/download/$VERSION/ic-admin-x86_64-darwin.gz" | gunzip > ~/.local/bin/ic-admin
+chmod 755 ~/.local/bin/ic-admin
 ```
 
-If you are a controller and wish to deploy a reproducible docker build:
+This is an x86_64 binary; on Apple Silicon it runs under Rosetta 2.
 
-```
-# Reproducible build
-./scripts/docker-build
-# Note: The docker build artifacts are placed in the same location
-#       as when running `dfx build signer --ic`
+### Docker
 
-# Inspect the Wasm and install arguments in `./out/`.
+Install with `brew install --cask docker-desktop`, then launch Docker.app once to start the daemon (the cask's final CLI symlink step needs `sudo`). On Apple Silicon, reproducible builds (`./scripts/docker-build`) run under `linux/amd64` emulation, so they are slower. A daemon-only alternative is Colima (`brew install docker colima && colima start`).
 
-# Deploy:
-dfx canister install signer --mode upgrade --upgrade-unchanged --network staging
-```
+### bash >= 5
 
-If you are not a controller, you may request a canister upgrade via Orbit. Please contact Leon Tan for the latest Orbit deployment instructions.
-
-## Deploy to Production
-
-- Create a GitHub release with a tag such as `v0.1.2`
-  - Update the GitHub release text. It is recommended to ask the team to review the text.
-  - Ensure that the release has been published.
-- Trigger the [Prepare Production Proposal](.github/workflows/prepare-proposal.yml) workflow from the GitHub Actions tab with the release tag. It will:
-  - Download the release Wasm and arguments to `release/ci`.
-  - Run a reproducible docker build and verify that the Wasm and argument file hashes match the release assets.
-  - Create `release/PROPOSAL.md` and `release/ROLLBACK.md` and upload them, together with the release assets, as a workflow artifact.
-- Check out the release commit.
-- Delete any old release directory and download the `proposal-$TAG` workflow artifact into `release/`.
-- Install the corresponding `ic-admin`: `./scripts/setup ic-admin`
-- Run: `./scripts/propose`
-  - Verify the proposal very carefully, then submit the proposal.
-- Create an appointment with trusted neurons to vote on the proposal.
-
-The same can be done by hand:
-
-- Check out the release commit
-- Delete any old release directory.
-- Install the corresponding `ic-admin`: `./scripts/setup ic-admin`
-- Run: `./scripts/proposal-assets -t $TAG`
-  - Verify that `release/ci` contains the release Wasm and arguments.
-  - Run a docker build locally and verify that the Wasm and argument file hashes match.
-- Run: `./scripts/proposal-template -t $TAG`
-  - Verify that `release/PROPOSAL.md` has been created.
-- Run: `./scripts/propose`
-  - Verify the proposal very carefully, then submit the proposal.
-- Create an appointment with trusted neurons to vote on the proposal.
+Some scripts (e.g. `./scripts/docker-build`) require bash >= 5; macOS ships bash 3.2. Install a newer one with `brew install bash`.
