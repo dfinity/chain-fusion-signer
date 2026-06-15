@@ -593,10 +593,14 @@ pub async fn btc_caller_send(
     payment: Option<PaymentType>,
 ) -> Result<SendBtcResponse, SendBtcError> {
     let n_inputs = params.utxos_to_spend.len() as u64;
+    // The builder may append a change output, so price one extra output beyond those
+    // the caller requested. Pricing outputs (not just inputs) prevents a caller from
+    // inflating the byte-based `bitcoin_send_transaction` cost with many cheap outputs.
+    let n_outputs = params.outputs.len() as u64 + 1;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
-            SignerMethods::BtcCallerSend.btc_fee_for_inputs(n_inputs),
+            SignerMethods::BtcCallerSend.btc_fee_for_tx(n_inputs, n_outputs),
         )
         .await?;
     match params.address_type {

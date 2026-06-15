@@ -19,14 +19,15 @@ impl SignerMethods {
     ///
     /// For most methods this is the exact fee deducted by the canister.
     ///
-    /// For `BtcCallerSign` and `BtcCallerSend` the deducted fee depends on the number
-    /// of transaction inputs (one `sign_with_ecdsa` per input). The value returned here
-    /// is a **grace-period default** sized for a 2-input transaction; it is intended
-    /// to give existing callers (who pre-approve a single cycle amount) a soft landing
-    /// while they migrate. The canister itself deducts the precise amount
-    /// `btc_base_fee() + n_inputs * btc_per_input_fee()`. Callers that handle BTC sign
-    /// or send should compute the total with [`Self::btc_fee_for_inputs`] rather than
-    /// relying on `fee()`.
+    /// For `BtcCallerSign` and `BtcCallerSend` the deducted fee depends on the
+    /// transaction shape (one `sign_with_ecdsa` per input, and for `BtcCallerSend` the
+    /// byte-based `bitcoin_send_transaction` cost, which grows with the number of
+    /// outputs). The value returned here is a **grace-period default** sized for a
+    /// 2-input, 2-output transaction; it is intended to give existing callers (who
+    /// pre-approve a single cycle amount) a soft landing while they migrate. The
+    /// canister itself deducts the precise amount: [`Self::btc_fee_for_inputs`] for
+    /// `BtcCallerSign`, and [`Self::btc_fee_for_tx`] for `BtcCallerSend`. Callers should
+    /// compute the total with those helpers rather than relying on `fee()`.
     #[must_use]
     #[allow(clippy::match_same_arms)]
     pub fn fee(&self) -> u128 {
@@ -34,9 +35,10 @@ impl SignerMethods {
         match self {
             SignerMethods::BtcCallerAddress => 79_000_000,
             SignerMethods::BtcCallerBalance => 113_000_000,
-            // Grace-period default sized for a 2-input transaction:
-            // btc_base_fee() + 2 * btc_per_input_fee() = 95 B + 2 * 37 B = 169 B
-            SignerMethods::BtcCallerSend => 169_000_000_000,
+            // Grace-period default sized for a 2-input, 2-output transaction:
+            // btc_base_fee() + 2 * btc_per_input_fee() + 2 * btc_per_output_fee()
+            //   = 95 B + 2 * 37 B + 2 * 1 B = 171 B
+            SignerMethods::BtcCallerSend => 171_000_000_000,
             // Grace-period default sized for a 2-input transaction:
             // btc_base_fee() + 2 * btc_per_input_fee() = 74 B + 2 * 37 B = 148 B
             SignerMethods::BtcCallerSign => 148_000_000_000,
@@ -83,8 +85,73 @@ impl SignerMethods {
     /// For non-BTC methods this returns [`Self::fee`] regardless of `n_inputs`, so it
     /// is safe to call on any variant, but the name reflects its intended use with
     /// `BtcCallerSign` and `BtcCallerSend`.
+    ///
+    /// Note: this prices inputs only. `BtcCallerSend` also pays a byte-based broadcast
+    /// cost that grows with the number of outputs; use [`Self::btc_fee_for_tx`] there.
     #[must_use]
     pub fn btc_fee_for_inputs(&self, n_inputs: u64) -> u128 {
         self.btc_base_fee() + u128::from(n_inputs) * self.btc_per_input_fee()
+    }
+
+    /// The cost, in cycles, charged per BTC transaction *output*.
+    ///
+    /// `BtcCallerSend` broadcasts the transaction via `bitcoin_send_transaction`, whose
+    /// cost is `5e9 + 20e6 * transaction_bytes` (mainnet). Each output adds a fixed
+    /// ~31–43 bytes to the serialized transaction (no witness data), i.e. up to ~860M
+    /// cycles; this rounds up to 1e9 to leave margin. `BtcCallerSign` never broadcasts,
+    /// so it pays nothing per output.
+    #[must_use]
+    pub fn btc_per_output_fee(&self) -> u128 {
+        match self {
+            SignerMethods::BtcCallerSend => 1_000_000_000,
+            _ => 0,
+        }
+    }
+
+    /// Total fee for a BTC send call that processes `n_inputs` inputs and `n_outputs`
+    /// outputs.
+    ///
+    /// Inputs drive the per-signature (`sign_with_ecdsa`) cost; outputs drive the
+    /// byte-based `bitcoin_send_transaction` cost. Pricing both prevents a caller from
+    /// inflating the canister's broadcast cost with many (potentially zero-value)
+    /// outputs while paying only the input-based fee.
+    #[must_use]
+    pub fn btc_fee_for_tx(&self, n_inputs: u64, n_outputs: u64) -> u128 {
+        self.btc_fee_for_inputs(n_inputs) + u128::from(n_outputs) * self.btc_per_output_fee()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SignerMethods::{BtcCallerSend, BtcCallerSign};
+
+    const B: u128 = 1_000_000_000;
+
+    #[test]
+    fn send_prices_each_output() {
+        // Only BtcCallerSend pays per output; the cost grows linearly with output count.
+        assert_eq!(BtcCallerSend.btc_per_output_fee(), B);
+        for (n_in, n_out) in [(1, 1), (1, 5_000), (3, 200)] {
+            assert_eq!(
+                BtcCallerSend.btc_fee_for_tx(n_in, n_out),
+                BtcCallerSend.btc_fee_for_inputs(n_in) + u128::from(n_out) * B,
+            );
+        }
+    }
+
+    #[test]
+    fn send_grace_default_matches_2in_2out() {
+        // The fee() grace-period default is the precise cost of a 2-input, 2-output tx.
+        assert_eq!(BtcCallerSend.btc_fee_for_tx(2, 2), BtcCallerSend.fee());
+    }
+
+    #[test]
+    fn sign_does_not_pay_for_outputs() {
+        // BtcCallerSign never broadcasts, so outputs are free and fee_for_tx == fee_for_inputs.
+        assert_eq!(BtcCallerSign.btc_per_output_fee(), 0);
+        assert_eq!(
+            BtcCallerSign.btc_fee_for_tx(2, 10_000),
+            BtcCallerSign.btc_fee_for_inputs(2),
+        );
     }
 }
