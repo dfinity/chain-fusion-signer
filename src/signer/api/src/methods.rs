@@ -110,7 +110,8 @@ impl SignerMethods {
     }
 
     /// Total fee for a BTC send call that processes `n_inputs` inputs and `n_outputs`
-    /// outputs.
+    /// outputs (including a potential change output; `btc_caller_send` charges
+    /// `requested_outputs + 1`).
     ///
     /// Inputs drive the per-signature (`sign_with_ecdsa`) cost; outputs drive the
     /// byte-based `bitcoin_send_transaction` cost. Pricing both prevents a caller from
