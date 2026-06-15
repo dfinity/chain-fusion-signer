@@ -25,9 +25,10 @@ impl SignerMethods {
     /// outputs). The value returned here is a **grace-period default** sized for a
     /// 2-input, 2-output transaction; it is intended to give existing callers (who
     /// pre-approve a single cycle amount) a soft landing while they migrate. The
-    /// canister itself deducts the precise amount: [`Self::btc_fee_for_inputs`] for
-    /// `BtcCallerSign`, and [`Self::btc_fee_for_tx`] for `BtcCallerSend`. Callers should
-    /// compute the total with those helpers rather than relying on `fee()`.
+    /// canister itself deducts the amount computed by [`Self::btc_fee_for_inputs`] for
+    /// `BtcCallerSign`, and by [`Self::btc_fee_for_tx`] for `BtcCallerSend` (with
+    /// `n_outputs` including a potential change output). Callers should compute the total
+    /// with those helpers rather than relying on `fee()`.
     #[must_use]
     #[allow(clippy::match_same_arms)]
     pub fn fee(&self) -> u128 {
