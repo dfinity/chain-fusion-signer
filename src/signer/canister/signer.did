@@ -216,24 +216,25 @@ type RejectionCode = variant {
 type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
 type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
 type Result_10 = variant {
+  Ok : record { EcdsaPublicKeyResult };
+  Err : EthAddressError;
+};
+type Result_11 = variant {
   Ok : record { SignWithEcdsaResult };
   Err : EthAddressError;
 };
 type Result_2 = variant { Ok : SendBtcResponse; Err : SendBtcError };
-type Result_3 = variant { Ok : SignBtcResponse; Err : SendBtcError };
-type Result_4 = variant { Ok : EthAddressResponse; Err : EthAddressError };
-type Result_5 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
-type Result_6 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
-type Result_7 = variant {
-  Ok : record { EcdsaPublicKeyResult };
-  Err : EthAddressError;
-};
+type Result_3 = variant { Ok; Err : SendBtcError };
+type Result_4 = variant { Ok : SignBtcResponse; Err : SendBtcError };
+type Result_5 = variant { Ok : EthAddressResponse; Err : EthAddressError };
+type Result_6 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
+type Result_7 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
 type Result_8 = variant {
-  Ok : record { SignWithEcdsaResult };
+  Ok : record { EcdsaPublicKeyResult };
   Err : EthAddressError;
 };
 type Result_9 = variant {
-  Ok : record { EcdsaPublicKeyResult };
+  Ok : record { SignWithEcdsaResult };
   Err : EthAddressError;
 };
 // # Schnorr Algorithm.
@@ -384,6 +385,33 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   btc_caller_send : (SendBtcRequest, opt PaymentType) -> (Result_2);
+  // Broadcasts an already-signed, externally-built BTC transaction (raw bytes).
+  // 
+  // Unlike [`btc_caller_send`], this endpoint does not build, sign or finalize anything: it
+  // relays the caller-provided raw transaction bytes straight to the Bitcoin network. It exists
+  // so that a client (e.g. a wallet that finalized a PSBT itself) can broadcast a transaction the
+  // signer never constructed — for example WalletConnect `signPsbt` with `broadcast: true`.
+  // 
+  // # Details
+  // - Charges a FLAT fee via `PAYMENT_GUARD.deduct(..)` BEFORE the outcall (see
+  // [`SignerMethods::BtcCallerSendRawTransaction`]). No t-ECDSA signing happens here, so the fee
+  // is not priced per input/output.
+  // - Sends the transaction with `bitcoin_api::send_transaction(..)`.
+  // - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
+  // 
+  // # Security
+  // This is a public relay. The threat model is DoS / cycle-drain, not theft: the Bitcoin network
+  // only accepts a transaction that already carries valid signatures, so a caller cannot spend
+  // UTXOs they do not control. The flat payment-guard fee, enforced before the outcall, is the
+  // mitigation against cheap amplification. The raw bytes are passed through verbatim — they are
+  // never deserialized here — so invalid or garbage bytes are rejected by the Bitcoin canister and
+  // surfaced as `SendBtcError::InternalError`; this endpoint never panics on them.
+  // 
+  // # Panics
+  // - If the caller is the anonymous user.
+  btc_caller_send_raw_transaction : (Network, blob, opt PaymentType) -> (
+      Result_3,
+    );
   // Creates and signs a BTC transaction from the caller's address without broadcasting it.
   // 
   // # Details
@@ -397,7 +425,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  btc_caller_sign : (SendBtcRequest, opt PaymentType) -> (Result_3);
+  btc_caller_sign : (SendBtcRequest, opt PaymentType) -> (Result_4);
   // Show the canister configuration.
   config : () -> (Config) query;
   // Returns the Ethereum address of a specified user.
@@ -412,7 +440,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  eth_address : (EthAddressRequest, opt PaymentType) -> (Result_4);
+  eth_address : (EthAddressRequest, opt PaymentType) -> (Result_5);
   // Returns the Ethereum address of the caller.
   // 
   // # Details
@@ -423,7 +451,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  eth_address_of_caller : (opt PaymentType) -> (Result_4);
+  eth_address_of_caller : (opt PaymentType) -> (Result_5);
   // Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
   // 
   // # Details
@@ -438,7 +466,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  eth_personal_sign : (EthPersonalSignRequest, opt PaymentType) -> (Result_5);
+  eth_personal_sign : (EthPersonalSignRequest, opt PaymentType) -> (Result_6);
   // Computes an Ethereum signature for a precomputed hash.
   // 
   // # Details
@@ -452,7 +480,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  eth_sign_prehash : (EthSignPrehashRequest, opt PaymentType) -> (Result_6);
+  eth_sign_prehash : (EthSignPrehashRequest, opt PaymentType) -> (Result_7);
   // Computes an Ethereum signature for an [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction.
   // 
   // # Details
@@ -468,7 +496,7 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   eth_sign_transaction : (EthSignTransactionRequest, opt PaymentType) -> (
-      Result_6,
+      Result_7,
     );
   // Returns the generic ECDSA public key of the caller.
   // 
@@ -485,7 +513,7 @@ service : (Arg) -> {
   // # Panics
   // - If the caller is the anonymous user.
   generic_caller_ecdsa_public_key : (EcdsaPublicKeyArgs, opt PaymentType) -> (
-      Result_7,
+      Result_8,
     );
   // Signs a message using the caller's ECDSA key.
   // 
@@ -501,7 +529,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgs) -> (Result_8);
+  generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgs) -> (Result_9);
   // API method to get cycle balance and burn rate.
   get_canister_status : () -> (CanisterStatusResultV2);
   // Processes external HTTP requests.
@@ -538,7 +566,7 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  schnorr_public_key : (SchnorrPublicKeyArgs, opt PaymentType) -> (Result_9);
+  schnorr_public_key : (SchnorrPublicKeyArgs, opt PaymentType) -> (Result_10);
   // Signs a message using the caller's Schnorr key.
   // 
   // Note: This is an exact dual of the canister [`sign_with_schnorr`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_schnorr) method.  The argument and response types are also the same.
@@ -571,5 +599,5 @@ service : (Arg) -> {
   // 
   // # Panics
   // - If the caller is the anonymous user.
-  schnorr_sign : (SignWithSchnorrArgs, opt PaymentType) -> (Result_10);
+  schnorr_sign : (SignWithSchnorrArgs, opt PaymentType) -> (Result_11);
 }

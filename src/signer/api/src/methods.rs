@@ -9,6 +9,7 @@ pub enum SignerMethods {
     BtcCallerAddress,
     BtcCallerBalance,
     BtcCallerSend,
+    BtcCallerSendRawTransaction,
     BtcCallerSign,
     SchnorrPublicKey,
     SchnorrSign,
@@ -40,6 +41,22 @@ impl SignerMethods {
             // btc_base_fee() + 2 * btc_per_input_fee() + 2 * btc_per_output_fee()
             //   = 95 B + 2 * 37 B + 2 * 1 B = 171 B
             SignerMethods::BtcCallerSend => 171_000_000_000,
+            // Flat fee for broadcasting an externally-built, already-signed raw transaction.
+            //
+            // Unlike `BtcCallerSend`, this method performs NO t-ECDSA signing, so it is NOT
+            // priced per input. Its only cost is the `bitcoin_send_transaction` outcall, whose
+            // mainnet cost is `5e9 + 20e6 * transaction_bytes`. A raw transaction can be large
+            // (the protocol caps it around 100 KB), giving a worst-case outcall cost of roughly
+            // `5e9 + 20e6 * 100_000 ≈ 2e12` cycles for a pathological payload, but a few hundred
+            // bytes for a normal one.
+            //
+            // The endpoint is a public relay, so the threat model is DoS / cycle-drain rather
+            // than UTXO theft (a valid signature is still required for the Bitcoin network to
+            // accept the tx). A flat 100 B cycles sits in the same magnitude family as the other
+            // BTC methods, comfortably exceeds the broadcast cost of any realistic transaction,
+            // and makes spamming the relay to drain canister cycles uneconomical. It is a flat
+            // fee because there is no per-input/per-signature work to meter here.
+            SignerMethods::BtcCallerSendRawTransaction => 100_000_000_000,
             // Grace-period default sized for a 2-input transaction:
             // btc_base_fee() + 2 * btc_per_input_fee() = 74 B + 2 * 37 B = 148 B
             SignerMethods::BtcCallerSign => 148_000_000_000,
@@ -125,9 +142,22 @@ impl SignerMethods {
 
 #[cfg(test)]
 mod tests {
-    use super::SignerMethods::{BtcCallerSend, BtcCallerSign};
+    use super::SignerMethods::{BtcCallerSend, BtcCallerSendRawTransaction, BtcCallerSign};
 
     const B: u128 = 1_000_000_000;
+
+    #[test]
+    fn send_raw_transaction_charges_a_flat_fee() {
+        // The raw-broadcast relay does no t-ECDSA signing, so its fee is a single flat value and
+        // does not scale with inputs or outputs.
+        assert_eq!(BtcCallerSendRawTransaction.fee(), 100 * B);
+        assert_eq!(BtcCallerSendRawTransaction.btc_per_input_fee(), 0);
+        assert_eq!(BtcCallerSendRawTransaction.btc_per_output_fee(), 0);
+        assert_eq!(
+            BtcCallerSendRawTransaction.btc_fee_for_tx(10, 10),
+            BtcCallerSendRawTransaction.fee(),
+        );
+    }
 
     #[test]
     fn send_prices_each_output() {
