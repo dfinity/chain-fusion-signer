@@ -1,5 +1,6 @@
 use candid::Principal;
 use ic_cdk::{api::msg_caller, export_candid, init, post_upgrade, query, update};
+use ic_cdk_bitcoin_canister::Network;
 use ic_cdk_management_canister::{
     EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult,
     SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
@@ -619,6 +620,48 @@ pub async fn btc_caller_send(
             })
         }
     }
+}
+
+/// Broadcasts an already-signed, externally-built BTC transaction (raw bytes).
+///
+/// Unlike [`btc_caller_send`], this endpoint does not build, sign or finalize anything: it
+/// relays the caller-provided raw transaction bytes straight to the Bitcoin network. It exists
+/// so that a client (e.g. a wallet that finalized a PSBT itself) can broadcast a transaction the
+/// signer never constructed — for example `WalletConnect` `signPsbt` with `broadcast: true`.
+///
+/// # Details
+/// - Charges a FLAT fee via `PAYMENT_GUARD.deduct(..)` BEFORE the outcall (see
+///   [`SignerMethods::BtcCallerSendRawTransaction`]). No t-ECDSA signing happens here, so the fee
+///   is not priced per input/output.
+/// - Sends the transaction with `bitcoin_api::send_transaction(..)`.
+///   - Costs: See [Bitcoin API fees and pricing](https://internetcomputer.org/docs/current/references/bitcoin-how-it-works#api-fees-and-pricing)
+///
+/// # Security
+/// This is a public relay. The threat model is `DoS` / cycle-drain, not theft: the Bitcoin network
+/// only accepts a transaction that already carries valid signatures, so a caller cannot spend
+/// UTXOs they do not control. The flat payment-guard fee, enforced before the outcall, is the
+/// mitigation against cheap amplification. The raw bytes are passed through verbatim — they are
+/// never deserialized here — so invalid or garbage bytes are rejected by the Bitcoin canister and
+/// surfaced as `SendBtcError::InternalError`; this endpoint never panics on them.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn btc_caller_send_raw_transaction(
+    network: Network,
+    transaction: Vec<u8>,
+    payment: Option<PaymentType>,
+) -> Result<(), SendBtcError> {
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::BtcCallerSendRawTransaction.fee(),
+        )
+        .await?;
+
+    bitcoin_api::send_transaction(network, transaction)
+        .await
+        .map_err(|msg| SendBtcError::InternalError { msg })
 }
 
 // /////////////////////

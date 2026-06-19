@@ -297,3 +297,94 @@ mod caller_sign {
         assert!(hex::decode(&response.signed_transaction_hex).is_ok());
     }
 }
+
+mod caller_send_raw {
+    use super::*;
+
+    /// A standard `btc_caller_send_raw_transaction()` call, approving exactly the flat fee.
+    fn paid_caller_send_raw(
+        test_env: &TestSetup,
+        caller: Principal,
+        network: Network,
+        transaction: &[u8],
+    ) -> Result<Result<(), SendBtcError>, String> {
+        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+        let payment_recipient = cycles_ledger::Account {
+            owner: test_env.signer.canister_id(),
+            subaccount: None,
+        };
+        let amount: u128 = SignerMethods::BtcCallerSendRawTransaction.fee() + LEDGER_FEE;
+        test_env
+            .ledger
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .expect("Failed to call ledger canister")
+            .expect("Failed to approve payment");
+
+        test_env.signer.btc_caller_send_raw_transaction(
+            caller,
+            &network,
+            &serde_bytes::ByteBuf::from(transaction.to_vec()),
+            &Some(payment_type),
+        )
+    }
+
+    #[test]
+    fn test_anonymous_cannot_send_raw_transaction() {
+        let test_env = TestSetup::default();
+
+        let response = test_env.signer.btc_caller_send_raw_transaction(
+            Principal::anonymous(),
+            &Network::Regtest,
+            &serde_bytes::ByteBuf::from(vec![0x01, 0x02, 0x03]),
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
+        );
+
+        assert!(response.is_err());
+        assert_eq!(
+            response.unwrap_err(),
+            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
+        );
+    }
+
+    #[test]
+    fn test_send_raw_without_payment_fails_with_payment_error() {
+        let test_env = TestSetup::default();
+
+        // No icrc2_approve: the payment guard must reject before any Bitcoin outcall.
+        let response = test_env
+            .signer
+            .btc_caller_send_raw_transaction(
+                test_env.user,
+                &Network::Regtest,
+                &serde_bytes::ByteBuf::from(vec![0x01, 0x02, 0x03]),
+                &Some(PaymentType::CallerPaysIcrc2Cycles),
+            )
+            .expect("Failed to call btc_caller_send_raw_transaction");
+
+        assert!(
+            matches!(response, Err(SendBtcError::PaymentError(_))),
+            "expected a PaymentError, got {response:?}"
+        );
+    }
+
+    #[test]
+    fn test_send_raw_garbage_bytes_is_rejected_gracefully() {
+        let test_env = TestSetup::default();
+
+        // The fee is charged up front (the payment guard runs before the outcall); the Bitcoin
+        // canister then rejects the malformed transaction. The endpoint must surface this as a
+        // graceful `InternalError` rather than trapping/panicking on the invalid bytes.
+        let response = paid_caller_send_raw(
+            &test_env,
+            test_env.user,
+            Network::Regtest,
+            &[0xde, 0xad, 0xbe, 0xef],
+        )
+        .expect("Call to btc_caller_send_raw_transaction trapped unexpectedly");
+
+        assert!(
+            matches!(response, Err(SendBtcError::InternalError { .. })),
+            "expected an InternalError from the Bitcoin canister, got {response:?}"
+        );
+    }
+}
