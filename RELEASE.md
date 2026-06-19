@@ -4,9 +4,14 @@ A concise, end-to-end checklist for cutting a new release, deploying to `staging
 
 For a throwaway **test release**, just push any tag and the [Release](.github/workflows/release.yml) workflow builds the artifacts and creates a release for that tag. The sections below describe a full **production release**.
 
-## 1. Cut the release
+> ⚠️ **The automated path is not provisioned yet — follow the "By hand" steps throughout.** As of the `v0.5.0` release the automation has never run successfully because its CI secrets are not set up, so each automated step fails and has to be done by hand. **Do not start by triggering the automated workflows** — go straight to the by-hand steps in each section. The missing pieces:
+>
+> - **Version bump (§1) and tag-on-merge (§2):** the `PR_AUTOMATION_BOT_PUBLIC_APP_ID` variable and `PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY` secret. Without them both workflows fail at "Create GitHub App Token" (`private-key input must be set to a non-empty string`).
+> - **Staging deploy (§3):** the `DFX_DEPLOY_KEY_STAGING` secret. Without it the deploy fails at "Import deployment identity" (`Failed to validate pem file ... missing data`).
+>
+> Until all three are provisioned, the by-hand flow is: §1 manual version-bump PR → §2 `./scripts/release` to tag → §3 manual `dfx canister install` to staging. Once the secrets are set up, the automated path below should work and this banner can be removed.
 
-> **Prerequisite for the automated path.** Both the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) and [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) workflows authenticate as a GitHub App, using the `PR_AUTOMATION_BOT_PUBLIC_APP_ID` repository (or org) variable and the `PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY` secret. If these are not provisioned, both workflows fail immediately at the "Create GitHub App Token" step (`private-key input must be set to a non-empty string`). Until they are set up, use the **By hand** steps below instead.
+## 1. Cut the release
 
 - Trigger the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) workflow from the GitHub Actions tab, choosing the bump type (`patch | minor | major | alpha | beta | rc`).
   - This runs `./scripts/version-bump`, which bumps `[workspace.package].version` in the root `Cargo.toml` and regenerates `Cargo.lock`, then opens a release PR from a `release/v*` branch.
@@ -38,7 +43,7 @@ Sections 1 and 2 can also be done by hand:
 
 ## 3. Deploy to `staging`
 
-- This happens **automatically** when the Release workflow completes for a `v*` tag.
+- This happens **automatically** when the Release workflow completes for a `v*` tag — **provided the `DFX_DEPLOY_KEY_STAGING` secret is set** (a controller identity of the staging canister, in PEM form). If it is missing the workflow fails at "Import deployment identity" (`Failed to validate pem file ... missing data`); use the **By hand** deploy below instead.
 - Because the release artifacts are built for the `ic` network, the workflow passes an explicit `Upgrade` argument so the existing staging configuration (e.g. `ecdsa_key_name = "test_key_1"`) is preserved instead of installing the `ic` init args.
 - The canister is upgraded with the `DFX_DEPLOY_KEY_STAGING` identity, which must be a controller of the staging canister.
 - Verify the upgrade:
