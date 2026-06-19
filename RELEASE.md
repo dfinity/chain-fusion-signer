@@ -53,25 +53,41 @@ Sections 1 and 2 can also be done by hand:
 
 ### By hand
 
-If you are a controller of the staging canister, you can deploy directly.
-
-A quick deploy (builds locally for the `staging` network, so it uses the correct staging args):
+If you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** — no local or docker build needed. It encodes the gotchas that otherwise turn this into a back-and-forth (verified working for `v0.5.0`):
 
 ```
-dfx deploy signer --network staging
+# 0. Work from the release commit and confirm your identity controls staging:
+#      dfx identity get-principal   # must appear in:
+#      dfx canister info signer --network staging   # "Controllers:" list
+
+# 1. Download the release Wasm into the path dfx.json expects, then verify its
+#    sha256 against the release report.txt (the `out/signer.wasm.gz` line).
+gh release download v<version> --pattern signer.wasm.gz --output out/signer.wasm.gz --clobber
+shasum -a 256 out/signer.wasm.gz   # must equal the hash in report.txt
+
+# 2. Create the dfx workspace dir so dfx can RUN its Candid compat check instead of
+#    falling back to an interactive prompt (which a non-interactive shell auto-declines):
+mkdir -p .dfx/staging/canisters/signer
+
+# 3. CRITICAL — neutralize the init args. dfx.json sets `init_arg_file: out/signer.args.did`,
+#    which holds the *production* args (`ecdsa_key_name = "key_1"`). dfx reads that file and
+#    IGNORES a `--argument` flag, so you must overwrite the file with `(null)`, otherwise the
+#    upgrade repoints staging at the production key. `(null)` => `post_upgrade(None)` => the
+#    existing staging config (`test_key_1`) is preserved.
+printf '(null)\n' > out/signer.args.did
+
+# 4. Install the upgrade. `--wasm` installs the pre-built module directly; `--yes` confirms
+#    past dfx's Candid check (benign here — the interface is unchanged across a pricing-only
+#    release; for any release, diff the deployed candid vs the new `signer.did` to be sure).
+dfx canister install signer --wasm out/signer.wasm.gz \
+  --mode upgrade --upgrade-unchanged --network staging --yes
 ```
 
-Or deploy a reproducible docker build:
+Then verify (as in the bullets above): the module hash equals the release Wasm hash, `git:tags`/`git:commit` are correct, and `dfx canister call signer config --network staging` still shows `ecdsa_key_name = "test_key_1"` (**not** `key_1`).
 
-```
-# Reproducible build; artifacts are placed in ./out/ (same location as `dfx build signer --ic`).
-./scripts/docker-build
+> If `dfx canister metadata` / `info` queries trigger a mainnet plaintext-identity confirmation, prefix the command with `DFX_WARNING=-mainnet_plaintext_identity`.
 
-# Inspect the Wasm and install arguments in ./out/, then deploy:
-dfx canister install signer --mode upgrade --upgrade-unchanged --argument '(null)' --network staging
-```
-
-Note: the docker build produces `ic` install args, so pass `--argument '(null)'` to `dfx canister install` to preserve the existing staging configuration (an `Upgrade` argument), the same way the automated workflow does — installing the `ic` args would otherwise overwrite the staging key.
+Alternatively, rebuild from scratch with `./scripts/docker-build` and install the same way — but the published Wasm is already that reproducible artifact, so downloading it (step 1) is simpler and provably identical.
 
 If you are not a controller, you may request a canister upgrade via Orbit; contact the Orbit team for the latest Orbit deployment instructions.
 
