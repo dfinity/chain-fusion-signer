@@ -93,6 +93,8 @@ If you are not a controller, you may request a canister upgrade via Orbit; conta
 
 ## 4. Upgrade production (NNS proposal)
 
+> ⚠️ **The [Prepare Production Proposal](.github/workflows/prepare-proposal.yml) workflow is currently broken** — its "Build reproducibly" step runs `git log | head -n1` under `set -o pipefail`, so `git log` gets SIGPIPE and the step fails with exit code 141 (fix: use `git log -1 --format=%H`). Until that is fixed, prepare the proposal with the **by-hand scripts** below; they do exactly the same work locally and are the path verified for `v0.5.0`.
+
 - Ensure the GitHub release for the tag has been **published** (step 2).
 - Trigger the [Prepare Production Proposal](.github/workflows/prepare-proposal.yml) workflow with the release tag. It downloads the release assets, runs a reproducible docker build, verifies the Wasm and argument hashes match the release, generates `release/PROPOSAL.md` and `release/ROLLBACK.md`, and uploads everything as the `proposal-$TAG` workflow artifact.
 - On your machine (see prerequisites below):
@@ -114,6 +116,31 @@ If you are not a controller, you may request a canister upgrade via Orbit; conta
 
 ### Running the proposal scripts by hand
 
-The proposal scripts can also be run directly instead of via the Prepare Production Proposal workflow: `./scripts/proposal-assets -t v<version>`, then verify with a local `./scripts/docker-build`, then `./scripts/proposal-template -t v<version>`, then `./scripts/propose`. The manual fallback additionally requires **Docker** and **bash >= 5** (see the tooling notes linked above), since `./scripts/docker-build` needs both.
+Run these from an up-to-date `main` checkout (you pick up the latest tooling fixes; the scripts target the release via `-t v<version>` and need not run from the release commit). The first three steps are a **safe dry run** — they download, build, and template only; nothing touches the HSM or gets submitted, so you can review everything in advance. They additionally require **Docker** and **bash >= 5** (see the tooling notes linked above).
 
-> Note: run the proposal scripts from an up-to-date `main` checkout rather than the release tag, so you pick up the latest tooling fixes (the scripts target the release via `-t v<version>` and do not need to be run from the release commit).
+```
+# 1. Download the published release assets into release/ci/ (prints their sha256sums).
+./scripts/proposal-assets -t v<version>
+
+# 2. Reproduce the build locally and verify it is bit-for-bit identical to the release.
+#    out/signer.wasm.gz must equal the `out/signer.wasm.gz` hash in release/ci/report.txt;
+#    out/signer.args.{did,bin} must equal the matching release/ci files.
+./scripts/docker-build
+sha256sum out/signer.wasm.gz   # compare against release/ci/report.txt
+
+# 3. Generate the proposal text and review it.
+./scripts/proposal-template -t v<version>
+#    -> release/PROPOSAL.md  (upgrade to v<version>: target canister, wasm + arg hashes, changelog)
+#    -> release/ROLLBACK.md  (revert to the previous version)
+```
+
+Sanity-check `release/PROPOSAL.md`: the wasm hash matches step 2, the **Candid/binary arg hashes are the production args** (`ecdsa_key_name = "key_1"`, not `test_key_1`), and `release/ROLLBACK.md` points at the version currently on production.
+
+Then submit (HSM-gated — see prerequisites above):
+
+```
+# 4. Builds the ic-admin command, prints it for review, then signs with the HSM and submits.
+./scripts/propose
+```
+
+> Note: `out/` and `release/ci/` are build outputs left in the working tree by the dry run — harmless, git-ignored, and overwritten on the next run.
