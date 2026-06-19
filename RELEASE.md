@@ -91,6 +91,7 @@ dfx canister install signer --wasm out/signer.wasm.gz \
 ```
 
 **CHECK** (prefix queries with `DFX_WARNING=-mainnet_plaintext_identity` if a plaintext-identity confirmation appears):
+
 - `dfx canister info signer --network staging` → **module hash equals the release wasm hash** (step 3); `git:tags` = `v<version>`, `git:commit` = the release commit.
 - `dfx canister call signer config --network staging` → still `ecdsa_key_name = "test_key_1"` (**not** `key_1`).
 
