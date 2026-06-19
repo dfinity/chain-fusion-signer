@@ -6,6 +6,8 @@ For a throwaway **test release**, just push any tag and the [Release](.github/wo
 
 ## 1. Cut the release
 
+> **Prerequisite for the automated path.** Both the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) and [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) workflows authenticate as a GitHub App, using the `PR_AUTOMATION_BOT_PUBLIC_APP_ID` repository (or org) variable and the `PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY` secret. If these are not provisioned, both workflows fail immediately at the "Create GitHub App Token" step (`private-key input must be set to a non-empty string`). Until they are set up, use the **By hand** steps below instead.
+
 - Trigger the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) workflow from the GitHub Actions tab, choosing the bump type (`patch | minor | major | alpha | beta | rc`).
   - This runs `./scripts/version-bump`, which bumps `[workspace.package].version` in the root `Cargo.toml` and regenerates `Cargo.lock`, then opens a release PR from a `release/v*` branch.
 - Review and merge the release PR.
