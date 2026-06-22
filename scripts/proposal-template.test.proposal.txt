@@ -2,8 +2,9 @@
 Commit: `e1c36f468c7b78e851332cc7dae0bfce6bc8f886`
 Release: `https://github.com/dfinity/chain-fusion-signer/releases/tag/v0.2.8`
 Wasm sha256 hash: `9d76ee4646df62d1a4bddbdfb4fa78e43166c19a94595ba9e1f5f27b823c8192`
-Candid argument hash: `a99d4a8355c86d2367955d833df83302b5748e6e34898e280e359f9c57541e1f`
-Binary argument hash: `367a11245d7e97692843c69e9582dd8ad08eef1ff3392dfd0c944d5f1bd74a41`
+Upgrade argument: `(variant { Upgrade })` (preserves the existing canister configuration)
+Candid argument hash: `5ea6172390cb0bdb8cec26a66cb6ce18f714c7f842fddec6e87ef2ad31289b04`
+Binary argument hash: `100d1390b7762eef1bc2af9d6fdd157bb800bfc3787142c435d4c28747d0ac30`
 
 The chain fusion signer is a canister that makes the internet computer threshold signing API available to web applications, off-chain clients and other-chain applications.
 
