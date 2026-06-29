@@ -242,7 +242,8 @@ pub(crate) struct BtcSignPrehashRequest {
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct BtcSignPrehashResponse {
     /// Hex-encoded 64-byte ECDSA signature (`r || s`), as returned by the management canister.
-    /// The caller recovers the recovery id (and any encoding it needs) from the known public key.
+    /// The caller recovers the recovery id (and any encoding it needs) from the known public
+    /// key.
     pub(crate) signature: String,
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]

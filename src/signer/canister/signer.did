@@ -18,7 +18,8 @@ type BtcSignPrehashRequest = record {
 };
 type BtcSignPrehashResponse = record {
   // Hex-encoded 64-byte ECDSA signature (`r || s`), as returned by the management canister.
-  // The caller recovers the recovery id (and any encoding it needs) from the known public key.
+  // The caller recovers the recovery id (and any encoding it needs) from the known public
+  // key.
   signature : text;
 };
 type BtcTxOutput = record { destination_address : text; sent_satoshis : nat64 };
@@ -423,7 +424,7 @@ service : (Arg) -> {
   // This is the Bitcoin counterpart of `eth_sign_prehash`: it signs an arbitrary hash with the
   // caller's BTC key (schema `Btc`), so the signature verifies against the caller's P2WPKH address.
   // Unlike `btc_caller_sign`, which builds and signs a transaction from supplied UTXOs, this signs
-  // any digest, which is what arbitrary message / PSBT signing (e.g. WalletConnect `signMessage` /
+  // any digest, which is what arbitrary message / PSBT signing (e.g. `WalletConnect` `signMessage` /
   // `signPsbt`) requires. `generic_sign_with_ecdsa` cannot serve this: it derives a different
   // (schema `Generic`) key whose signatures do not match the BTC address.
   // 
