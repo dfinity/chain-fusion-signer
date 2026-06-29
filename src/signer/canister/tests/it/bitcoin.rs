@@ -5,9 +5,10 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            BitcoinAddressType, BtcTxOutput, GetAddressError, GetAddressRequest,
-            GetAddressResponse, GetBalanceRequest, GetBalanceResponse, Network, OutPoint,
-            PaymentType, SendBtcError, SendBtcRequest, SignBtcResponse, Utxo,
+            BitcoinAddressType, BtcSignPrehashError, BtcSignPrehashRequest, BtcSignPrehashResponse,
+            BtcTxOutput, GetAddressError, GetAddressRequest, GetAddressResponse, GetBalanceRequest,
+            GetBalanceResponse, Network, OutPoint, PaymentType, SendBtcError, SendBtcRequest,
+            SignBtcResponse, Utxo,
         },
     },
     utils::{
@@ -295,5 +296,85 @@ mod caller_sign {
         assert!(!response.signed_transaction_hex.is_empty());
         assert!(!response.txid.is_empty());
         assert!(hex::decode(&response.signed_transaction_hex).is_ok());
+    }
+}
+
+mod sign_prehash {
+    use super::*;
+
+    // An arbitrary 32-byte digest (hex), as `btc_sign_prehash` expects.
+    const PREHASH_HEX: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+    /// A standard btc_sign_prehash() call, including payment.
+    fn paid_sign_prehash(
+        test_env: &TestSetup,
+        caller: Principal,
+        request: &BtcSignPrehashRequest,
+    ) -> Result<Result<BtcSignPrehashResponse, BtcSignPrehashError>, String> {
+        let payment_type = PaymentType::CallerPaysIcrc2Cycles;
+        let payment_recipient = cycles_ledger::Account {
+            owner: test_env.signer.canister_id(),
+            subaccount: None,
+        };
+        let amount: u128 = SignerMethods::BtcSignPrehash.fee() + LEDGER_FEE;
+        test_env
+            .ledger
+            .icrc2_approve(caller, &ApproveArgs::new(payment_recipient, amount.into()))
+            .expect("Failed to call ledger canister")
+            .expect("Failed to approve payment");
+
+        test_env
+            .signer
+            .btc_sign_prehash(caller, request, &Some(payment_type))
+    }
+
+    #[test]
+    fn can_btc_sign_prehash() {
+        let test_env = TestSetup::default();
+
+        let request = BtcSignPrehashRequest {
+            hash: PREHASH_HEX.to_string(),
+        };
+        let response = paid_sign_prehash(&test_env, test_env.user, &request)
+            .expect("Failed to reach signer canister")
+            .expect("Failed to sign");
+
+        // Raw 64-byte `r || s` ECDSA signature => 128 hex chars. The recovery id is left to the
+        // caller, who recovers it against the BTC public key (the key match is what makes this
+        // usable for arbitrary message / PSBT signing).
+        assert_eq!(response.signature.len(), 128);
+        assert!(hex::decode(&response.signature).is_ok());
+    }
+
+    #[test]
+    fn cannot_btc_sign_prehash_if_hash_is_not_hex() {
+        let test_env = TestSetup::default();
+
+        let request = BtcSignPrehashRequest {
+            hash: "not a hex string".to_string(),
+        };
+        let response = paid_sign_prehash(&test_env, test_env.user, &request);
+
+        assert!(response.is_err());
+        assert!(response.unwrap_err().contains("failed to decode hex"));
+    }
+
+    #[test]
+    fn test_anonymous_cannot_btc_sign_prehash() {
+        let test_env = TestSetup::default();
+
+        let request = BtcSignPrehashRequest {
+            hash: PREHASH_HEX.to_string(),
+        };
+        let result = test_env.signer.btc_sign_prehash(
+            Principal::anonymous(),
+            &request,
+            &Some(PaymentType::CallerPaysIcrc2Cycles),
+        );
+
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("Anonymous caller not authorized"));
     }
 }

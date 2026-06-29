@@ -4,7 +4,7 @@ use candid::Principal;
 use ic_cdk_bitcoin_canister::Network as BitcoinNetwork;
 use ic_cdk_management_canister::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs};
 
-use crate::{derivation_path::Schema, state::read_config};
+use crate::{derivation_path::Schema, sign::ecdsa_api, state::read_config};
 
 /// Computes the public key of the specified principal.
 async fn ecdsa_pubkey_of(principal: &Principal) -> Result<Vec<u8>, String> {
@@ -31,6 +31,17 @@ pub fn transform_network(network: BitcoinNetwork) -> Network {
         BitcoinNetwork::Testnet => Network::Testnet,
         BitcoinNetwork::Regtest => Network::Regtest,
     }
+}
+
+/// Signs a precomputed 32-byte digest under the caller's Bitcoin key (schema `Btc`).
+///
+/// Returns the raw 64-byte ECDSA signature (`r || s`). Unlike `btc_caller_sign`, which builds and
+/// signs a transaction from supplied UTXOs, this signs an arbitrary digest, so the signature
+/// verifies against the caller's P2WPKH address. This is what arbitrary message / PSBT signing
+/// (e.g. `WalletConnect` `signMessage` / `signPsbt`) needs and `generic_sign_with_ecdsa` cannot
+/// provide, as it derives a different (schema `Generic`) key.
+pub async fn sign_prehash(principal: &Principal, message_hash: Vec<u8>) -> Result<Vec<u8>, String> {
+    ecdsa_api::get_ecdsa_signature(Schema::Btc.derivation_path(principal), message_hash).await
 }
 
 /// Converts a public key to a P2PKH address.
