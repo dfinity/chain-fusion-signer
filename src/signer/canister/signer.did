@@ -7,6 +7,8 @@ type Bip341 = record {
 };
 type BitcoinAddressType = variant { P2WPKH };
 type BtcSignPrehashError = variant {
+  // The supplied hash was not valid hex or was not a 32-byte digest.
+  InvalidHash : record { msg : text };
   // An inter-canister call error from the threshold signature API.
   SigningError : text;
   // Payment failed.

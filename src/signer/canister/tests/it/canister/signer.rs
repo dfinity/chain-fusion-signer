@@ -248,6 +248,8 @@ pub(crate) struct BtcSignPrehashResponse {
 }
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) enum BtcSignPrehashError {
+    /// The supplied hash was not valid hex or was not a 32-byte digest.
+    InvalidHash { msg: String },
     /// An inter-canister call error from the threshold signature API.
     SigningError(String),
     /// Payment failed.

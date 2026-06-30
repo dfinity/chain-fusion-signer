@@ -41,6 +41,12 @@ pub fn transform_network(network: BitcoinNetwork) -> Network {
 /// (e.g. `WalletConnect` `signMessage` / `signPsbt`) needs and `generic_sign_with_ecdsa` cannot
 /// provide, as it derives a different (schema `Generic`) key.
 pub async fn sign_prehash(principal: &Principal, message_hash: Vec<u8>) -> Result<Vec<u8>, String> {
+    if message_hash.len() != 32 {
+        return Err(format!(
+            "expected a 32-byte digest, got {} bytes",
+            message_hash.len()
+        ));
+    }
     ecdsa_api::get_ecdsa_signature(Schema::Btc.derivation_path(principal), message_hash).await
 }
 

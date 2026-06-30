@@ -353,10 +353,38 @@ mod sign_prehash {
         let request = BtcSignPrehashRequest {
             hash: "not a hex string".to_string(),
         };
-        let response = paid_sign_prehash(&test_env, test_env.user, &request);
+        let response = paid_sign_prehash(&test_env, test_env.user, &request)
+            .expect("Failed to reach signer canister");
 
-        assert!(response.is_err());
-        assert!(response.unwrap_err().contains("failed to decode hex"));
+        // Malformed input must surface as the typed error (no trap).
+        match response {
+            Err(BtcSignPrehashError::InvalidHash { msg }) => {
+                assert!(
+                    msg.contains("failed to decode hex"),
+                    "unexpected msg: {msg}"
+                );
+            }
+            other => panic!("expected InvalidHash error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn cannot_btc_sign_prehash_if_hash_is_not_32_bytes() {
+        let test_env = TestSetup::default();
+
+        // Valid hex, but only 31 bytes.
+        let request = BtcSignPrehashRequest {
+            hash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd".to_string(),
+        };
+        let response = paid_sign_prehash(&test_env, test_env.user, &request)
+            .expect("Failed to reach signer canister");
+
+        match response {
+            Err(BtcSignPrehashError::InvalidHash { msg }) => {
+                assert!(msg.contains("32-byte digest"), "unexpected msg: {msg}");
+            }
+            other => panic!("expected InvalidHash error, got {other:?}"),
+        }
     }
 
     #[test]

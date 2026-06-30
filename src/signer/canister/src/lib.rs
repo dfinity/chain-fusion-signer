@@ -596,6 +596,22 @@ pub async fn btc_sign_prehash(
     req: BtcSignPrehashRequest,
     payment: Option<PaymentType>,
 ) -> Result<BtcSignPrehashResponse, BtcSignPrehashError> {
+    // Validate the input before charging: a malformed hash must return the typed error (not trap)
+    // and must not deduct payment from the caller.
+    let message_hash = hex::decode(req.hash.trim_start_matches("0x")).map_err(|e| {
+        BtcSignPrehashError::InvalidHash {
+            msg: format!("failed to decode hex: {e}"),
+        }
+    })?;
+    if message_hash.len() != 32 {
+        return Err(BtcSignPrehashError::InvalidHash {
+            msg: format!(
+                "expected a 32-byte digest, got {} bytes",
+                message_hash.len()
+            ),
+        });
+    }
+
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -603,7 +619,6 @@ pub async fn btc_sign_prehash(
         )
         .await?;
 
-    let message_hash = convert::decode_hex(&req.hash).to_vec();
     let signature = bitcoin_utils::sign_prehash(&msg_caller(), message_hash).await?;
 
     Ok(BtcSignPrehashResponse {

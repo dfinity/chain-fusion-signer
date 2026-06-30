@@ -151,6 +151,8 @@ pub mod bitcoin {
 
     #[derive(CandidType, Deserialize, Debug)]
     pub enum BtcSignPrehashError {
+        /// The supplied hash was not valid hex or was not a 32-byte digest.
+        InvalidHash { msg: String },
         /// Payment failed.
         PaymentError(PaymentError),
         /// An inter-canister call error from the threshold signature API.
