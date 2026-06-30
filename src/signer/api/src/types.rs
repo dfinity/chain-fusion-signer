@@ -134,4 +134,38 @@ pub mod bitcoin {
         PaymentError(PaymentError),
         BuildP2wpkhError(BuildP2wpkhTxError),
     }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct BtcSignPrehashRequest {
+        /// Hex-encoded 32-byte digest to sign under the caller's Bitcoin key.
+        pub hash: String,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub struct BtcSignPrehashResponse {
+        /// Hex-encoded 64-byte ECDSA signature (`r || s`), as returned by the management canister.
+        /// The caller recovers the recovery id (and any encoding it needs) from the known public
+        /// key.
+        pub signature: String,
+    }
+
+    #[derive(CandidType, Deserialize, Debug)]
+    pub enum BtcSignPrehashError {
+        /// The supplied hash was not valid hex or was not a 32-byte digest.
+        InvalidHash { msg: String },
+        /// Payment failed.
+        PaymentError(PaymentError),
+        /// An inter-canister call error from the threshold signature API.
+        SigningError(String),
+    }
+    impl From<PaymentError> for BtcSignPrehashError {
+        fn from(e: PaymentError) -> Self {
+            Self::PaymentError(e)
+        }
+    }
+    impl From<String> for BtcSignPrehashError {
+        fn from(msg: String) -> Self {
+            Self::SigningError(msg)
+        }
+    }
 }
