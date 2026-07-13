@@ -111,12 +111,13 @@ fi
 WASM="release/ci/signer.wasm.gz"
 WASM_SHA="$(sha256sum <"$WASM" | awk '{print $1}')"
 
-# Gets the canister arguments
-ARG_PATH=release/ci/signer.args.bin
-test -e "$ARG_PATH" || {
-  echo "ERROR: Arguments need to be provided in $ARG_PATH"
-  exit 1
-} >&2
+# Gets the canister upgrade argument.
+# Upgrades use the network-independent `(variant { Upgrade })` argument, which tells the
+# canister's post_upgrade hook to keep the existing configuration. The Init args in
+# release/ci are only for the initial installation; submitting them on an upgrade would
+# overwrite the whole canister config (see RELEASE.md, "Init vs Upgrade argument").
+ARG_PATH=release/signer.upgrade.args.bin
+build.upgrade.args.sh "release/signer.upgrade.args.did" >&2
 
 ARG_SHA="$(sha256sum <"$ARG_PATH" | awk '{print $1}')"
 

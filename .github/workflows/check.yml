@@ -38,6 +38,8 @@ jobs:
           fetch-depth: 0
       - name: Install tools
         run: sudo apt-get install -yy shellcheck
+      - name: Install didc
+        run: ./scripts/setup didc
       - name: Lint shell
         run: ./scripts/lint-sh
       - name: Shell commands work
