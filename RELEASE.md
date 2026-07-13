@@ -13,7 +13,7 @@ Canisters: `signer` is `tdxud-2yaaa-aaaad-aadiq-cai` on `staging` and `grghe-sya
 - **GitHub:** `gh` authenticated; you can open and merge PRs, and a second person can approve (you cannot approve your own PR).
 - **Build tooling:** `cargo-edit` (`./scripts/setup cargo-edit`), Docker, and `bash >= 5` (for the reproducible `./scripts/docker-build`).
 - **Staging deploy (step 5):** a `dfx` identity that is a **controller of the staging canister**.
-- **Production proposal (steps 7–8):** `ic-admin` on your `PATH` (macOS needs the `darwin` build — see [HACKING.md](HACKING.md#local-tooling)), the **HSM connected with its PIN**, and your **NNS neuron ID** (the HSM identity must be a controller or hotkey of it). `propose` reads the neuron from `~/.config/dfx/prod-neuron` if present, otherwise prompts.
+- **Production proposal (steps 7–8):** `ic-admin` and `didc` on your `PATH` (`./scripts/setup ic-admin didc`; macOS needs the `darwin`/`macos` builds — see [HACKING.md](HACKING.md#local-tooling)), the **HSM connected with its PIN**, and your **NNS neuron ID** (the HSM identity must be a controller or hotkey of it). `propose` reads the neuron from `~/.config/dfx/prod-neuron` if present, otherwise prompts.
 
 ---
 
@@ -122,7 +122,9 @@ sha256sum out/signer.wasm.gz                        # must equal release/ci/repo
 #    -> release/ROLLBACK.md  (revert to the previous version)
 ```
 
-**CHECK** `release/PROPOSAL.md`: the wasm hash matches step b; the **Candid/binary arg hashes are the production args** (`ecdsa_key_name = "key_1"`, not `test_key_1`); the target is `grghe-syaaa-aaaar-qabyq-cai`; and `release/ROLLBACK.md` points at the version currently on production.
+`proposal-template` runs `build.upgrade.args.sh` (which needs `didc`) to produce the upgrade argument, so `PROPOSAL.md` records the `(variant { Upgrade })` argument rather than the `Init` args (see [Init vs Upgrade argument](#init-vs-upgrade-argument) below).
+
+**CHECK** `release/PROPOSAL.md`: the wasm hash matches step b; the **upgrade argument is `(variant { Upgrade })`** with binary arg hash `100d1390b7762eef1bc2af9d6fdd157bb800bfc3787142c435d4c28747d0ac30` (constant for every upgrade); the target is `grghe-syaaa-aaaar-qabyq-cai`; and `release/ROLLBACK.md` points at the version currently on production.
 
 ## 8. Submit the proposal (HSM-gated)
 
@@ -134,11 +136,24 @@ With the HSM connected and your neuron ready:
 
 It builds the `ic-admin` command, **prints it for review** (it authenticates with `--use-hsm --key-id 01 --slot 0` and prompts for the PIN), then signs and submits.
 
-**CHECK:** before confirming, read the printed command carefully — target canister `grghe-syaaa-aaaar-qabyq-cai`, the wasm hash from step 3/7, and your neuron ID. After submission, confirm the proposal is listed on the NNS.
+**CHECK:** before confirming, read the printed command carefully — target canister `grghe-syaaa-aaaar-qabyq-cai`, `--mode upgrade`, the wasm hash from step 3/7, `--arg-sha256 100d1390…` (the `(variant { Upgrade })` argument), and your neuron ID. After submission, confirm the proposal is listed on the NNS.
 
 ## 9. Get it voted in
 
 Schedule an appointment with trusted neurons to vote on the proposal.
+
+---
+
+## Init vs Upgrade argument
+
+The canister's install argument is `type Arg = variant { Upgrade; Init : InitArg }`, and `post_upgrade` treats them very differently ([`src/signer/canister/src/lib.rs`](src/signer/canister/src/lib.rs)):
+
+- `Init : record { … }` → calls `set_config`, which **replaces the entire config** with a `Config` derived from those fields.
+- `Upgrade` (or no argument) → **keeps the existing config** untouched.
+
+Therefore **upgrade proposals must use `(variant { Upgrade })`**, not the `Init` args. Submitting `Init` on an upgrade re-applies the full config and would silently overwrite any field that differs from the baked-in args (e.g. a non-default root key or cycles ledger). The `Init` args (`scripts/build.signer.args.sh`, written to `out/signer.args.*`) are only for the **initial installation**; the staging deploy (step 5) achieves the same "keep config" effect by passing `(null)`.
+
+`scripts/propose` and `scripts/proposal-template` both call `scripts/build.upgrade.args.sh`, which encodes `(variant { Upgrade })` with `didc` — a constant, network-independent value (binary sha256 `100d1390…`). Anyone can reproduce it with `didc encode '(variant { Upgrade })'`.
 
 ---
 

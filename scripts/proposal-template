@@ -80,26 +80,21 @@ else
   echo "Please populate ${WASM} and run this again."
   exit 0
 fi
-ARGS_DID="release/ci/signer.args.did"
-if test -f "$ARGS_DID"; then
-  ARGS_DID_SHA="$(sha256sum "$ARGS_DID" | awk '{print $1}')"
-else
-  echo "Please populate ${ARGS_DID} and run this again."
-  exit 0
-fi
-ARGS_BIN="release/ci/signer.args.bin"
-if test -f "$ARGS_BIN"; then
-  ARGS_BIN_SHA="$(sha256sum "$ARGS_BIN" | awk '{print $1}')"
-else
-  echo "Please populate ${ARGS_BIN} and run this again."
-  exit 0
-fi
+# Upgrade proposals use the network-independent `(variant { Upgrade })` argument, which
+# preserves the canister's existing configuration. (The Init args in release/ci are only
+# for the initial installation; submitting them on an upgrade would overwrite the config.)
+ARGS_DID="release/signer.upgrade.args.did"
+build.upgrade.args.sh "$ARGS_DID" >&2
+ARGS_DID_SHA="$(sha256sum "$ARGS_DID" | awk '{print $1}')"
+ARGS_BIN="${ARGS_DID%.did}.bin"
+ARGS_BIN_SHA="$(sha256sum "$ARGS_BIN" | awk '{print $1}')"
 
 cat <<EOF >"$OUTPUT_PROPOSAL"
 # Upgrade Chain Fusion Signer canister to $RELEASE_CANDIDATE_TAG
 Commit: \`$(git rev-parse "tags/$RELEASE_CANDIDATE_TAG")\`
 Release: \`${RELEASE_GITHUB_URL}\`
 Wasm sha256 hash: \`${WASM_SHA}\`
+Upgrade argument: \`(variant { Upgrade })\` (preserves the existing canister configuration)
 Candid argument hash: \`${ARGS_DID_SHA}\`
 Binary argument hash: \`${ARGS_BIN_SHA}\`
 
