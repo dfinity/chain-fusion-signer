@@ -11,9 +11,10 @@ use ic_chain_fusion_signer_api::{
     std_canister_status,
     types::{
         bitcoin::{
-            BitcoinAddressType, GetAddressError, GetAddressRequest, GetAddressResponse,
-            GetBalanceError, GetBalanceRequest, GetBalanceResponse, SendBtcError, SendBtcRequest,
-            SendBtcResponse, SignBtcResponse,
+            BitcoinAddressType, BtcSignPrehashError, BtcSignPrehashRequest, BtcSignPrehashResponse,
+            GetAddressError, GetAddressRequest, GetAddressResponse, GetBalanceError,
+            GetBalanceRequest, GetBalanceResponse, SendBtcError, SendBtcRequest, SendBtcResponse,
+            SignBtcResponse,
         },
         eth::{
             EthPersonalSignError, EthPersonalSignRequest, EthPersonalSignResponse,
@@ -570,6 +571,59 @@ pub async fn btc_caller_sign(
             })
         }
     }
+}
+
+/// Signs a precomputed 32-byte digest under the caller's Bitcoin key.
+///
+/// # Details
+/// This is the Bitcoin counterpart of `eth_sign_prehash`: it signs an arbitrary hash with the
+/// caller's BTC key (schema `Btc`), so the signature verifies against the caller's P2WPKH address.
+/// Unlike `btc_caller_sign`, which builds and signs a transaction from supplied UTXOs, this signs
+/// any digest, which is what arbitrary message / PSBT signing (e.g. `WalletConnect` `signMessage` /
+/// `signPsbt`) requires. `generic_sign_with_ecdsa` cannot serve this: it derives a different
+/// (schema `Generic`) key whose signatures do not match the BTC address.
+///
+/// - Signs the message hash with `management_canister::ecdsa::sign_with_ecdsa(..)`
+///   - Costs: See [Fees for the t-ECDSA production key](https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#fees-for-the-t-ecdsa-production-key)
+///
+/// Returns the raw 64-byte ECDSA signature (`r || s`) as hex; the caller recovers the recovery id
+/// from the known public key.
+///
+/// # Panics
+/// - If the caller is the anonymous user.
+#[update(guard = "caller_is_not_anonymous")]
+pub async fn btc_sign_prehash(
+    req: BtcSignPrehashRequest,
+    payment: Option<PaymentType>,
+) -> Result<BtcSignPrehashResponse, BtcSignPrehashError> {
+    // Validate the input before charging: a malformed hash must return the typed error (not trap)
+    // and must not deduct payment from the caller.
+    let message_hash = hex::decode(req.hash.trim_start_matches("0x")).map_err(|e| {
+        BtcSignPrehashError::InvalidHash {
+            msg: format!("failed to decode hex: {e}"),
+        }
+    })?;
+    if message_hash.len() != 32 {
+        return Err(BtcSignPrehashError::InvalidHash {
+            msg: format!(
+                "expected a 32-byte digest, got {} bytes",
+                message_hash.len()
+            ),
+        });
+    }
+
+    PAYMENT_GUARD
+        .deduct(
+            payment.unwrap_or(PaymentType::AttachedCycles),
+            SignerMethods::BtcSignPrehash.fee(),
+        )
+        .await?;
+
+    let signature = bitcoin_utils::sign_prehash(&msg_caller(), message_hash).await?;
+
+    Ok(BtcSignPrehashResponse {
+        signature: hex::encode(signature),
+    })
 }
 
 /// Creates, signs and sends a BTC transaction from the caller's address.

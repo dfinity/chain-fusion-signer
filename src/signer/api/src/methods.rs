@@ -10,6 +10,7 @@ pub enum SignerMethods {
     BtcCallerBalance,
     BtcCallerSend,
     BtcCallerSign,
+    BtcSignPrehash,
     SchnorrPublicKey,
     SchnorrSign,
 }
@@ -43,6 +44,8 @@ impl SignerMethods {
             // Grace-period default sized for a 2-input transaction:
             // btc_base_fee() + 2 * btc_per_input_fee() = 74 B + 2 * 37 B = 148 B
             SignerMethods::BtcCallerSign => 148_000_000_000,
+            // Flat: one `sign_with_ecdsa` over a single prehash, no transaction building.
+            SignerMethods::BtcSignPrehash => 37_000_000_000,
             SignerMethods::EthAddress | SignerMethods::EthAddressOfCaller => 77_000_000,
             SignerMethods::EthPersonalSign => 37_000_000_000,
             SignerMethods::EthSignPrehash => 37_000_000_000,
