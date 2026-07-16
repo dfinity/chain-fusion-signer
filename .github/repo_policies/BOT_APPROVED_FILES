@@ -1,0 +1,8 @@
+# List of approved files that can be changed by a bot via an automated PR
+# This is to increase security and prevent accidentally updating files that shouldn't be changed by a bot
+#
+# Only the version bump opened by the release automation (bump-version.yml, authored by
+# pr-automation-bot-public[bot]) is checked against this list; dependabot is exempt.
+
+Cargo.toml
+Cargo.lock
