@@ -2,7 +2,9 @@
 
 An end-to-end, step-by-step guide for cutting a release, deploying it to `staging`, and upgrading production via an NNS proposal.
 
-It is written as a **by-hand runbook**, because the CI automation is not fully provisioned yet (see [Automation](#automation-once-secrets-are-provisioned) at the end). Follow the numbered steps in order; each ends with a **CHECK** you should confirm before moving on.
+The CI chain now drives steps 1, 2 and 5 (open the release PR, tag on merge, deploy to `staging`); its credentials are provisioned. Follow the numbered steps in order; each ends with a **CHECK** you should confirm before moving on. Steps that are still by hand — **release notes** (step 4) and the **HSM-gated production proposal** (steps 7–8) — are marked as such, and every automated step keeps its by-hand fallback under _If you need to do it manually_.
+
+See [Automation status](#automation-status) for what has actually been exercised and the invariants that keep it working.
 
 > **Throwaway test release:** if you only need build artifacts, push any tag and the [Release](.github/workflows/release.yml) workflow builds them and creates a release for that tag. The steps below are for a full **production release**.
 
@@ -10,35 +12,43 @@ Canisters: `signer` is `tdxud-2yaaa-aaaad-aadiq-cai` on `staging` and `grghe-sya
 
 ## Preflight — have these ready before you start
 
-- **GitHub:** `gh` authenticated; you can open and merge PRs, and a second person can approve (you cannot approve your own PR).
-- **Build tooling:** `cargo-edit` (`./scripts/setup cargo-edit`), Docker, and `bash >= 5` (for the reproducible `./scripts/docker-build`).
-- **Staging deploy (step 5):** a `dfx` identity that is a **controller of the staging canister**.
+- **GitHub:** `gh` authenticated; you can run workflows and merge PRs, and a second person can approve (you cannot approve your own PR).
+- **Build tooling** (only for the manual fallbacks and the step 7 dry run): `cargo-edit` (`./scripts/setup cargo-edit`), Docker, and `bash >= 5` (for the reproducible `./scripts/docker-build`).
+- **Staging deploy (step 5):** nothing — CI deploys with `DFX_DEPLOY_KEY_STAGING`. To deploy or inspect by hand you need a `dfx` identity that is a **controller of the staging canister**.
 - **Production proposal (steps 7–8):** `ic-admin` and `didc` on your `PATH` (`./scripts/setup ic-admin didc`; macOS needs the `darwin`/`macos` builds — see [HACKING.md](HACKING.md#local-tooling)), the **HSM connected with its PIN**, and your **NNS neuron ID** (the HSM identity must be a controller or hotkey of it). `propose` reads the neuron from `~/.config/dfx/prod-neuron` if present, otherwise prompts.
 
 ---
 
-## 1. Cut the version-bump PR
+## 1. Open the release PR
 
-1. `git fetch origin`, then create a fresh **worktree** off `origin/main` (keeps your main checkout clean) on branch `chore/release-<version>`.
-2. Ensure `cargo-edit` is present: `./scripts/setup cargo-edit`.
-3. Bump the version — choose the level by impact:
-   - **minor** for a behaviour change (e.g. fee-semantics changes: `0.4.0` added input UTXOs, `0.5.0` added output UTXOs).
-   - **patch** for fixes/maintenance only.
-   ```
-   ./scripts/version-bump [patch | minor | major | alpha | beta | rc]
-   ```
-   This bumps `[workspace.package].version` in the root `Cargo.toml` (inherited by `signer`, `ic-chain-fusion-signer-api`, `example_backend`) and regenerates `Cargo.lock`.
-4. Commit just those two files: `chore(release): Bump version to <version>`.
-5. Push and open a **draft** PR using the `Motivation` / `Changes` / `Tests` template.
+Run the [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml) workflow (`workflow_dispatch`) and pick the bump level by impact:
 
-**CHECK:** the diff is version-only (Cargo.toml + the three crate versions in Cargo.lock); CI is green; you have one approving review. Then mark the PR ready and merge it.
+- **minor** for a behaviour change (e.g. fee-semantics changes: `0.4.0` added input UTXOs, `0.5.0` added output UTXOs).
+- **patch** for fixes/maintenance only.
 
-## 2. Tag the release
+```
+gh workflow run bump-version.yml -f version_bump=patch
+```
 
-1. `git checkout main && git pull --ff-only origin main`.
-2. Tag and build: `./scripts/release` — it tags the merge commit `v<version>`, pushes the tag, and watches the [Release](.github/workflows/release.yml) workflow build the artifacts.
+`version_bump` accepts `patch`, `minor`, `major`, `alpha`, `beta` or `rc`.
 
-**CHECK:** `Cargo.toml` shows `<version>` and `HEAD` is the merge commit; the Release workflow **succeeded**; a **draft** GitHub release exists with all assets (`signer.wasm.gz`, `report.txt`, `commit.txt`, `signer.did`, `signer.args.*`, `provenance.json`).
+It runs `./scripts/version-bump`, which bumps `[workspace.package].version` in the root `Cargo.toml` (inherited by `signer`, `ic-chain-fusion-signer-api`, `example_backend`) and regenerates `Cargo.lock`, then opens a PR from branch **`release/v<version>`**.
+
+**CHECK:** the diff is version-only (Cargo.toml + the three crate versions in Cargo.lock); CI is green; you have one approving review (you cannot approve your own PR). The head branch **must** be `release/v<version>` — that is what step 2 keys off.
+
+> **If you need to do it manually:** create a worktree off `origin/main` on branch `release/v<version>` (**not** `chore/release-<version>` — that name silently skips the tag job in step 2), run `./scripts/setup cargo-edit` then `./scripts/version-bump <level>`, commit just those two files as `chore(release): Bump version to <version>`, and open the PR.
+
+## 2. Merge it — tag, build and staging deploy are automatic
+
+Merging the PR from `release/v<version>` starts the whole chain:
+
+1. [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) takes the `signer` package version from `cargo metadata` and tags the merge commit `v<version>`.
+2. Pushing that tag triggers [Release](.github/workflows/release.yml), which builds the artifacts and creates a **draft** GitHub release.
+3. When Release completes, [Deploy to Staging](.github/workflows/deploy-staging.yml) installs those artifacts on `staging` (see step 5 for what to verify).
+
+**CHECK:** `tag-release` **ran** rather than being skipped (it is conditional on the head branch starting with `release/v` — a skipped run means the branch was misnamed and nothing was tagged); tag `v<version>` exists on the merge commit; the Release workflow **succeeded**; a **draft** GitHub release exists with all assets (`signer.wasm.gz`, `report.txt`, `commit.txt`, `signer.did`, `signer.args.*`, `provenance.json`).
+
+> **If you need to do it manually:** `git checkout main && git pull --ff-only origin main`, then `./scripts/release` — it tags the merge commit `v<version>`, pushes the tag, and watches the Release workflow.
 
 ## 3. Verify the draft release artifacts
 
@@ -62,7 +72,9 @@ gh release download v<version> --pattern commit.txt --pattern report.txt
 
 ## 5. Deploy to `staging`
 
-If you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (verified for `v0.5.0`).
+[Deploy to Staging](.github/workflows/deploy-staging.yml) does this for you: it runs automatically when Release completes for a `v*` tag, importing the `DFX_DEPLOY_KEY_STAGING` secret (a controller identity in PEM form) and installing the release Wasm. Normally you only **verify** it — jump to the CHECK below.
+
+> **If you need to do it manually** (the workflow failed, or you are shipping an untagged build): if you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (verified for `v0.5.0`). For an untagged build, replace step b with `./scripts/docker-build`.
 
 ```
 # a. Confirm your identity controls staging:
@@ -157,13 +169,23 @@ Therefore **upgrade proposals must use `(variant { Upgrade })`**, not the `Init`
 
 ---
 
-## Automation (once secrets are provisioned)
+## Automation status
 
-The repo ships a CI chain that is meant to replace the by-hand steps above, but **it has never run successfully** because its secrets are not set up. Until they are, use the runbook above. The intended flow and the missing pieces:
+The credentials are provisioned and `bump-version` is confirmed working (it opened the `v0.5.1` release PR). The rest of the chain is wired and credentialed but was first exercised by `v0.5.1` — if you are cutting an early release after that, check each stage rather than assuming.
 
-- **Step 1 — [Version Bump and Release Branch Creation](.github/workflows/bump-version.yml)** (opens the release PR) and **step 2 — [Tag on Merge from Release Branch](.github/workflows/tag-release.yml)** (tags on merge) authenticate as a GitHub App via the `PR_AUTOMATION_BOT_PUBLIC_APP_ID` variable and `PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY` secret. Missing → both fail at "Create GitHub App Token" (`private-key input must be set to a non-empty string`).
-- **Step 5 — [Deploy to Staging](.github/workflows/deploy-staging.yml)** runs automatically when Release completes for a `v*` tag, using the `DFX_DEPLOY_KEY_STAGING` secret (a controller identity in PEM form). Missing → fails at "Import deployment identity" (`Failed to validate pem file ... missing data`).
-- **Step 7 — [Prepare Production Proposal](.github/workflows/prepare-proposal.yml)** would generate the proposal artifact, but its "Build reproducibly" step runs `git log | head -n1` under `set -o pipefail`, so `git log` gets SIGPIPE and it fails with exit code 141 (fix: `git log -1 --format=%H`).
-- The **Release** build (`GITHUB_TOKEN`) and the staging deploy's payment of cycles are unaffected.
+| Workflow                                                                                             | Credential                                                                                                                               | Status                                          |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| [bump-version](.github/workflows/bump-version.yml), [tag-release](.github/workflows/tag-release.yml) | `PR_AUTOMATION_BOT_PUBLIC_APP_ID` (org variable) + `PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY` (org secret), via the PR-automation GitHub App | Provisioned; `bump-version` verified end-to-end |
+| [deploy-staging](.github/workflows/deploy-staging.yml)                                               | `DFX_DEPLOY_KEY_STAGING` (repo secret) — a controller identity in PEM form                                                               | Provisioned; first exercised by `v0.5.1`        |
+| [Release](.github/workflows/release.yml)                                                             | `GITHUB_TOKEN`                                                                                                                           | Always worked                                   |
 
-Once the three credentials are provisioned and the `prepare-proposal` step is fixed, the automated path should work; update this runbook to lead with it.
+### Invariants that keep it working
+
+- **Never create a branch or tag named `release`.** Git stores refs as file paths, so `refs/heads/release` and `refs/heads/release/v<version>` cannot coexist — a bare `release` branch makes every `bump-version` run fail its push with `! [remote rejected] release/v<version> (directory file conflict)`. A stale `release` branch from 2024 blocked this workflow until it was deleted; the commit it pointed at is preserved by tag `v0.2.8`.
+- **The release PR's head branch must be `release/v<version>`.** `tag-release` is conditional on `startsWith(head.ref, 'release/v')`; any other name (e.g. `chore/release-<version>`) makes the job **skip silently** — the PR merges, nothing is tagged, and no release is built.
+- **The deploy key must stay a controller of the staging canister.** `DFX_DEPLOY_KEY_STAGING` is only useful while its principal is in the staging controller list, and the IC caps controllers at **10** — adding one to a full list fails with `The number of elements exceeds maximum allowed 10`.
+
+### Still by hand, by design
+
+- **Release notes** (step 4): the chain only creates a _draft_ release; a human curates the notes and publishes.
+- **The production proposal** (steps 7–8): HSM-gated. [Prepare Production Proposal](.github/workflows/prepare-proposal.yml) can generate the artifact, but submission stays manual.
