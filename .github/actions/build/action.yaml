@@ -28,7 +28,9 @@ runs:
       shell: bash
       run: |
         set -euxo pipefail
-        git log | head -n1 > out/commit.txt
+        # `git log | head -n1` makes git receive SIGPIPE under `pipefail` (exit 141);
+        # `-1 --format=%H` also yields the bare commit hash RELEASE.md's checks expect.
+        git log -1 --format=%H > out/commit.txt
     - name: Install build tools
       shell: bash
       run: scripts/setup cargo-binstall ic-wasm
