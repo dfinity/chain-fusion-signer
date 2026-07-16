@@ -28,7 +28,6 @@ runs:
       shell: bash
       run: |
         set -euxo pipefail
-        # Not `git log | head -n1`: that SIGPIPEs git under pipefail (exit 141).
         git log -1 --format=%H > out/commit.txt
     - name: Install build tools
       shell: bash
