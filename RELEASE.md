@@ -27,8 +27,10 @@ Run the [Version Bump and Release Branch Creation](.github/workflows/bump-versio
 - **patch** for fixes/maintenance only.
 
 ```
-gh workflow run bump-version.yml -f version_bump=[patch | minor | major | alpha | beta | rc]
+gh workflow run bump-version.yml -f version_bump=patch
 ```
+
+`version_bump` accepts `patch`, `minor`, `major`, `alpha`, `beta` or `rc`.
 
 It runs `./scripts/version-bump`, which bumps `[workspace.package].version` in the root `Cargo.toml` (inherited by `signer`, `ic-chain-fusion-signer-api`, `example_backend`) and regenerates `Cargo.lock`, then opens a PR from branch **`release/v<version>`**.
 
@@ -40,7 +42,7 @@ It runs `./scripts/version-bump`, which bumps `[workspace.package].version` in t
 
 Merging the PR from `release/v<version>` starts the whole chain:
 
-1. [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) reads the version from `Cargo.toml` and tags the merge commit `v<version>`.
+1. [Tag on Merge from Release Branch](.github/workflows/tag-release.yml) takes the `signer` package version from `cargo metadata` and tags the merge commit `v<version>`.
 2. Pushing that tag triggers [Release](.github/workflows/release.yml), which builds the artifacts and creates a **draft** GitHub release.
 3. When Release completes, [Deploy to Staging](.github/workflows/deploy-staging.yml) installs those artifacts on `staging` (see step 5 for what to verify).
 
