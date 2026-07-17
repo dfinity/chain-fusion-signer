@@ -14,8 +14,11 @@ git checkout tags/v0.2.7
 ./scripts/docker-build
 ```
 
-This will generate these files:
-- out/signer.wasm.gz
-- out/signer.args.did
-- out/signer.args.bin
+The sha256 of the resulting `out/signer.wasm.gz` must equal the wasm hash above.
+
+That build also writes `out/signer.args.did` and `out/signer.args.bin`. Those are the **Init** arguments, used only when the canister is installed for the first time — they are **not** the argument of this rollback. A rollback is an upgrade, so it uses the network-independent `(variant { Upgrade })`, which preserves the canister's existing configuration. Reproduce it with:
+
+```
+didc encode '(variant { Upgrade })' | xxd -r -p | sha256sum
+```
 
