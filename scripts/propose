@@ -121,6 +121,8 @@ build.upgrade.args.sh "release/signer.upgrade.args.did" >&2
 
 ARG_SHA="$(sha256sum <"$ARG_PATH" | awk '{print $1}')"
 
+ARG_SHA="$(sha256sum <"$ARG_PATH" | awk '{print $1}')"
+
 # Gets the proposal text
 SUMMARY_FILE=release/PROPOSAL.md
 test -e "${SUMMARY_FILE:-}" || {
