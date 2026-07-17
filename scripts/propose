@@ -62,9 +62,11 @@ fi
 PEM_PATH="$HOME/.config/dfx/identity/${DFX_IDENTITY}/identity.pem"
 if [[ "${DFX_NETWORK:-}" =~ mainnet|ic ]] || [[ "${DFX_HSM_KEY_ID:-}" != "" ]]; then
   # Authenticate with an HSM
-  read -rp "HSM Pin: " DFX_HSM_PIN
+  read -rsp "HSM Pin: " DFX_HSM_PIN
+  echo >&2           # `read -s` suppresses the newline the user typed.
   export DFX_HSM_PIN # Needed for dfx canister id, for some strange reason.
   AUTH_ARGS=(--use-hsm --pin "$DFX_HSM_PIN" --key-id "${DFX_HSM_KEY_ID}" --slot 0)
+  AUTH_ARGS_REDACTED=(--use-hsm --pin "<redacted>" --key-id "${DFX_HSM_KEY_ID}" --slot 0)
 elif test -e "$PEM_PATH"; then
   # Authenticate with a pem file
   [[ "$(jq .encryption "$HOME/.config/dfx/identity/${DFX_IDENTITY}/identity.json")" == "null" ]] || {
@@ -72,6 +74,7 @@ elif test -e "$PEM_PATH"; then
     exit 1
   } >&2
   AUTH_ARGS=(--secret-key-pem "$PEM_PATH")
+  AUTH_ARGS_REDACTED=("${AUTH_ARGS[@]}")
 else
   {
     echo "ERROR: Please specify the HSM key ID (usually 01) or use a dfx identity with an unencrypted pem file."
@@ -129,12 +132,13 @@ test -e "${SUMMARY_FILE:-}" || {
 } >&2
 
 # Prepares the command
-set ic-admin "${AUTH_ARGS[@]}" --nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$WASM_SHA" --arg "$ARG_PATH" --arg-sha256 "$ARG_SHA"
+PROPOSAL_ARGS=(--nns-url "$DFX_NNS_URL" propose-to-change-nns-canister --proposer "$DFX_NEURON_ID" --canister-id "$CANISTER_ID" --mode upgrade --wasm-module-path "$WASM" --summary-file "$SUMMARY_FILE" --wasm-module-sha256 "$WASM_SHA" --arg "$ARG_PATH" --arg-sha256 "$ARG_SHA")
+set ic-admin "${AUTH_ARGS[@]}" "${PROPOSAL_ARGS[@]}"
 # ... just checking...
 echo
 echo PLEASE REVIEW THIS COMMAND:
 echo
-echo "${@}"
+echo "ic-admin ${AUTH_ARGS_REDACTED[*]} ${PROPOSAL_ARGS[*]}"
 echo
 
 read -rp "Execute? (y/N) " COMMAND_OK
