@@ -54,13 +54,21 @@ jobs:
         env:
           DFX_DEPLOY_KEY: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
       - name: Deploy signer to staging
-        # The build artifacts contain the init args for DFX_NETWORK=ic, which
-        # do not apply to staging. Pass an explicit Upgrade argument so that
-        # post_upgrade preserves the existing staging configuration instead of
-        # applying the ic init args.
-        run: dfx canister install signer --mode upgrade --upgrade-unchanged --argument '(variant { Upgrade })' --network staging --yes
+        # The artifacts carry the init args for DFX_NETWORK=ic (ecdsa_key_name = "key_1"),
+        # which must never be applied to staging. dfx.json points init_arg_file at
+        # out/signer.args.did and reads it in preference to --argument, so the file itself
+        # has to be neutralized: (null) => post_upgrade(None) => staging config preserved.
+        # The .dfx dir lets dfx run its Candid compat check instead of prompting.
+        run: |
+          printf '(null)\n' > out/signer.args.did
+          mkdir -p .dfx/staging/canisters/signer
+          dfx canister install signer --wasm out/signer.wasm.gz \
+            --mode upgrade --upgrade-unchanged --network staging --yes
       - name: Verify deployment
         run: |
           sha256sum out/signer.wasm.gz
           dfx canister info signer --network staging
           dfx canister metadata signer git:commit --network staging
+          # Fail loudly rather than leave staging silently pointed at the production key.
+          key="$(dfx canister call signer config --network staging | sed -n 's/.*ecdsa_key_name = "\([^"]*\)".*/\1/p')"
+          [ "$key" = "test_key_1" ] || { echo "ERROR: staging ecdsa_key_name is '$key', expected test_key_1"; exit 1; }
