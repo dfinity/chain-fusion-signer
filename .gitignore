@@ -18,6 +18,7 @@
 
 # Release artefacts
 release/
+proposal_id.txt
 
 # rust
 target/
