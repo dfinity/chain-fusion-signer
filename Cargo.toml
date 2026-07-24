@@ -23,7 +23,7 @@ serde = "1"
 serde_bytes = "0.11"
 getrandom = { version = "0.2", features = ["custom"] }
 hex = "0.4"
-k256 = "0.13"
+k256 = "0.14"
 lazy_static = "1.5.0"
 pocket-ic = "13.0.0"
 pretty_assertions = "1.4.1"
