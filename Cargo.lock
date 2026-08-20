@@ -148,9 +148,9 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "0.32.101"
+version = "0.32.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ed8ccb78a9ff7a6fbb90e2fb9b8588b4a9928d49d8af3cb789108a84ea6b0ce"
+checksum = "bb0ce8bd5baaa0d303a19915a6d93afed161f528654e42da2a7a97d05c59499a"
 dependencies = [
  "base58ck",
  "bech32",
@@ -1039,9 +1039,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.13"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f44da3a8150a6703ed5d34e164b875fd14c2cdab9af1252a9a1020bde2bdc54"
+checksum = "a9f37a958b41b3b19ee2707c06439c0e9e547e847223eb791ecb0cb821c65e27"
 dependencies = [
  "atomic-waker",
  "bytes",
