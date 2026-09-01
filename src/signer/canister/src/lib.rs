@@ -9,7 +9,7 @@ use ic_cdk_management_canister::{
 };
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
-    limits::max_ingress_arg_bytes,
+    limits::{check_derivation_path, check_key_name, max_ingress_arg_bytes},
     methods::SignerMethods,
     metrics::get_metrics,
     std_canister_status,
@@ -123,7 +123,7 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// cost it far more than the fee they pay.
 ///
 /// Note that message inspection runs only for ingress messages, not for calls from other
-/// canisters.
+/// canisters, which is why the update methods bound what they forward as well.
 #[inspect_message]
 fn inspect_message() {
     if let Some(max_bytes) = max_ingress_arg_bytes(&msg_method_name()) {
@@ -145,6 +145,25 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 // // GENERIC SIGNATURES //
 // ////////////////////////
 
+/// Checks that the caller-supplied parts of a threshold key request are within the
+/// documented size limits.
+///
+/// The signer forwards the derivation path and the key ID verbatim to the management
+/// canister and pays for every byte it transmits, while the public key methods collect a
+/// flat fee.  Rejecting oversized input keeps the cost of a call bounded, so that a call
+/// can never cost the signer more than it charges for.
+///
+/// The check runs before payment is deducted, so a caller is not charged for a request
+/// that is refused.
+///
+/// # Errors
+/// - If the derivation path has too many elements or too many bytes.
+/// - If the key name is too long.
+fn check_signing_args(derivation_path: &[Vec<u8>], key_name: &str) -> Result<(), String> {
+    check_derivation_path(derivation_path)?;
+    check_key_name(key_name)
+}
+
 /// Returns the generic ECDSA public key of the caller.
 ///
 /// Note: This is an exact dual of the canister [`ecdsa_public_key`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-ecdsa_public_key) method.  The argument and response types are also the same.
@@ -152,8 +171,10 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
-/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
-///   refused before they reach the canister.
+/// - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
+///   name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
+///   requests are rejected with `InvalidArgument` before any payment is taken, and oversized
+///   ingress messages are refused before they reach the canister at all.
 ///
 /// # Details
 /// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -166,6 +187,8 @@ pub async fn generic_caller_ecdsa_public_key(
     arg: EcdsaPublicKeyArgs,
     payment: Option<PaymentType>,
 ) -> Result<(EcdsaPublicKeyResult,), GenericCallerEcdsaPublicKeyError> {
+    check_signing_args(&arg.derivation_path, &arg.key_id.name)
+        .map_err(|msg| GenericCallerEcdsaPublicKeyError::InvalidArgument { msg })?;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -182,6 +205,9 @@ pub async fn generic_caller_ecdsa_public_key(
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
+/// - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
+///   name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
+///   requests are rejected with `InvalidArgument` before any payment is taken.
 ///
 /// # Details
 /// - Calls `management_canister::ecdsa::sign_with_ecdsa(..)`
@@ -194,6 +220,8 @@ pub async fn generic_sign_with_ecdsa(
     payment: Option<PaymentType>,
     arg: SignWithEcdsaArgs,
 ) -> Result<(SignWithEcdsaResult,), GenericSignWithEcdsaError> {
+    check_signing_args(&arg.derivation_path, &arg.key_id.name)
+        .map_err(|msg| GenericSignWithEcdsaError::InvalidArgument { msg })?;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -215,8 +243,10 @@ pub async fn generic_sign_with_ecdsa(
 ///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
 ///     ensuring that the derivation path is used to namespace appropriately and to ensure that
 ///     unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
-///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
-///     calling the management canister.
+///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 253, two less than when
+///     calling the management canister, because the signer prepends the schema and the key owner's
+///     principal.  The elements may total at most 4096 bytes; see
+///     [`limits`](ic_chain_fusion_signer_api::limits) for the exact limits.
 ///   - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
 ///     for details.
 /// - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
@@ -228,8 +258,9 @@ pub async fn generic_sign_with_ecdsa(
 ///   are not requested.
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
-/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
-///   refused before they reach the canister.
+/// - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
+///   payment is taken, and oversized ingress messages are refused before they reach the canister at
+///   all.
 ///
 /// # Details
 /// - Calls `management_canister::schnorr::schnorr_public_key(..)`
@@ -242,6 +273,8 @@ pub async fn schnorr_public_key(
     arg: SchnorrPublicKeyArgs,
     payment: Option<PaymentType>,
 ) -> Result<(SchnorrPublicKeyResult,), SchnorrPublicKeyError> {
+    check_signing_args(&arg.derivation_path, &arg.key_id.name)
+        .map_err(|msg| SchnorrPublicKeyError::InvalidArgument { msg })?;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),
@@ -263,8 +296,10 @@ pub async fn schnorr_public_key(
 ///   - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
 ///     ensuring that the derivation path is used to namespace appropriately and to ensure that
 ///     unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
-///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
-///     calling the management canister.
+///     YOUR APP".into_bytes()]`.  The maximum derivation path length is 253, two less than when
+///     calling the management canister, because the signer prepends the schema and the key owner's
+///     principal.  The elements may total at most 4096 bytes; see
+///     [`limits`](ic_chain_fusion_signer_api::limits) for the exact limits.
 ///   - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
 ///     for details.
 /// - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
@@ -276,6 +311,8 @@ pub async fn schnorr_public_key(
 ///   are not requested.
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
+/// - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
+///   payment is taken.
 ///
 ///  # Details
 /// - Calls `management_canister::schnorr::sign_with_schnorr(..)`
@@ -288,6 +325,8 @@ pub async fn schnorr_sign(
     arg: SignWithSchnorrArgs,
     payment: Option<PaymentType>,
 ) -> Result<(SignWithSchnorrResult,), SchnorrSigningError> {
+    check_signing_args(&arg.derivation_path, &arg.key_id.name)
+        .map_err(|msg| SchnorrSigningError::InvalidArgument { msg })?;
     PAYMENT_GUARD
         .deduct(
             payment.unwrap_or(PaymentType::AttachedCycles),

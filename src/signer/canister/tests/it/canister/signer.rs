@@ -349,7 +349,20 @@ pub(crate) struct EcdsaPublicKeyResult {
     /// Can be used to deterministically derive child keys of the [`public_key`](Self::public_key).
     pub(crate) chain_code: serde_bytes::ByteBuf,
 }
-pub(crate) type Result8 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum GenericCallerEcdsaPublicKeyError {
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
+    /// An inter-canister call error from the threshold signature API.
+    SigningError(String),
+    /// Payment failed.
+    PaymentError(PaymentError),
+}
+pub(crate) type Result8 =
+    std::result::Result<(EcdsaPublicKeyResult,), GenericCallerEcdsaPublicKeyError>;
 /// # Sign With ECDSA Args.
 ///
 /// Argument type of [`sign_with_ecdsa`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#ic-sign_with_ecdsa).
@@ -370,7 +383,19 @@ pub(crate) struct SignWithEcdsaResult {
     /// Encoded as the concatenation of the SEC1 encodings of the two values `r` and `s`.
     pub(crate) signature: serde_bytes::ByteBuf,
 }
-pub(crate) type Result9 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum GenericSignWithEcdsaError {
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
+    /// An inter-canister call error from the threshold signature API.
+    SigningError(String),
+    /// Payment failed.
+    PaymentError(PaymentError),
+}
+pub(crate) type Result9 = std::result::Result<(SignWithEcdsaResult,), GenericSignWithEcdsaError>;
 /// # Canister Status Type
 ///
 /// Status of a canister.
@@ -461,7 +486,19 @@ pub(crate) struct SchnorrPublicKeyArgs {
     /// A vector of variable length byte strings.
     pub(crate) derivation_path: Vec<serde_bytes::ByteBuf>,
 }
-pub(crate) type Result10 = std::result::Result<(EcdsaPublicKeyResult,), EthAddressError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum SchnorrPublicKeyError {
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
+    /// An inter-canister call error from the threshold signature API.
+    SigningError(String),
+    /// Payment failed.
+    PaymentError(PaymentError),
+}
+pub(crate) type Result10 = std::result::Result<(EcdsaPublicKeyResult,), SchnorrPublicKeyError>;
 /// # Bip341 variant of Schnorr Aux.
 #[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Bip341 {
@@ -488,7 +525,19 @@ pub(crate) struct SignWithSchnorrArgs {
     /// Message to be signed.
     pub(crate) message: serde_bytes::ByteBuf,
 }
-pub(crate) type Result11 = std::result::Result<(SignWithEcdsaResult,), EthAddressError>;
+#[derive(CandidType, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub(crate) enum SchnorrSigningError {
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
+    /// An inter-canister call error from the threshold signature API.
+    SigningError(String),
+    /// Payment failed.
+    PaymentError(PaymentError),
+}
+pub(crate) type Result11 = std::result::Result<(SignWithEcdsaResult,), SchnorrSigningError>;
 
 pub struct SignerPic {
     pub pic: Arc<PocketIc>,

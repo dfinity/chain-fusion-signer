@@ -7,6 +7,11 @@ pub enum SchnorrSigningError {
     PaymentError(ic_papi_api::PaymentError),
     /// An inter-canister call error from the threshold signature API.
     SigningError(String),
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
 }
 impl From<ic_papi_api::PaymentError> for SchnorrSigningError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
@@ -25,6 +30,11 @@ pub enum SchnorrPublicKeyError {
     PaymentError(ic_papi_api::PaymentError),
     /// An inter-canister call error from the threshold signature API.
     SigningError(String),
+    /// A caller-supplied argument exceeds the documented size limits.
+    ///
+    /// The derivation path may have at most 253 elements totalling at most 4096 bytes,
+    /// and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+    InvalidArgument { msg: String },
 }
 impl From<ic_papi_api::PaymentError> for SchnorrPublicKeyError {
     fn from(e: ic_papi_api::PaymentError) -> Self {
