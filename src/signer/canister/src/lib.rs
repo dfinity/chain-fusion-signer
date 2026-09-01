@@ -1,11 +1,15 @@
 use candid::Principal;
-use ic_cdk::{api::msg_caller, export_candid, init, post_upgrade, query, update};
+use ic_cdk::{
+    api::{accept_message, msg_arg_data, msg_caller, msg_method_name},
+    export_candid, init, inspect_message, post_upgrade, query, update,
+};
 use ic_cdk_management_canister::{
     EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SchnorrPublicKeyArgs, SchnorrPublicKeyResult,
     SignWithEcdsaArgs, SignWithEcdsaResult, SignWithSchnorrArgs, SignWithSchnorrResult,
 };
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
+    limits::max_ingress_arg_bytes,
     methods::SignerMethods,
     metrics::get_metrics,
     std_canister_status,
@@ -109,6 +113,28 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
     }
 }
 
+/// Rejects oversized ingress messages before the signer pays to induct them.
+///
+/// The canister pays an ingress induction fee proportional to the size of every message it
+/// accepts, and pays again to forward the caller's derivation path to the management
+/// canister, but the public key methods charge a flat fee.  Rejecting an oversized message
+/// here means it is never inducted, so the signer pays nothing for it; without this filter
+/// a funded caller can drain the signer with calls that are valid, paid and successful yet
+/// cost it far more than the fee they pay.
+///
+/// Note that message inspection runs only for ingress messages, not for calls from other
+/// canisters.
+#[inspect_message]
+fn inspect_message() {
+    if let Some(max_bytes) = max_ingress_arg_bytes(&msg_method_name()) {
+        if msg_arg_data().len() > max_bytes {
+            // Returning without accepting the message rejects it.
+            return;
+        }
+    }
+    accept_message();
+}
+
 /// API method to get cycle balance and burn rate.
 #[update]
 pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
@@ -126,6 +152,8 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
+/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
+///   refused before they reach the canister.
 ///
 /// # Details
 /// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -200,6 +228,8 @@ pub async fn generic_sign_with_ecdsa(
 ///   are not requested.
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
+/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
+///   refused before they reach the canister.
 ///
 /// # Details
 /// - Calls `management_canister::schnorr::schnorr_public_key(..)`
