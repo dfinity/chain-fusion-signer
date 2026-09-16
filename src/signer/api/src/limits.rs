@@ -3,9 +3,13 @@
 //! The signer charges a flat fee for its public key methods, but the cost it pays for a
 //! call grows with the number of caller-supplied bytes: the canister pays an ingress
 //! induction fee proportional to the size of every message it accepts, and pays again to
-//! forward the caller's derivation path to the management canister.  Without a cap on
-//! those bytes, a funded caller can make the signer spend orders of magnitude more cycles
-//! than it collects, draining the balance of a service shared by all users.
+//! forward the caller's derivation path and key ID to the management canister.  Without a
+//! cap on those bytes, a funded caller can make the signer spend orders of magnitude more
+//! cycles than it collects, draining the balance of a service shared by all users.
+//!
+//! There are two layers.  [`ingress_limit`] bounds the raw message before the
+//! signer pays to induct it, but it only applies to ingress; [`check_derivation_path`] and
+//! [`check_key_name`] bound what the signer forwards, whatever the message arrived on.
 
 /// How large a Candid argument a method accepts over ingress.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -83,8 +87,72 @@ pub fn ingress_limit(method: &str) -> IngressLimit {
     }
 }
 
+/// The maximum number of derivation path elements the management canister accepts.
+pub const MAX_MANAGEMENT_DERIVATION_PATH_ELEMENTS: usize = 255;
+
+/// The number of derivation path elements the signer prepends to the caller's path: the
+/// schema and the key owner's principal.
+pub const DERIVATION_PATH_PREFIX_ELEMENTS: usize = 2;
+
+/// The maximum number of derivation path elements a caller may supply.
+///
+/// The signer prepends [`DERIVATION_PATH_PREFIX_ELEMENTS`] elements of its own, so the
+/// caller gets what is left of the management canister's allowance.
+pub const MAX_DERIVATION_PATH_ELEMENTS: usize =
+    MAX_MANAGEMENT_DERIVATION_PATH_ELEMENTS - DERIVATION_PATH_PREFIX_ELEMENTS;
+
+/// The maximum total size, in bytes, of a caller-supplied derivation path.
+///
+/// This is the sum of the lengths of every element; the per-element length is not
+/// restricted separately because a single element may legitimately hold a long
+/// application name.  4 KiB is far above any legitimate use: the documented pattern is a
+/// single application-name element, and even a fully populated BIP32-style path, at four
+/// bytes per element, is about 1 KiB.
+pub const MAX_DERIVATION_PATH_BYTES: usize = 4096;
+
+/// The maximum length, in bytes, of a caller-supplied threshold key name.
+///
+/// Production key names (`key_1`, `test_key_1`, `dfx_test_key`) are far shorter; the
+/// signer forwards the name verbatim, so it has to be bounded too.
+pub const MAX_KEY_NAME_BYTES: usize = 128;
+
+/// Checks that a caller-supplied derivation path is within the documented limits.
+///
+/// # Errors
+/// - If the path has more than [`MAX_DERIVATION_PATH_ELEMENTS`] elements.
+/// - If the elements total more than [`MAX_DERIVATION_PATH_BYTES`] bytes.
+pub fn check_derivation_path(derivation_path: &[Vec<u8>]) -> Result<(), String> {
+    let elements = derivation_path.len();
+    if elements > MAX_DERIVATION_PATH_ELEMENTS {
+        return Err(format!(
+            "derivation path has {elements} elements, the maximum is {MAX_DERIVATION_PATH_ELEMENTS}"
+        ));
+    }
+    let bytes: usize = derivation_path.iter().map(Vec::len).sum();
+    if bytes > MAX_DERIVATION_PATH_BYTES {
+        return Err(format!(
+            "derivation path is {bytes} bytes, the maximum is {MAX_DERIVATION_PATH_BYTES}"
+        ));
+    }
+    Ok(())
+}
+
+/// Checks that a caller-supplied threshold key name is within the documented limit.
+///
+/// # Errors
+/// - If the name is longer than [`MAX_KEY_NAME_BYTES`] bytes.
+pub fn check_key_name(name: &str) -> Result<(), String> {
+    let bytes = name.len();
+    if bytes > MAX_KEY_NAME_BYTES {
+        return Err(format!(
+            "key name is {bytes} bytes, the maximum is {MAX_KEY_NAME_BYTES}"
+        ));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
-mod tests {
+mod ingress_tests {
     use super::{
         ingress_limit, IngressLimit, MAX_PUBLIC_KEY_ARG_BYTES, MAX_SMALL_ARG_BYTES,
         MAX_TRANSACTION_ARG_BYTES,
@@ -190,5 +258,105 @@ mod tests {
             found > 10,
             "Expected to parse the service methods, found only {found}."
         );
+    }
+}
+
+#[cfg(test)]
+mod forwarding_tests {
+    use candid::{Encode, Principal};
+    use ic_cdk_management_canister::{SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs};
+    use ic_papi_api::{caller::PatronPaysIcrc2Tokens, Account, PaymentType};
+    use serde_bytes::ByteBuf;
+
+    use super::{
+        check_derivation_path, check_key_name, MAX_DERIVATION_PATH_BYTES,
+        MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES, MAX_PUBLIC_KEY_ARG_BYTES,
+    };
+
+    /// The largest request the forwarding limits allow still fits inside the ingress limit.
+    ///
+    /// The two layers are set independently, so a change to either could contradict the
+    /// other and start refusing valid calls.  This encodes a request that saturates both
+    /// the element count and the byte budget, so the Candid framing and the per-element
+    /// length prefixes are counted rather than estimated.
+    #[test]
+    fn the_ingress_limit_admits_the_largest_permitted_request() {
+        let per = MAX_DERIVATION_PATH_BYTES / MAX_DERIVATION_PATH_ELEMENTS;
+        let mut path = vec![vec![0u8; per]; MAX_DERIVATION_PATH_ELEMENTS];
+        let used: usize = path.iter().map(Vec::len).sum();
+        path[0].extend(vec![0u8; MAX_DERIVATION_PATH_BYTES - used]);
+        assert_eq!(check_derivation_path(&path), Ok(()), "should be permitted");
+
+        let arg = SchnorrPublicKeyArgs {
+            canister_id: Some(Principal::management_canister()),
+            derivation_path: path,
+            key_id: SchnorrKeyId {
+                algorithm: SchnorrAlgorithm::Ed25519,
+                name: "k".repeat(MAX_KEY_NAME_BYTES),
+            },
+        };
+        // The second argument is the real payment type, with its largest variant: a patron paying
+        // in tokens, naming a ledger and a patron account with a full subaccount.  Candid writes
+        // the whole type table whatever the value, so a stand-in type would under-count.
+        let payment = Some(PaymentType::PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens {
+            ledger: Principal::management_canister(),
+            patron: Account {
+                owner: Principal::management_canister(),
+                subaccount: Some(ByteBuf::from(vec![0u8; 32])),
+            },
+        }));
+        let encoded = Encode!(&arg, &payment).expect("should encode");
+        assert!(
+            encoded.len() < MAX_PUBLIC_KEY_ARG_BYTES,
+            "The largest permitted request encodes to {} bytes, which the {MAX_PUBLIC_KEY_ARG_BYTES} \
+             byte ingress limit would refuse.",
+            encoded.len()
+        );
+    }
+
+    #[test]
+    fn ordinary_paths_are_accepted() {
+        // No path at all.
+        assert_eq!(check_derivation_path(&[]), Ok(()));
+        // The documented minimum: an application name.
+        assert_eq!(check_derivation_path(&[b"MY APP".to_vec()]), Ok(()));
+        // A fully populated BIP32-style path.
+        let bip32 = vec![vec![0u8; 4]; MAX_DERIVATION_PATH_ELEMENTS];
+        assert_eq!(check_derivation_path(&bip32), Ok(()));
+    }
+
+    #[test]
+    fn limits_are_inclusive() {
+        // Exactly at the byte limit, in one element and spread over many.
+        assert_eq!(
+            check_derivation_path(&[vec![0u8; MAX_DERIVATION_PATH_BYTES]]),
+            Ok(())
+        );
+        let spread = vec![vec![0u8; MAX_DERIVATION_PATH_BYTES / 4]; 4];
+        assert_eq!(check_derivation_path(&spread), Ok(()));
+        // Exactly at the element limit.
+        assert_eq!(
+            check_derivation_path(&vec![vec![]; MAX_DERIVATION_PATH_ELEMENTS]),
+            Ok(())
+        );
+        // Exactly at the key name limit.
+        assert_eq!(check_key_name(&"k".repeat(MAX_KEY_NAME_BYTES)), Ok(()));
+    }
+
+    #[test]
+    fn oversized_paths_are_rejected() {
+        // One huge element: the shape used by the reported cycle drain.
+        assert!(check_derivation_path(&[vec![0u8; MAX_DERIVATION_PATH_BYTES + 1]]).is_err());
+        // The same total spread over many elements, so counting elements alone would not
+        // catch it.
+        let spread = vec![vec![0u8; MAX_DERIVATION_PATH_BYTES / 4 + 1]; 4];
+        assert!(check_derivation_path(&spread).is_err());
+        // Too many elements, even though they are empty.
+        assert!(check_derivation_path(&vec![vec![]; MAX_DERIVATION_PATH_ELEMENTS + 1]).is_err());
+    }
+
+    #[test]
+    fn oversized_key_names_are_rejected() {
+        assert!(check_key_name(&"k".repeat(MAX_KEY_NAME_BYTES + 1)).is_err());
     }
 }

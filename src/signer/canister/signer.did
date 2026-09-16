@@ -135,6 +135,28 @@ type EthSignTransactionRequest = record {
   chain_id : nat;
   nonce : nat;
 };
+type GenericCallerEcdsaPublicKeyError = variant {
+  // A caller-supplied argument exceeds the documented size limits.
+  // 
+  // The derivation path may have at most 253 elements totalling at most 4096 bytes,
+  // and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+  InvalidArgument : record { msg : text };
+  // An inter-canister call error from the threshold signature API.
+  SigningError : text;
+  // Payment failed.
+  PaymentError : PaymentError;
+};
+type GenericSignWithEcdsaError = variant {
+  // A caller-supplied argument exceeds the documented size limits.
+  // 
+  // The derivation path may have at most 253 elements totalling at most 4096 bytes,
+  // and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+  InvalidArgument : record { msg : text };
+  // An inter-canister call error from the threshold signature API.
+  SigningError : text;
+  // Payment failed.
+  PaymentError : PaymentError;
+};
 type GetAddressError = variant {
   InternalError : record { msg : text };
   PaymentError : PaymentError;
@@ -235,11 +257,11 @@ type Result = variant { Ok : GetAddressResponse; Err : GetAddressError };
 type Result_1 = variant { Ok : GetBalanceResponse; Err : GetAddressError };
 type Result_10 = variant {
   Ok : record { EcdsaPublicKeyResult };
-  Err : EthAddressError;
+  Err : SchnorrPublicKeyError;
 };
 type Result_11 = variant {
   Ok : record { SignWithEcdsaResult };
-  Err : EthAddressError;
+  Err : SchnorrSigningError;
 };
 type Result_2 = variant { Ok : SendBtcResponse; Err : SendBtcError };
 type Result_3 = variant { Ok : SignBtcResponse; Err : SendBtcError };
@@ -252,11 +274,11 @@ type Result_6 = variant { Ok : EthPersonalSignResponse; Err : EthAddressError };
 type Result_7 = variant { Ok : EthSignPrehashResponse; Err : EthAddressError };
 type Result_8 = variant {
   Ok : record { EcdsaPublicKeyResult };
-  Err : EthAddressError;
+  Err : GenericCallerEcdsaPublicKeyError;
 };
 type Result_9 = variant {
   Ok : record { SignWithEcdsaResult };
-  Err : EthAddressError;
+  Err : GenericSignWithEcdsaError;
 };
 // # Schnorr Algorithm.
 // 
@@ -286,6 +308,28 @@ type SchnorrPublicKeyArgs = record {
   canister_id : opt principal;
   // A vector of variable length byte strings.
   derivation_path : vec blob;
+};
+type SchnorrPublicKeyError = variant {
+  // A caller-supplied argument exceeds the documented size limits.
+  // 
+  // The derivation path may have at most 253 elements totalling at most 4096 bytes,
+  // and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+  InvalidArgument : record { msg : text };
+  // An inter-canister call error from the threshold signature API.
+  SigningError : text;
+  // Payment failed.
+  PaymentError : PaymentError;
+};
+type SchnorrSigningError = variant {
+  // A caller-supplied argument exceeds the documented size limits.
+  // 
+  // The derivation path may have at most 253 elements totalling at most 4096 bytes,
+  // and the key name at most 128 bytes.  See [`crate::limits`] for the exact limits.
+  InvalidArgument : record { msg : text };
+  // An inter-canister call error from the threshold signature API.
+  SigningError : text;
+  // Payment failed.
+  PaymentError : PaymentError;
 };
 type SendBtcError = variant {
   BuildP2wpkhError : BuildP2wpkhTxError;
@@ -518,8 +562,10 @@ service : (Arg) -> {
   // # Warnings
   // - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
   // unintended sub-keys are not requested.
-  // - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
-  // refused before they reach the canister.
+  // - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
+  // name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
+  // requests are rejected with `InvalidArgument` before any payment is taken, and ingress messages
+  // over 8 KiB are refused before they reach the canister at all.
   // 
   // # Details
   // - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -537,6 +583,10 @@ service : (Arg) -> {
   // # Warnings
   // - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
   // unintended sub-keys are not requested.
+  // - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
+  // name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
+  // requests are rejected with `InvalidArgument` before any payment is taken, and ingress messages
+  // over 8 KiB are refused before they reach the canister at all.
   // 
   // # Details
   // - Calls `management_canister::ecdsa::sign_with_ecdsa(..)`
@@ -561,8 +611,10 @@ service : (Arg) -> {
   // - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
   // ensuring that the derivation path is used to namespace appropriately and to ensure that
   // unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
-  // YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
-  // calling the management canister.
+  // YOUR APP".into_bytes()]`.  The maximum derivation path length is 253, two less than when
+  // calling the management canister, because the signer prepends the schema and the key owner's
+  // principal.  The elements may total at most 4096 bytes; see
+  // [`limits`](ic_chain_fusion_signer_api::limits) for the exact limits.
   // - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
   // for details.
   // - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
@@ -574,8 +626,9 @@ service : (Arg) -> {
   // are not requested.
   // - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
   // APP".into_bytes()]`
-  // - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
-  // refused before they reach the canister.
+  // - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
+  // payment is taken, and ingress messages over 8 KiB are refused before they reach the canister
+  // at all.
   // 
   // # Details
   // - Calls `management_canister::schnorr::schnorr_public_key(..)`
@@ -596,8 +649,10 @@ service : (Arg) -> {
   // - `arg.derivation_path`: The derivation path to the public key.  The caller is responsible for
   // ensuring that the derivation path is used to namespace appropriately and to ensure that
   // unintended sub-keys are not requested.  At minimum, it is recommended to use `vec!["NAME OF
-  // YOUR APP".into_bytes()]`.  The maximum derivation path length is 254, one less than when
-  // calling the management canister.
+  // YOUR APP".into_bytes()]`.  The maximum derivation path length is 253, two less than when
+  // calling the management canister, because the signer prepends the schema and the key owner's
+  // principal.  The elements may total at most 4096 bytes; see
+  // [`limits`](ic_chain_fusion_signer_api::limits) for the exact limits.
   // - `arg.key_id`: The ID of the root threshold key to use.  E.g. `key_1` or `test_key_1`.  See <https://internetcomputer.org/docs/current/references/t-sigs-how-it-works#key-derivation>
   // for details.
   // - `payment`: The payment type to use.  If omitted or `None`, it will be assumed that cycles have
@@ -609,6 +664,8 @@ service : (Arg) -> {
   // are not requested.
   // - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
   // APP".into_bytes()]`
+  // - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
+  // payment is taken.
   // 
   // # Details
   // - Calls `management_canister::schnorr::sign_with_schnorr(..)`

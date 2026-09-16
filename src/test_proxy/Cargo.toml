@@ -1,0 +1,12 @@
+[package]
+name = "test_proxy"
+version = { workspace = true }
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+candid = { workspace = true }
+ic-cdk = { workspace = true }
