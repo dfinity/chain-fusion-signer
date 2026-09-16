@@ -152,7 +152,7 @@ pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV
 /// # Warnings
 /// - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
 ///   unintended sub-keys are not requested.
-/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
+/// - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
 ///   refused before they reach the canister.
 ///
 /// # Details
@@ -228,7 +228,7 @@ pub async fn generic_sign_with_ecdsa(
 ///   are not requested.
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
-/// - Ingress messages to this method may carry at most 16 KiB of Candid arguments; larger ones are
+/// - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
 ///   refused before they reach the canister.
 ///
 /// # Details

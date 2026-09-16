@@ -17,10 +17,16 @@ pub const FLAT_FEE_PUBLIC_KEY_METHODS: [&str; 2] =
 /// The maximum size, in bytes, of the Candid argument the methods in
 /// [`FLAT_FEE_PUBLIC_KEY_METHODS`] accept over ingress.
 ///
-/// This is far above any legitimate request.  The documented derivation path is a single
-/// application-name element, and even a fully populated 253-element BIP32-style path is
-/// about 1 KiB; the rest is headroom for the key ID and Candid framing.
-pub const MAX_PUBLIC_KEY_ARG_BYTES: usize = 16 * 1024;
+/// Sized from both ends.  It has to be above any legitimate request: the documented
+/// derivation path is a single application-name element, and even a fully populated
+/// BIP32-style path encodes to well under 5 KiB including the key ID and Candid framing.
+///
+/// It also has to stay below what the signer charges, because a message this filter
+/// accepts is inducted and paid for even if the method then rejects it.  On a 34-node
+/// fiduciary subnet ingress induction is `(1_200_000 + 2_000 * bytes) * 34 / 13`, so 8 KiB
+/// costs about 46M cycles against the 77M flat fee, while 16 KiB would cost about 89M —
+/// more than the fee, which would let a caller burn cycles for free.
+pub const MAX_PUBLIC_KEY_ARG_BYTES: usize = 8 * 1024;
 
 /// The maximum ingress argument size for `method`, or `None` if the method is not size
 /// limited.
