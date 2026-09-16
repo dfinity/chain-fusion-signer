@@ -518,6 +518,8 @@ service : (Arg) -> {
   // # Warnings
   // - The user supplied derivation path is used as-is.  The caller is responsible for ensuring that
   // unintended sub-keys are not requested.
+  // - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
+  // refused before they reach the canister.
   // 
   // # Details
   // - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -572,6 +574,8 @@ service : (Arg) -> {
   // are not requested.
   // - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
   // APP".into_bytes()]`
+  // - Ingress messages to this method may carry at most 8 KiB of Candid arguments; larger ones are
+  // refused before they reach the canister.
   // 
   // # Details
   // - Calls `management_canister::schnorr::schnorr_public_key(..)`
