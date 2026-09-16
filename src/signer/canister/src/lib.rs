@@ -9,7 +9,7 @@ use ic_cdk_management_canister::{
 };
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
-    limits::{check_derivation_path, check_key_name, max_ingress_arg_bytes},
+    limits::{check_derivation_path, check_key_name, ingress_limit, IngressLimit},
     methods::SignerMethods,
     metrics::get_metrics,
     std_canister_status,
@@ -126,13 +126,12 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// canisters, which is why the update methods bound what they forward as well.
 #[inspect_message]
 fn inspect_message() {
-    if let Some(max_bytes) = max_ingress_arg_bytes(&msg_method_name()) {
-        if msg_arg_data().len() > max_bytes {
-            // Returning without accepting the message rejects it.
-            return;
-        }
+    // Returning without accepting the message refuses it, so it is never inducted.
+    match ingress_limit(&msg_method_name()) {
+        IngressLimit::Unlimited => accept_message(),
+        IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
+        IngressLimit::AtMost(_) | IngressLimit::Unknown => (),
     }
-    accept_message();
 }
 
 /// API method to get cycle balance and burn rate.
@@ -173,8 +172,8 @@ fn check_signing_args(derivation_path: &[Vec<u8>], key_name: &str) -> Result<(),
 ///   unintended sub-keys are not requested.
 /// - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
 ///   name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
-///   requests are rejected with `InvalidArgument` before any payment is taken, and oversized
-///   ingress messages are refused before they reach the canister at all.
+///   requests are rejected with `InvalidArgument` before any payment is taken, and ingress messages
+///   over 8 KiB are refused before they reach the canister at all.
 ///
 /// # Details
 /// - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -259,8 +258,8 @@ pub async fn generic_sign_with_ecdsa(
 /// - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
 ///   APP".into_bytes()]`
 /// - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
-///   payment is taken, and oversized ingress messages are refused before they reach the canister at
-///   all.
+///   payment is taken, and ingress messages over 8 KiB are refused before they reach the canister
+///   at all.
 ///
 /// # Details
 /// - Calls `management_canister::schnorr::schnorr_public_key(..)`

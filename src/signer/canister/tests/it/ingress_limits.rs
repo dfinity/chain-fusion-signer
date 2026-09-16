@@ -11,6 +11,13 @@ use ic_chain_fusion_signer_api::{limits::MAX_PUBLIC_KEY_ARG_BYTES, methods::Sign
 use ic_papi_api::principal2account;
 use serde_bytes::ByteBuf;
 
+/// A payload just under the IC's ~2 MiB ingress ceiling.
+///
+/// The ceiling applies to the whole signed message, so this leaves room for the envelope;
+/// anything larger is refused by the network before it reaches the canister at all, which
+/// is not what these tests are about.
+const NEARLY_MAX_INGRESS: usize = 1_900_000;
+
 use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
@@ -174,4 +181,58 @@ fn ordinary_ingress_is_accepted() {
         status.is_ok(),
         "Methods without an ingress size limit should still be accepted, got: {status:?}"
     );
+}
+
+/// An oversized message to an unpaid, zero-argument method costs the signer nothing.
+///
+/// `get_canister_status` takes no arguments and collects no fee, so before every method had
+/// a limit a caller could send it a maximum-size blob, have dispatch reject the malformed
+/// argument, and leave the signer paying induction for it — a cycle drain needing no
+/// funding at all.
+#[test]
+fn oversized_ingress_to_an_unpaid_method_costs_nothing() {
+    let test_env = TestSetup::default();
+    let blob = vec![0u8; NEARLY_MAX_INGRESS];
+
+    let balance_before = signer_balance(&test_env);
+    for _ in 0..5 {
+        let response = test_env.pic.update_call(
+            test_env.signer.canister_id,
+            test_env.user,
+            "get_canister_status",
+            blob.clone(),
+        );
+        assert!(
+            response.is_err(),
+            "An oversized message to get_canister_status should be refused, got: {response:?}"
+        );
+    }
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(
+        spent, 0,
+        "Refusing oversized messages to an unpaid method should cost nothing, cost {spent} cycles."
+    );
+}
+
+/// A call to a method that does not exist is refused before it is inducted.
+///
+/// Dispatch would reject it anyway; refusing it here means the signer does not pay to
+/// induct a maximum-size message first.
+#[test]
+fn unknown_methods_are_refused_for_free() {
+    let test_env = TestSetup::default();
+
+    let balance_before = signer_balance(&test_env);
+    let response = test_env.pic.update_call(
+        test_env.signer.canister_id,
+        test_env.user,
+        "not_a_method",
+        vec![0u8; NEARLY_MAX_INGRESS],
+    );
+    assert!(
+        response.is_err(),
+        "An unknown method should be refused, got: {response:?}"
+    );
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(spent, 0, "Refusing an unknown method cost {spent} cycles.");
 }

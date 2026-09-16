@@ -564,8 +564,8 @@ service : (Arg) -> {
   // unintended sub-keys are not requested.
   // - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
   // name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
-  // requests are rejected with `InvalidArgument` before any payment is taken, and oversized
-  // ingress messages are refused before they reach the canister at all.
+  // requests are rejected with `InvalidArgument` before any payment is taken, and ingress messages
+  // over 8 KiB are refused before they reach the canister at all.
   // 
   // # Details
   // - Calls `management_canister::ecdsa::ecdsa_public_key(..)`
@@ -626,8 +626,8 @@ service : (Arg) -> {
   // - It is recommended that, at minimum, the derivation path should be `vec!["NAME OF YOUR
   // APP".into_bytes()]`
   // - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
-  // payment is taken, and oversized ingress messages are refused before they reach the canister at
-  // all.
+  // payment is taken, and ingress messages over 8 KiB are refused before they reach the canister
+  // at all.
   // 
   // # Details
   // - Calls `management_canister::schnorr::schnorr_public_key(..)`
