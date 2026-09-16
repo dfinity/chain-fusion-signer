@@ -816,7 +816,7 @@ dependencies = [
 
 [[package]]
 name = "example_backend"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "candid",
  "ic-cdk 0.20.2",
@@ -1381,7 +1381,7 @@ dependencies = [
 
 [[package]]
 name = "ic-chain-fusion-signer-api"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
@@ -2878,7 +2878,7 @@ dependencies = [
 
 [[package]]
 name = "signer"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "assert_matches",
  "bitcoin",
@@ -3114,7 +3114,7 @@ dependencies = [
 
 [[package]]
 name = "test_proxy"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "candid",
  "ic-cdk 0.20.2",
