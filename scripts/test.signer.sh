@@ -17,6 +17,10 @@ else
   export SIGNER_CANISTER_WASM_FILE="/target/wasm32-unknown-unknown/release/$SIGNER_CANISTER_WASM"
 fi
 
+echo "Building test_proxy canister."
+# Used by the integration tests to reach the signer through an inter-canister call.
+cargo build --locked --target wasm32-unknown-unknown --release -p test_proxy
+
 if [ -f "./$BITCON_CANISTER_WASM" ]; then
   echo "Use existing $BITCON_CANISTER_WASM canister."
 else

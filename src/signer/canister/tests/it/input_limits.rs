@@ -6,9 +6,12 @@
 //! two properties that prevent it: oversized input is refused, and refusing it neither
 //! charges the caller nor costs the signer.
 
-use candid::Nat;
+use candid::{decode_one, encode_args, Nat};
 use ic_chain_fusion_signer_api::{
-    limits::{MAX_DERIVATION_PATH_BYTES, MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES},
+    limits::{
+        MAX_DERIVATION_PATH_BYTES, MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES,
+        MAX_PUBLIC_KEY_ARG_BYTES,
+    },
     methods::SignerMethods,
 };
 use ic_papi_api::principal2account;
@@ -24,7 +27,10 @@ use crate::{
             SignWithSchnorrArgs,
         },
     },
-    utils::test_environment::{TestSetup, LEDGER_FEE},
+    utils::{
+        pic_canister::{cargo_wasm_path, PicCanister, PicCanisterBuilder, PicCanisterTrait},
+        test_environment::{TestSetup, LEDGER_FEE},
+    },
 };
 
 /// The key name deployed by [`TestSetup`].
@@ -305,5 +311,95 @@ fn rejected_requests_do_not_charge_the_caller_and_stay_cheap() {
         spent_per_call < fee,
         "A rejected request cost the signer {spent_per_call} cycles, which is more than the \
          {fee} cycle fee it charges for serving one."
+    );
+}
+
+/// Deploys the test proxy, a canister that forwards raw calls to another canister.
+fn deploy_proxy(test_env: &TestSetup) -> PicCanister {
+    PicCanisterBuilder::default()
+        .with_wasm(&cargo_wasm_path("test_proxy"))
+        .deploy_to(test_env.pic.clone())
+}
+
+/// Calls `method` on the signer from the proxy canister, returning the raw reply.
+fn call_from_canister(
+    test_env: &TestSetup,
+    proxy: &PicCanister,
+    method: &str,
+    arg: Vec<u8>,
+) -> Vec<u8> {
+    proxy
+        .update::<_, Result<ByteBuf, String>>(
+            test_env.user,
+            "call_raw",
+            (
+                test_env.signer.canister_id,
+                method.to_string(),
+                ByteBuf::from(arg),
+            ),
+        )
+        .expect("Failed to call the proxy")
+        .expect("The inter-canister call should reach the signer")
+        .into_vec()
+}
+
+/// A canister caller cannot make the signer forward an oversized derivation path.
+///
+/// Message inspection runs only for ingress, so it cannot protect against a path sent from
+/// another canister.  This sends one well over the ingress limit, which ingress would refuse
+/// outright, and checks the method itself rejects it: a typed `InvalidArgument` can only come
+/// from the method, so it proves the call got past inspection and was stopped anyway.
+#[test]
+fn oversized_derivation_path_from_a_canister_is_rejected() {
+    let test_env = TestSetup::default();
+    let proxy = deploy_proxy(&test_env);
+    let path = vec![ByteBuf::from(vec![0u8; 2 * MAX_PUBLIC_KEY_ARG_BYTES])];
+    // No payment: the check runs before payment is taken, so none is needed to reach it.
+    let payment: Option<PaymentType> = None;
+
+    let schnorr_arg = SchnorrPublicKeyArgs {
+        canister_id: None,
+        derivation_path: path.clone(),
+        key_id: schnorr_key_id(),
+    };
+    // The same request over ingress never reaches the method.
+    let over_ingress = test_env
+        .signer
+        .schnorr_public_key(test_env.user, &schnorr_arg, &payment);
+    assert!(
+        over_ingress.is_err(),
+        "Over ingress, message inspection should refuse this request, got: {over_ingress:?}"
+    );
+    let reply = call_from_canister(
+        &test_env,
+        &proxy,
+        "schnorr_public_key",
+        encode_args((&schnorr_arg, &payment)).unwrap(),
+    );
+    let schnorr: signer::Result10 = decode_one(&reply).expect("Failed to decode the reply");
+    assert!(
+        matches!(schnorr, Err(SchnorrPublicKeyError::InvalidArgument { .. })),
+        "schnorr_public_key should reject an oversized path from a canister, got: {schnorr:?}"
+    );
+
+    let ecdsa_arg = EcdsaPublicKeyArgs {
+        canister_id: None,
+        derivation_path: path,
+        key_id: ecdsa_key_id(),
+    };
+    let reply = call_from_canister(
+        &test_env,
+        &proxy,
+        "generic_caller_ecdsa_public_key",
+        encode_args((&ecdsa_arg, &payment)).unwrap(),
+    );
+    let ecdsa: signer::Result8 = decode_one(&reply).expect("Failed to decode the reply");
+    assert!(
+        matches!(
+            ecdsa,
+            Err(GenericCallerEcdsaPublicKeyError::InvalidArgument { .. })
+        ),
+        "generic_caller_ecdsa_public_key should reject an oversized path from a canister, got: \
+         {ecdsa:?}"
     );
 }

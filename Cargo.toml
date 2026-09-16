@@ -2,7 +2,8 @@
 members = [
     "src/example_backend",
     "src/signer/api",
-    "src/signer/canister"]
+    "src/signer/canister",
+    "src/test_proxy"]
 resolver = "2"
 
 [workspace.package]

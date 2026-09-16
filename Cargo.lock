@@ -3102,6 +3102,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_proxy"
+version = "0.5.1"
+dependencies = [
+ "candid",
+ "ic-cdk 0.20.2",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"

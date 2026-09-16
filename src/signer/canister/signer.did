@@ -585,7 +585,8 @@ service : (Arg) -> {
   // unintended sub-keys are not requested.
   // - The derivation path may have at most 253 elements totalling at most 4096 bytes, and the key
   // name at most 128 bytes; see [`limits`](ic_chain_fusion_signer_api::limits).  Oversized
-  // requests are rejected with `InvalidArgument` before any payment is taken.
+  // requests are rejected with `InvalidArgument` before any payment is taken, and ingress messages
+  // over 8 KiB are refused before they reach the canister at all.
   // 
   // # Details
   // - Calls `management_canister::ecdsa::sign_with_ecdsa(..)`
