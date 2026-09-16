@@ -1,0 +1,25 @@
+name: 'Dependabot auto-merge'
+# Enable GitHub auto-merge on every Dependabot PR as soon as it is opened.
+# The PR still has to satisfy the main branch ruleset before it actually
+# merges: required status checks (pr-pass, Checks pass) and a code owner
+# approval.  This workflow does not approve anything.
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  enable-auto-merge:
+    name: 'Enable auto-merge'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Enable squash auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
