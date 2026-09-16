@@ -8,9 +8,6 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      # These crates share the `signature` trait crate. Bumping one of them alone
-      # leaves the workspace with two `signature` major versions and the Schnorr
-      # integration tests no longer compile, so they must move together.
       rustcrypto:
         patterns:
           - "signature"
