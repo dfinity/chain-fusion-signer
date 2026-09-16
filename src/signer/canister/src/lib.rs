@@ -9,7 +9,7 @@ use ic_cdk_management_canister::{
 };
 use ic_chain_fusion_signer_api::{
     http::{HttpRequest, HttpResponse},
-    limits::max_ingress_arg_bytes,
+    limits::{ingress_limit, IngressLimit},
     methods::SignerMethods,
     metrics::get_metrics,
     std_canister_status,
@@ -126,13 +126,12 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// canisters.
 #[inspect_message]
 fn inspect_message() {
-    if let Some(max_bytes) = max_ingress_arg_bytes(&msg_method_name()) {
-        if msg_arg_data().len() > max_bytes {
-            // Returning without accepting the message rejects it.
-            return;
-        }
+    // Returning without accepting the message refuses it, so it is never inducted.
+    match ingress_limit(&msg_method_name()) {
+        IngressLimit::Unlimited => accept_message(),
+        IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
+        IngressLimit::AtMost(_) | IngressLimit::Unknown => (),
     }
-    accept_message();
 }
 
 /// API method to get cycle balance and burn rate.
