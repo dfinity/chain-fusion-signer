@@ -56,12 +56,15 @@ COPY Cargo.toml .
 COPY src/example_backend/Cargo.toml src/example_backend/Cargo.toml
 COPY src/signer/api/Cargo.toml src/signer/api/Cargo.toml
 COPY src/signer/canister/Cargo.toml src/signer/canister/Cargo.toml
+COPY src/test_proxy/Cargo.toml src/test_proxy/Cargo.toml
 RUN    mkdir -p src/signer/canister/src \
     && touch    src/signer/canister/src/lib.rs \
     && mkdir -p src/signer/api/src \
     && touch    src/signer/api/src/lib.rs \
     && mkdir -p src/example_backend/src \
     && touch    src/example_backend/src/lib.rs \
+    && mkdir -p src/test_proxy/src \
+    && touch    src/test_proxy/src/lib.rs \
     && cargo build --locked --target wasm32-unknown-unknown \
     && rm -rf src
 
