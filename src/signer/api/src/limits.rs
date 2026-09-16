@@ -265,6 +265,8 @@ mod ingress_tests {
 mod forwarding_tests {
     use candid::{Encode, Principal};
     use ic_cdk_management_canister::{SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs};
+    use ic_papi_api::{caller::PatronPaysIcrc2Tokens, Account, PaymentType};
+    use serde_bytes::ByteBuf;
 
     use super::{
         check_derivation_path, check_key_name, MAX_DERIVATION_PATH_BYTES,
@@ -293,9 +295,17 @@ mod forwarding_tests {
                 name: "k".repeat(MAX_KEY_NAME_BYTES),
             },
         };
-        // The second argument is the payment type; `None` is its smallest encoding, and the
-        // difference is far below the headroom this assertion leaves.
-        let encoded = Encode!(&arg, &Option::<u8>::None).expect("should encode");
+        // The second argument is the real payment type, with its largest variant: a patron paying
+        // in tokens, naming a ledger and a patron account with a full subaccount.  Candid writes
+        // the whole type table whatever the value, so a stand-in type would under-count.
+        let payment = Some(PaymentType::PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens {
+            ledger: Principal::management_canister(),
+            patron: Account {
+                owner: Principal::management_canister(),
+                subaccount: Some(ByteBuf::from(vec![0u8; 32])),
+            },
+        }));
+        let encoded = Encode!(&arg, &payment).expect("should encode");
         assert!(
             encoded.len() < MAX_PUBLIC_KEY_ARG_BYTES,
             "The largest permitted request encodes to {} bytes, which the {MAX_PUBLIC_KEY_ARG_BYTES} \
