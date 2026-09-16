@@ -104,7 +104,8 @@ pub fn build_p2wpkh_transaction(
 
             let address = address
                 .require_network(transform_network(network))
-                .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?; // Convert from ParseError to BuildP2wpkhError
+                .map_err(|_| BuildP2wpkhTxError::WrongBitcoinNetwork)?; // Convert from ParseError
+                                                                        // to BuildP2wpkhError
 
             Ok(TxOut {
                 script_pubkey: address.script_pubkey(),
@@ -384,7 +385,8 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_wrong_bitcoin_network() {
-        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Valid mainnet P2wpkh address
+        let source_address = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Valid mainnet P2wpkh
+                                                                           // address
 
         let result = build_p2wpkh_transaction(
             source_address,
@@ -426,7 +428,8 @@ mod tests {
 
     #[test]
     fn test_build_p2wpkh_transaction_not_p2wpkh_source_address() {
-        let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH address, not P2WPKH
+        let source_address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"; // This is a legacy P2PKH
+                                                                   // address, not P2WPKH
 
         let result = build_p2wpkh_transaction(source_address, Network::Mainnet, &[], 10, &vec![]);
 
@@ -470,7 +473,8 @@ mod tests {
         match result {
             Ok(tx) => {
                 assert_eq!(tx.input.len(), utxos.len());
-                assert_eq!(tx.output.len(), 2); // 2 outputs (one for the destination, one for the change)
+                assert_eq!(tx.output.len(), 2); // 2 outputs (one for the destination, one for the
+                                                // change)
 
                 // Check that the first output matches the sent amount
                 assert_eq!(tx.output[0].value.to_sat(), amount_sent);
