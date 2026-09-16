@@ -48,9 +48,11 @@ pub const MAX_PUBLIC_KEY_ARG_BYTES: usize = 8 * 1024;
 /// The maximum Candid argument, in bytes, for the transaction-shaped methods.
 ///
 /// These carry a caller-supplied list of transaction inputs and outputs, or EVM call data.
-/// They are priced per input and per output, so a large request pays for itself, but the
-/// cap still bounds what an unfunded caller can make the signer induct.  128 KiB is roughly
-/// 1,600 Bitcoin UTXOs, far beyond any realistic transaction.
+/// Their fees differ — `btc_caller_sign` is priced per input, `btc_caller_send` per input
+/// and per output, and `eth_sign_transaction` is a flat 37B cycles — but the cheapest is
+/// still 37B.  At 128 KiB, ingress induction costs about 689M cycles, so the cap bounds what
+/// an unfunded caller can make the signer induct to a small fraction of any fee.  128 KiB is
+/// roughly 1,600 Bitcoin UTXOs, far beyond any realistic transaction.
 pub const MAX_TRANSACTION_ARG_BYTES: usize = 128 * 1024;
 
 /// How large a Candid argument `method` accepts over ingress.

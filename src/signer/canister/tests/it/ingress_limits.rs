@@ -175,11 +175,12 @@ fn ordinary_ingress_is_accepted() {
         "An ordinary request should still return a public key, got: {public_key:?}"
     );
 
-    // A method that is not size limited still works too.
+    // A method in a different limit tier still works too.
     let status = test_env.signer.get_canister_status(test_env.user);
     assert!(
         status.is_ok(),
-        "Methods without an ingress size limit should still be accepted, got: {status:?}"
+        "An ordinary call to a method with a smaller ingress limit should still be accepted, \
+         got: {status:?}"
     );
 }
 
