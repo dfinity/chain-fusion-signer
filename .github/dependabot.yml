@@ -7,6 +7,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      rustcrypto:
+        patterns:
+          - "signature"
+          - "ed25519-dalek"
+          - "k256"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
