@@ -33,7 +33,7 @@ strum_macros = "0.28.0"
 ic-chain-fusion-signer-api = { path = "src/signer/api" }
 ic-papi-api = { git = "https://github.com/dfinity/papi", rev = "a102b459e2a7ab17de247ab68025428ea68c12e5" }
 ic-papi-guard = { git = "https://github.com/dfinity/papi", rev = "a102b459e2a7ab17de247ab68025428ea68c12e5" }
-ed25519-dalek = "2.2.0"
+ed25519-dalek = "3.0.0"
 signature = "2.2"
 
 # START papi dependencies
