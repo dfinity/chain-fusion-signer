@@ -46,12 +46,14 @@ pub const MAX_PUBLIC_KEY_ARG_BYTES: usize = 8 * 1024;
 /// The maximum Candid argument, in bytes, for the transaction-shaped methods.
 ///
 /// These carry a caller-supplied list of transaction inputs and outputs, or EVM call data.
-/// Their fees differ — `btc_caller_sign` is priced per input, `btc_caller_send` per input
-/// and per output, and `eth_sign_transaction` is a flat 37B cycles — but the cheapest is
-/// still 37B.  At 128 KiB, ingress induction costs about 689M cycles, so the cap bounds what
-/// an unfunded caller can make the signer induct to a small fraction of any fee.  128 KiB is
-/// roughly 1,600 Bitcoin UTXOs, far beyond any realistic transaction.
-pub const MAX_TRANSACTION_ARG_BYTES: usize = 128 * 1024;
+/// Payment is taken inside the method, after the message has been inducted, so the fee does
+/// not bound the induction cost; this cap does.  At 32 KiB induction costs about 175M cycles
+/// on a 34-node fiduciary subnet.
+///
+/// That still fits large legitimate transactions: a Bitcoin transaction spending about 600
+/// UTXOs, which a wallet sending its whole balance at once may need, and about 16 KB of EVM
+/// call data, which is sent as hex.  Swaps and approvals need a few KB.
+pub const MAX_TRANSACTION_ARG_BYTES: usize = 32 * 1024;
 
 /// The maximum Candid argument, in bytes, for the methods that sign a caller-supplied
 /// message: `schnorr_sign` and `eth_personal_sign`.
@@ -286,7 +288,8 @@ mod ingress_tests {
 
 #[cfg(test)]
 mod forwarding_tests {
-    use candid::{Encode, Principal};
+    use candid::{Encode, Nat, Principal};
+    use ic_cdk_bitcoin_canister::{Network as BitcoinNetwork, OutPoint, Txid, Utxo};
     use ic_cdk_management_canister::{
         Bip341, SchnorrAlgorithm, SchnorrAux, SchnorrKeyId, SchnorrPublicKeyArgs,
         SignWithSchnorrArgs,
@@ -297,9 +300,12 @@ mod forwarding_tests {
     use super::{
         check_derivation_path, check_key_name, MAX_DERIVATION_PATH_BYTES,
         MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES, MAX_MESSAGE_SIGNING_ARG_BYTES,
-        MAX_PUBLIC_KEY_ARG_BYTES,
+        MAX_PUBLIC_KEY_ARG_BYTES, MAX_TRANSACTION_ARG_BYTES,
     };
-    use crate::types::eth::EthPersonalSignRequest;
+    use crate::types::{
+        bitcoin::{BitcoinAddressType, BtcTxOutput, SendBtcRequest},
+        eth::{EthPersonalSignRequest, EthSignTransactionRequest},
+    };
 
     /// The Solana packet size, which bounds a Solana transaction message.
     const SOLANA_PACKET_BYTES: usize = 1232;
@@ -388,6 +394,64 @@ mod forwarding_tests {
             encoded.len() < MAX_MESSAGE_SIGNING_ARG_BYTES,
             "A 4,000 byte personal_sign message encodes to {} bytes, which the \
              {MAX_MESSAGE_SIGNING_ARG_BYTES} byte ingress limit would refuse.",
+            encoded.len()
+        );
+    }
+
+    /// A Bitcoin transaction spending 600 UTXOs fits in the transaction ingress limit.
+    ///
+    /// The outputs use the longest address format, a Taproot address, and the values are the
+    /// largest the types hold, so the variable-length integers are counted at their widest.
+    #[test]
+    fn the_ingress_limit_admits_a_bitcoin_transaction_spending_600_utxos() {
+        let utxo = Utxo {
+            outpoint: OutPoint {
+                txid: Txid::from([0xffu8; 32]),
+                vout: u32::MAX,
+            },
+            value: u64::MAX,
+            height: u32::MAX,
+        };
+        let output = || BtcTxOutput {
+            destination_address: format!("bc1p{}", "q".repeat(58)),
+            sent_satoshis: u64::MAX,
+        };
+        let request = SendBtcRequest {
+            network: BitcoinNetwork::Mainnet,
+            address_type: BitcoinAddressType::P2WPKH,
+            utxos_to_spend: vec![utxo; 600],
+            fee_satoshis: Some(u64::MAX),
+            outputs: vec![output(), output()],
+        };
+        let encoded = Encode!(&request, &largest_payment()).expect("should encode");
+        assert!(
+            encoded.len() < MAX_TRANSACTION_ARG_BYTES,
+            "A Bitcoin transaction spending 600 UTXOs encodes to {} bytes, which the \
+             {MAX_TRANSACTION_ARG_BYTES} byte ingress limit would refuse.",
+            encoded.len()
+        );
+    }
+
+    /// An EVM transaction with 16,000 bytes of call data, hex encoded with a `0x` prefix, fits
+    /// in the transaction ingress limit.
+    #[test]
+    fn the_ingress_limit_admits_16000_bytes_of_evm_call_data() {
+        let max = Nat::from(u128::MAX);
+        let request = EthSignTransactionRequest {
+            chain_id: max.clone(),
+            to: format!("0x{}", "f".repeat(40)),
+            gas: max.clone(),
+            max_fee_per_gas: max.clone(),
+            max_priority_fee_per_gas: max.clone(),
+            value: max.clone(),
+            nonce: max,
+            data: Some(format!("0x{}", "ff".repeat(16_000))),
+        };
+        let encoded = Encode!(&request, &largest_payment()).expect("should encode");
+        assert!(
+            encoded.len() < MAX_TRANSACTION_ARG_BYTES,
+            "An EVM transaction with 16,000 bytes of call data encodes to {} bytes, which the \
+             {MAX_TRANSACTION_ARG_BYTES} byte ingress limit would refuse.",
             encoded.len()
         );
     }
