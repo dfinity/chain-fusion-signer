@@ -122,13 +122,17 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// a funded caller can drain the signer with calls that are valid, paid and successful yet
 /// cost it far more than the fee they pay.
 ///
+/// The filter also bounds what a caller who never pays can cost.  Payment is taken inside the
+/// method, after induction, so a message the filter accepts is paid for by the signer even if
+/// the call then fails for lack of funds.  That is why every method has a cap, including the
+/// message signing methods whose fee would cover a message of any size.
+///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
 #[inspect_message]
 fn inspect_message() {
     // Returning without accepting the message refuses it, so it is never inducted.
     match ingress_limit(&msg_method_name()) {
-        IngressLimit::Unlimited => accept_message(),
         IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
         IngressLimit::AtMost(_) | IngressLimit::Unknown => (),
     }
