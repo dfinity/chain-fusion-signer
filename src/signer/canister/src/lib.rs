@@ -44,7 +44,7 @@ use sign::{
 };
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
-use crate::guards::caller_is_not_anonymous;
+use crate::guards::{caller_is_controller, caller_is_not_anonymous};
 
 mod convert;
 mod derivation_path;
@@ -135,7 +135,10 @@ fn inspect_message() {
 }
 
 /// API method to get cycle balance and burn rate.
-#[update]
+///
+/// Restricted to controllers: the signer pays for the management canister call this makes,
+/// and the method takes no payment.
+#[update(guard = "caller_is_controller")]
 pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }

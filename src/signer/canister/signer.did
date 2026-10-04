@@ -596,6 +596,9 @@ service : (Arg) -> {
   // - If the caller is the anonymous user.
   generic_sign_with_ecdsa : (opt PaymentType, SignWithEcdsaArgs) -> (Result_9);
   // API method to get cycle balance and burn rate.
+  // 
+  // Restricted to controllers: the signer pays for the management canister call this makes,
+  // and the method takes no payment.
   get_canister_status : () -> (CanisterStatusResultV2);
   // Processes external HTTP requests.
   http_request : (HttpRequest) -> (HttpResponse) query;

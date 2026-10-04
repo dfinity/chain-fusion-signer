@@ -176,7 +176,7 @@ fn ordinary_ingress_is_accepted() {
     );
 
     // A method in a different limit tier still works too.
-    let status = test_env.signer.get_canister_status(test_env.user);
+    let status = test_env.signer.get_canister_status(test_env.controller);
     assert!(
         status.is_ok(),
         "An ordinary call to a method with a smaller ingress limit should still be accepted, \
