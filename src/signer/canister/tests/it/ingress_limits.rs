@@ -190,6 +190,9 @@ fn ordinary_ingress_is_accepted() {
 /// a limit a caller could send it a maximum-size blob, have dispatch reject the malformed
 /// argument, and leave the signer paying induction for it — a cycle drain needing no
 /// funding at all.
+///
+/// The message is sent by a controller: anyone else is refused whatever the size, which would
+/// make this pass without testing the size limit.
 #[test]
 fn oversized_ingress_to_an_unpaid_method_costs_nothing() {
     let test_env = TestSetup::default();
@@ -199,7 +202,7 @@ fn oversized_ingress_to_an_unpaid_method_costs_nothing() {
     for _ in 0..5 {
         let response = test_env.pic.update_call(
             test_env.signer.canister_id,
-            test_env.user,
+            test_env.controller,
             "get_canister_status",
             blob.clone(),
         );

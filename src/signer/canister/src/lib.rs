@@ -124,8 +124,15 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 ///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
+///
+/// `get_canister_status` is refused here for every caller but a controller, whatever the
+/// message size, so a call its guard would reject costs the signer nothing.  The guard still
+/// covers calls from other canisters.
 #[inspect_message]
 fn inspect_message() {
+    if msg_method_name() == "get_canister_status" && caller_is_controller().is_err() {
+        return;
+    }
     // Returning without accepting the message refuses it, so it is never inducted.
     match ingress_limit(&msg_method_name()) {
         IngressLimit::Unlimited => accept_message(),
