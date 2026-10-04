@@ -39,6 +39,8 @@ pub struct TestSetup {
     /// Unauthorized user, used in tests to ensure that random third parties cannot use resources
     /// they are not entitled to.
     pub unauthorized_user: Principal,
+    /// The signer's only controller.
+    pub controller: Principal,
     /// A canister used to deposit cycles into the ledger.
     pub cycles_depositor: CyclesDepositorPic,
     /// Bitcoin canister
@@ -74,9 +76,13 @@ impl Default for TestSetup {
                 )
                 .deploy_to(pic.clone()),
         );
+        let controller =
+            Principal::from_text("vuixw-rebio-m7c66-llnzj-2bcqh-zh44x-ztopn-oprgj-d3caa-o6bqa-3qe")
+                .unwrap();
         let signer = SignerPic::from(
             PicCanisterBuilder::default()
                 .with_wasm(&cargo_wasm_path("signer"))
+                .with_controllers(vec![controller])
                 .with_arg(
                     encode_one(Arg::Init(InitArg {
                         ecdsa_key_name: format!("test_key_1"),
@@ -155,6 +161,7 @@ impl Default for TestSetup {
             user2,
             users,
             unauthorized_user,
+            controller,
             cycles_depositor,
             bitcoin_canister,
         };

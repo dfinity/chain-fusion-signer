@@ -44,7 +44,7 @@ use sign::{
 };
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
-use crate::guards::caller_is_not_anonymous;
+use crate::guards::{caller_is_controller, caller_is_not_anonymous};
 
 mod convert;
 mod derivation_path;
@@ -124,8 +124,15 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 ///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
+///
+/// `get_canister_status` is refused here for every caller but a controller, whatever the
+/// message size, so a call its guard would reject costs the signer nothing.  The guard still
+/// covers calls from other canisters.
 #[inspect_message]
 fn inspect_message() {
+    if msg_method_name() == "get_canister_status" && caller_is_controller().is_err() {
+        return;
+    }
     // Returning without accepting the message refuses it, so it is never inducted.
     match ingress_limit(&msg_method_name()) {
         IngressLimit::Unlimited => accept_message(),
@@ -135,7 +142,10 @@ fn inspect_message() {
 }
 
 /// API method to get cycle balance and burn rate.
-#[update]
+///
+/// Restricted to controllers: the signer pays for the management canister call this makes,
+/// and the method takes no payment.
+#[update(guard = "caller_is_controller")]
 pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }
