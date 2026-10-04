@@ -385,12 +385,11 @@ fn message_signing_over_the_ingress_limit_is_refused_at_inspection() {
     );
 }
 
-/// An unfunded caller cannot make the signer pay to induct a large message signing request.
+/// Oversized message signing requests are refused before induction, also when the caller has
+/// not paid.
 ///
-/// Both methods charge a fee that would cover inducting a message of any size, but they take
-/// it only after the message has been inducted.  Without a cap, a caller with no funds could
-/// send a well-formed request near the ingress ceiling, fail to pay, and leave the signer with
-/// the induction fee — about 11B cycles a call on a 34-node subnet.
+/// Payment is taken after induction, so the ingress limit, not the fee, is what bounds the
+/// induction cost of these methods.
 #[test]
 fn unfunded_oversized_message_signing_costs_nothing() {
     let test_env = TestSetup::default();

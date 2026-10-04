@@ -56,11 +56,9 @@ pub const MAX_TRANSACTION_ARG_BYTES: usize = 128 * 1024;
 /// The maximum Candid argument, in bytes, for the methods that sign a caller-supplied
 /// message: `schnorr_sign` and `eth_personal_sign`.
 ///
-/// Their 37B cycle fee would cover inducting a message of any size, but only for a caller who
-/// pays it.  Payment is taken after the message has been inducted, so a caller with no funds
-/// at all can send a message this filter accepts, fail to pay, and leave the signer with the
-/// induction fee.  At the ~2 MiB ingress ceiling that is about 11B cycles per call.  The cap
-/// bounds it the same way as [`MAX_PUBLIC_KEY_ARG_BYTES`]: 8 KiB costs about 46M cycles on a
+/// Payment is taken inside the method, after the message has been inducted, so the 37B cycle
+/// fee does not bound the induction cost; this cap does.  It is sized the same way as
+/// [`MAX_PUBLIC_KEY_ARG_BYTES`]: 8 KiB costs about 46M cycles on a
 /// 34-node fiduciary subnet, below the cheapest fee the signer charges, while 16 KiB would
 /// cost about 89M.
 ///
@@ -188,10 +186,10 @@ mod ingress_tests {
         }
     }
 
-    /// The message signing methods are capped too, although their fee would cover any size.
+    /// The message signing methods are capped too, like every other method.
     ///
-    /// The fee is only collected after the message has been inducted, so without a cap a
-    /// caller who never pays could make the signer induct a maximum-size message for free.
+    /// The fee is collected after the message has been inducted, so it does not bound the
+    /// induction cost; the ingress limit does.
     #[test]
     fn message_signing_methods_are_capped() {
         for method in ["schnorr_sign", "eth_personal_sign"] {
