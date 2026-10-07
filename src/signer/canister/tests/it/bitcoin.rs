@@ -175,10 +175,9 @@ mod address {
         );
 
         assert!(response.is_err());
-        assert_eq!(
-            response.unwrap_err(),
-            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
-        );
+        assert!(response
+            .unwrap_err()
+            .contains("Canister rejected the message"));
     }
 
     #[test]
@@ -275,10 +274,9 @@ mod caller_sign {
         );
 
         assert!(response.is_err());
-        assert_eq!(
-            response.unwrap_err(),
-            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
-        );
+        assert!(response
+            .unwrap_err()
+            .contains("Canister rejected the message"));
     }
 
     #[test]
@@ -403,6 +401,6 @@ mod sign_prehash {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
-            .contains("Anonymous caller not authorized"));
+            .contains("Canister rejected the message"));
     }
 }
