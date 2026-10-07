@@ -33,7 +33,7 @@ const METHODS: [&str; 17] = [
     "btc_sign_prehash",
 ];
 
-/// The methods that accept a message of any size.
+/// The message signing methods, which also get a nearly maximum-size message.
 const MESSAGE_SIGNING_METHODS: [&str; 2] = ["schnorr_sign", "eth_personal_sign"];
 
 /// Reads the signer's cycle balance.
