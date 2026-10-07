@@ -122,11 +122,19 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// a funded caller can drain the signer with calls that are valid, paid and successful yet
 /// cost it far more than the fee they pay.
 ///
+/// Ingress from the anonymous principal is refused too, whatever its method and size.  The
+/// paid methods reject the anonymous principal in their guards, but a guard runs only after
+/// the message has been inducted and paid for; refusing it here means the signer pays nothing
+/// for it.
+///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
 #[inspect_message]
 fn inspect_message() {
     // Returning without accepting the message refuses it, so it is never inducted.
+    if caller_is_not_anonymous().is_err() {
+        return;
+    }
     match ingress_limit(&msg_method_name()) {
         IngressLimit::Unlimited => accept_message(),
         IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
