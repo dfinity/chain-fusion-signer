@@ -318,10 +318,11 @@ mod forwarding_tests {
     /// ledger and a patron account with a full subaccount.  Candid writes the whole type table
     /// whatever the value, so a stand-in type would under-count.
     fn largest_payment() -> Option<PaymentType> {
+        let principal = Principal::self_authenticating(b"maximum-length principal");
         Some(PaymentType::PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens {
-            ledger: Principal::management_canister(),
+            ledger: principal.clone(),
             patron: Account {
-                owner: Principal::management_canister(),
+                owner: principal,
                 subaccount: Some(ByteBuf::from(vec![0u8; 32])),
             },
         }))
