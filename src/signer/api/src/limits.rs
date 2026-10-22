@@ -15,13 +15,11 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum IngressLimit {
     /// The method accepts at most this many bytes of Candid argument.
-    AtMost(usize),
-    /// The method intentionally accepts a caller-supplied payload of any size.
     ///
-    /// Reserved for methods whose fee is dominated by a threshold signature large enough
-    /// to cover a maximum-size message, and where a cap would break callers signing large
-    /// messages.
-    Unlimited,
+    /// Every method has a cap, however high its fee: the signer pays to induct a message
+    /// before the method runs, so before it can take payment, and a caller who never pays
+    /// can still make it induct anything this filter accepts.
+    AtMost(usize),
     /// Not a known method: refuse it rather than pay to induct it.
     Unknown,
 }
@@ -55,6 +53,24 @@ pub const MAX_PUBLIC_KEY_ARG_BYTES: usize = 8 * 1024;
 /// roughly 1,600 Bitcoin UTXOs, far beyond any realistic transaction.
 pub const MAX_TRANSACTION_ARG_BYTES: usize = 128 * 1024;
 
+/// The maximum Candid argument, in bytes, for the methods that sign a caller-supplied
+/// message: `schnorr_sign` and `eth_personal_sign`.
+///
+/// Payment is taken inside the method, after the message has been inducted, so the 37B cycle
+/// fee does not bound the induction cost; this cap does.  It is sized the same way as
+/// [`MAX_PUBLIC_KEY_ARG_BYTES`]: 8 KiB costs about 46M cycles on a
+/// 34-node fiduciary subnet, below the cheapest fee the signer charges, while 16 KiB would
+/// cost about 89M.
+///
+/// Legitimate messages are far smaller.  `schnorr_sign` signs Solana transactions, whose
+/// message is under the 1,232 byte Solana packet size, XRP payments of a few hundred bytes,
+/// and short off-chain messages; a full Solana transaction fits even with the largest
+/// derivation path and key name [`check_derivation_path`] and [`check_key_name`] allow.
+/// `eth_personal_sign` takes the message as hex text, two characters per byte, which leaves
+/// room for a message of about 4,000 bytes; a Sign-In with Ethereum message is a few hundred.
+/// A larger message has to be hashed first and the digest signed instead.
+pub const MAX_MESSAGE_SIGNING_ARG_BYTES: usize = 8 * 1024;
+
 /// How large a Candid argument `method` accepts over ingress.
 ///
 /// Every method is listed.  An unrecognised name is [`IngressLimit::Unknown`] and is
@@ -63,8 +79,8 @@ pub const MAX_TRANSACTION_ARG_BYTES: usize = 128 * 1024;
 #[must_use]
 pub fn ingress_limit(method: &str) -> IngressLimit {
     match method {
-        // Arbitrarily large caller-supplied message, covered by the signature fee.
-        "schnorr_sign" | "eth_personal_sign" => IngressLimit::Unlimited,
+        // Sign a caller-supplied message.
+        "schnorr_sign" | "eth_personal_sign" => IngressLimit::AtMost(MAX_MESSAGE_SIGNING_ARG_BYTES),
         // Forward a caller-supplied derivation path.
         "generic_caller_ecdsa_public_key" | "generic_sign_with_ecdsa" | "schnorr_public_key" => {
             IngressLimit::AtMost(MAX_PUBLIC_KEY_ARG_BYTES)
@@ -154,8 +170,8 @@ pub fn check_key_name(name: &str) -> Result<(), String> {
 #[cfg(test)]
 mod ingress_tests {
     use super::{
-        ingress_limit, IngressLimit, MAX_PUBLIC_KEY_ARG_BYTES, MAX_SMALL_ARG_BYTES,
-        MAX_TRANSACTION_ARG_BYTES,
+        ingress_limit, IngressLimit, MAX_MESSAGE_SIGNING_ARG_BYTES, MAX_PUBLIC_KEY_ARG_BYTES,
+        MAX_SMALL_ARG_BYTES, MAX_TRANSACTION_ARG_BYTES,
     };
 
     /// The flat-fee public key methods are capped below what they charge.
@@ -170,11 +186,18 @@ mod ingress_tests {
         }
     }
 
-    /// Only the methods that intentionally take a large message are uncapped.
+    /// The message signing methods are capped too, like every other method.
+    ///
+    /// The fee is collected after the message has been inducted, so it does not bound the
+    /// induction cost; the ingress limit does.
     #[test]
-    fn only_message_signing_is_unlimited() {
+    fn message_signing_methods_are_capped() {
         for method in ["schnorr_sign", "eth_personal_sign"] {
-            assert_eq!(ingress_limit(method), IngressLimit::Unlimited, "{method}");
+            assert_eq!(
+                ingress_limit(method),
+                IngressLimit::AtMost(MAX_MESSAGE_SIGNING_ARG_BYTES),
+                "{method} is inducted before payment, so its ingress size has to be capped."
+            );
         }
     }
 
@@ -264,14 +287,46 @@ mod ingress_tests {
 #[cfg(test)]
 mod forwarding_tests {
     use candid::{Encode, Principal};
-    use ic_cdk_management_canister::{SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs};
+    use ic_cdk_management_canister::{
+        Bip341, SchnorrAlgorithm, SchnorrAux, SchnorrKeyId, SchnorrPublicKeyArgs,
+        SignWithSchnorrArgs,
+    };
     use ic_papi_api::{caller::PatronPaysIcrc2Tokens, Account, PaymentType};
     use serde_bytes::ByteBuf;
 
     use super::{
         check_derivation_path, check_key_name, MAX_DERIVATION_PATH_BYTES,
-        MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES, MAX_PUBLIC_KEY_ARG_BYTES,
+        MAX_DERIVATION_PATH_ELEMENTS, MAX_KEY_NAME_BYTES, MAX_MESSAGE_SIGNING_ARG_BYTES,
+        MAX_PUBLIC_KEY_ARG_BYTES,
     };
+    use crate::types::eth::EthPersonalSignRequest;
+
+    /// The Solana packet size, which bounds a Solana transaction message.
+    const SOLANA_PACKET_BYTES: usize = 1232;
+
+    /// A derivation path that saturates both the element count and the byte budget.
+    fn largest_permitted_path() -> Vec<Vec<u8>> {
+        let per = MAX_DERIVATION_PATH_BYTES / MAX_DERIVATION_PATH_ELEMENTS;
+        let mut path = vec![vec![0u8; per]; MAX_DERIVATION_PATH_ELEMENTS];
+        let used: usize = path.iter().map(Vec::len).sum();
+        path[0].extend(vec![0u8; MAX_DERIVATION_PATH_BYTES - used]);
+        assert_eq!(check_derivation_path(&path), Ok(()), "should be permitted");
+        path
+    }
+
+    /// The real payment type, with its largest variant: a patron paying in tokens, naming a
+    /// ledger and a patron account with a full subaccount.  Candid writes the whole type table
+    /// whatever the value, so a stand-in type would under-count.
+    fn largest_payment() -> Option<PaymentType> {
+        let principal = Principal::self_authenticating(b"maximum-length principal");
+        Some(PaymentType::PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens {
+            ledger: principal.clone(),
+            patron: Account {
+                owner: principal,
+                subaccount: Some(ByteBuf::from(vec![0u8; 32])),
+            },
+        }))
+    }
 
     /// The largest request the forwarding limits allow still fits inside the ingress limit.
     ///
@@ -281,35 +336,59 @@ mod forwarding_tests {
     /// length prefixes are counted rather than estimated.
     #[test]
     fn the_ingress_limit_admits_the_largest_permitted_request() {
-        let per = MAX_DERIVATION_PATH_BYTES / MAX_DERIVATION_PATH_ELEMENTS;
-        let mut path = vec![vec![0u8; per]; MAX_DERIVATION_PATH_ELEMENTS];
-        let used: usize = path.iter().map(Vec::len).sum();
-        path[0].extend(vec![0u8; MAX_DERIVATION_PATH_BYTES - used]);
-        assert_eq!(check_derivation_path(&path), Ok(()), "should be permitted");
-
         let arg = SchnorrPublicKeyArgs {
             canister_id: Some(Principal::management_canister()),
-            derivation_path: path,
+            derivation_path: largest_permitted_path(),
             key_id: SchnorrKeyId {
                 algorithm: SchnorrAlgorithm::Ed25519,
                 name: "k".repeat(MAX_KEY_NAME_BYTES),
             },
         };
-        // The second argument is the real payment type, with its largest variant: a patron paying
-        // in tokens, naming a ledger and a patron account with a full subaccount.  Candid writes
-        // the whole type table whatever the value, so a stand-in type would under-count.
-        let payment = Some(PaymentType::PatronPaysIcrc2Tokens(PatronPaysIcrc2Tokens {
-            ledger: Principal::management_canister(),
-            patron: Account {
-                owner: Principal::management_canister(),
-                subaccount: Some(ByteBuf::from(vec![0u8; 32])),
-            },
-        }));
-        let encoded = Encode!(&arg, &payment).expect("should encode");
+        let encoded = Encode!(&arg, &largest_payment()).expect("should encode");
         assert!(
             encoded.len() < MAX_PUBLIC_KEY_ARG_BYTES,
             "The largest permitted request encodes to {} bytes, which the {MAX_PUBLIC_KEY_ARG_BYTES} \
              byte ingress limit would refuse.",
+            encoded.len()
+        );
+    }
+
+    /// A full Solana transaction fits in the `schnorr_sign` ingress limit, even when every
+    /// other field is as large as the signer allows.
+    #[test]
+    fn the_ingress_limit_admits_a_full_solana_transaction() {
+        let arg = SignWithSchnorrArgs {
+            message: vec![0u8; SOLANA_PACKET_BYTES],
+            derivation_path: largest_permitted_path(),
+            key_id: SchnorrKeyId {
+                algorithm: SchnorrAlgorithm::Ed25519,
+                name: "k".repeat(MAX_KEY_NAME_BYTES),
+            },
+            aux: Some(SchnorrAux::Bip341(Bip341 {
+                merkle_root_hash: vec![0u8; 32],
+            })),
+        };
+        let encoded = Encode!(&arg, &largest_payment()).expect("should encode");
+        assert!(
+            encoded.len() < MAX_MESSAGE_SIGNING_ARG_BYTES,
+            "A full Solana transaction encodes to {} bytes, which the \
+             {MAX_MESSAGE_SIGNING_ARG_BYTES} byte ingress limit would refuse.",
+            encoded.len()
+        );
+    }
+
+    /// A 4,000 byte message, hex encoded with a `0x` prefix, fits in the `eth_personal_sign`
+    /// ingress limit.
+    #[test]
+    fn the_ingress_limit_admits_a_4000_byte_personal_sign_message() {
+        let request = EthPersonalSignRequest {
+            message: format!("0x{}", "00".repeat(4000)),
+        };
+        let encoded = Encode!(&request, &largest_payment()).expect("should encode");
+        assert!(
+            encoded.len() < MAX_MESSAGE_SIGNING_ARG_BYTES,
+            "A 4,000 byte personal_sign message encodes to {} bytes, which the \
+             {MAX_MESSAGE_SIGNING_ARG_BYTES} byte ingress limit would refuse.",
             encoded.len()
         );
     }

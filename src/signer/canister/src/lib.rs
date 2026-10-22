@@ -122,13 +122,17 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// a funded caller can drain the signer with calls that are valid, paid and successful yet
 /// cost it far more than the fee they pay.
 ///
+/// The filter also bounds what a caller who never pays can cost.  Payment is taken inside the
+/// method, after induction, so a message the filter accepts is paid for by the signer even if
+/// the call then fails for lack of funds.  That is why every method has a cap, including the
+/// message signing methods whose fee would cover a message of any size.
+///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
 #[inspect_message]
 fn inspect_message() {
     // Returning without accepting the message refuses it, so it is never inducted.
     match ingress_limit(&msg_method_name()) {
-        IngressLimit::Unlimited => accept_message(),
         IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
         IngressLimit::AtMost(_) | IngressLimit::Unknown => (),
     }
@@ -313,6 +317,9 @@ pub async fn schnorr_public_key(
 ///   APP".into_bytes()]`
 /// - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
 ///   payment is taken.
+/// - Over ingress, the encoded arguments may total at most 8 KiB; larger messages are refused
+///   before they reach the canister.  See
+///   [`MAX_MESSAGE_SIGNING_ARG_BYTES`](ic_chain_fusion_signer_api::limits::MAX_MESSAGE_SIGNING_ARG_BYTES).
 ///
 ///  # Details
 /// - Calls `management_canister::schnorr::sign_with_schnorr(..)`
@@ -430,6 +437,11 @@ pub async fn eth_sign_transaction(
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+///
+/// Over ingress, the encoded arguments may total at most 8 KiB, which fits a message of about
+/// 4,000 bytes; larger messages are refused before they reach the canister.  Hash a larger
+/// message yourself and use `eth_sign_prehash` instead.  See
+/// [`MAX_MESSAGE_SIGNING_ARG_BYTES`](ic_chain_fusion_signer_api::limits::MAX_MESSAGE_SIGNING_ARG_BYTES).
 ///
 /// # Details
 /// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
