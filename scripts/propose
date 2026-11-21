@@ -121,11 +121,11 @@ fi
 
 # Gets the NNS URL
 [[ "${NNS_URL:-}" != "" ]] || {
-  if is_mainnet; then
-    NNS_URL="https://ic0.app"
-  elif [[ "$ICP_ENVIRONMENT" == "local" ]]; then
-    NNS_URL="$(icp network status -e local --json | jq -r .api_url)"
-  fi
+  case "$ICP_ENVIRONMENT" in
+  # These environments are on the `ic` network in icp.yaml.
+  ic | staging | beta) NNS_URL="https://ic0.app" ;;
+  local) NNS_URL="$(icp network status -e local --json | jq -r .api_url)" ;;
+  esac
 }
 [[ "${NNS_URL:-}" != "" ]] || {
   echo "ERROR: Unable to determine the NNS URL."
