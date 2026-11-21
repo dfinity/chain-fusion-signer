@@ -14,6 +14,10 @@ print_help() {
 	- DFX_NETWORK: The target network: local (default), staging, beta or ic.
 	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID,
 	      which is also the ID used on local networks.
+	- ARG_FILE: Where to write the args; defaults to 'out/signer.args.did'.
+
+	The args must match the signer 'init_args' in 'icp.yaml'; 'scripts/icp-yaml-args.test'
+	checks that they do.
 	EOF
 }
 
@@ -25,34 +29,25 @@ print_help() {
 DFX_NETWORK="${DFX_NETWORK:-local}"
 CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-um5iw-rqaaa-aaaaq-qaaba-cai}"
 
-# Note: This path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
-ARG_FILE="out/signer.args.did"
+# Note: The default path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
+ARG_FILE="${ARG_FILE:-out/signer.args.did}"
 
 ####
 # Computes the install args, overwriting any existing args file.
 
 # .. Computes fields for the init args.
+# The root key is null on every network: on mainnet the signer uses its hardcoded mainnet root
+# key, and elsewhere the signer only stores the key without using it.
+ic_root_key_der="null"
 case "$DFX_NETWORK" in
 "staging")
   ECDSA_KEY_NAME="test_key_1"
-  # For security reasons, mainnet root key will be hardcoded in the signer canister.
-  ic_root_key_der="null"
   ;;
 "ic" | "beta")
   ECDSA_KEY_NAME="key_1"
-  # For security reasons, mainnet root key will be hardcoded in the signer canister.
-  ic_root_key_der="null"
   ;;
 *)
   ECDSA_KEY_NAME="dfx_test_key"
-  # In order to read the root key we grab the array from the '"root_key": [...]' bit, the brackets
-  # to match what candid expects ({}), replace the commas between array entries to match
-  # what candid expects (semicolon) and annotate the numbers with their type (otherwise dfx assumes 'nat'
-  # instead of 'nat8').
-  rootkey_did=$(dfx ping "${DFX_NETWORK:-local}" |
-    jq -r '.root_key | reduce .[] as $item ("{ "; "\(.) \($item):nat8;") + " }"')
-  echo "Parsed rootkey: ${rootkey_did:0:20}..." >&2
-  ic_root_key_der="opt vec $rootkey_did"
   ;;
 esac
 

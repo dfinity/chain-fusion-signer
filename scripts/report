@@ -5,27 +5,30 @@ set -euo pipefail
   cat <<-EOF
 	Prints which versions of the signer are deployed where and with what arguments.
 
-	Usage: $(basename "$0") [DFX_NETWORK...]
+	Usage: $(basename "$0") [ENVIRONMENT...]
+
+	where ENVIRONMENT is an icp-cli environment.  Default: all environments with a signer canister ID
+	in .icp/data/mappings/
 	EOF
 
   exit 0
 }
 
 report_git_ref() {
-  dfx canister metadata signer git:commit --network "$DFX_NETWORK"
+  icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT"
 }
 report_git_tag() {
-  dfx canister metadata signer git:tags --network "$DFX_NETWORK"
+  icp canister metadata signer git:tags -e "$ICP_ENVIRONMENT"
 }
 report_args() {
-  dfx canister call signer config --network "$DFX_NETWORK"
+  icp canister call signer config '()' --query -e "$ICP_ENVIRONMENT"
 }
 hrule() {
   echo "########################################"
 }
 report() {
   hrule
-  echo "network: $DFX_NETWORK"
+  echo "environment: $ICP_ENVIRONMENT"
   echo "git ref: $(report_git_ref)"
   echo "git tag: $(report_git_tag)"
   echo "args:"
@@ -34,11 +37,11 @@ report() {
 }
 
 if (($# > 0)); then
-  NETWORKS=("${@}")
+  ENVIRONMENTS=("${@}")
 else
-  readarray -t NETWORKS < <(jq -r '.signer | keys | .[]' canister_ids.json)
+  readarray -t ENVIRONMENTS < <(grep -l '"signer"' .icp/data/mappings/*.ids.json | xargs -n1 basename | sed 's/[.]ids[.]json$//')
 fi
 
-for DFX_NETWORK in "${NETWORKS[@]}"; do
+for ICP_ENVIRONMENT in "${ENVIRONMENTS[@]}"; do
   report
 done

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$(realpath "$0")")/.."
+
+# Checks that the signer init args in `icp.yaml` encode to the same bytes as the args that
+# `scripts/build.signer.args.sh` creates, for every environment.
+#
+# icp-cli reads args files when it loads the project, so `icp.yaml` cannot reference the
+# generated `out/signer.args.did` and has its own copy of the args instead.
+#
+# Requires: yq (`scripts/setup yq`), didc (`scripts/setup didc`)
+
+command -v yq >/dev/null || {
+  echo "ERROR: yq is required; install it with: scripts/setup yq"
+  exit 1
+} >&2
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+icp_yaml_args() {
+  local environment="$1"
+  env="$environment" yq -e '
+    (.environments[] | select(.name == strenv(env)) | .init_args.signer)
+    // (.canisters[] | select(.name == "signer") | .init_args)
+  ' icp.yaml
+}
+
+environments=(local)
+readarray -t -O 1 environments < <(yq '.environments[].name' icp.yaml)
+[[ "${#environments[@]}" -gt 1 ]] || {
+  echo "ERROR: No environments found in icp.yaml"
+  exit 1
+} >&2
+
+for environment in "${environments[@]}"; do
+  DFX_NETWORK="$environment" ARG_FILE="$tmp/$environment.did" scripts/build.signer.args.sh >/dev/null
+  expected="$(cat "$tmp/$environment.hex")"
+  actual="$(didc encode "$(icp_yaml_args "$environment")")"
+  if [[ "$expected" == "$actual" ]]; then
+    echo "OK: $environment"
+  else
+    {
+      echo "ERROR: The signer init args for '$environment' in icp.yaml differ from scripts/build.signer.args.sh."
+      echo "icp.yaml:"
+      icp_yaml_args "$environment"
+      echo "scripts/build.signer.args.sh:"
+      cat "$tmp/$environment.did"
+    } >&2
+    exit 1
+  fi
+done
+
+echo "PASSED $0"
