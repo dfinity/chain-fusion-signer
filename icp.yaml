@@ -1,51 +1,28 @@
 # yaml-language-server: $schema=https://github.com/dfinity/icp-cli/raw/refs/tags/v1.8.0/docs/schemas/icp-yaml-schema.json
-#
-# icp-cli project configuration; the icp-cli equivalent of `dfx.json`.
-#
-# Canister IDs on mainnet are recorded in `.icp/data/mappings/<environment>.ids.json`.
-#
-# Differences from `dfx.json`:
-# - The remote canisters `cycles_ledger`, `internet_identity` and `bitcoin` are not project canisters.
-#   On mainnet they are referred to by their well-known IDs.  On the local network, icp-cli
-#   installs the cycles ledger at its mainnet ID, Internet Identity when `ii: true` is set,
-#   and the bitcoin canister when `bitcoind-addr` is set.
-# - icp-cli cannot create a local canister with a specified ID, so the local signer does not get
-#   its mainnet ID `grghe-syaaa-aaaar-qabyq-cai`.
-# - There are no canister dependencies; icp-cli builds all canisters in parallel and injects
-#   `PUBLIC_CANISTER_ID:<name>` canister environment variables on `icp deploy`.
-# - Candid files are not declared here; the build scripts embed `candid:service` in the Wasm.
-
 canisters:
   - name: signer
     build:
       steps:
         - type: script
           commands:
-            # icp-cli sets `ICP_CLI_ENVIRONMENT` (local, staging, beta or ic), which selects the args.
             - scripts/build.signer.sh
             - cp out/signer.wasm.gz "$ICP_WASM_OUTPUT_PATH"
-    # Install args for the local network; the other environments override them below.
-    # These must match what `scripts/build.signer.args.sh` writes, which is also embedded in the
-    # Wasm as `candid:args`.  icp-cli reads args files when it loads the project, so the
-    # generated `out/signer.args.did` cannot be referenced here.
-    # Unlike dfx, the local root key is not passed: the signer only stores it, and icp-cli
-    # cannot read it into a static file.
+    # Must match `scripts/build.signer.args.sh` for every environment (`scripts/icp-yaml-args.test`).
+    # icp-cli reads args files when it loads the project, so it cannot use `out/signer.args.did`.
     init_args: |
       (variant { Init = record {
         ecdsa_key_name = "dfx_test_key";
         ic_root_key_der = null;
         cycles_ledger = opt principal "um5iw-rqaaa-aaaaq-qaaba-cai";
       }})
-    # Keeps the existing configuration; see `scripts/build.upgrade.args.sh`.
+    # See `scripts/build.upgrade.args.sh`.
     upgrade_args: "(variant { Upgrade })"
-  # Replaces `scripts/build.cycles_depositor.sh` and `scripts/build.cycles_depositor.args.sh`.
   - name: cycles_depositor
     build:
       steps:
         - type: pre-built
           url: https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/depositor.wasm.gz
           sha256: 79d8000abb2413da7077e296bf8abc56bd425d89b9c6de90778312b193ccd025
-    # The cycles ledger has the same ID on mainnet and on icp-cli local networks.
     init_args: '(record { ledger_id = principal "um5iw-rqaaa-aaaaq-qaaba-cai" })'
   - name: example_backend
     build:
@@ -65,10 +42,8 @@ canisters:
 networks:
   - name: local
     mode: managed
-    # Installs Internet Identity, as `dfx.json` did with the `internet_identity` canister.
     ii: true
 environments:
-  # Only the signer is deployed to mainnet; its IDs are in `.icp/data/mappings/`.
   - name: staging
     network: ic
     canisters: [signer]
