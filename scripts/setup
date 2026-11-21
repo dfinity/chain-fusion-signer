@@ -8,11 +8,17 @@ for tool in "${@}"; do
   echo "  install_method: $install_method"
   case "$install_method" in
   "curl")
-    url="$(jq -r '.[env.tool].version as $version | .[env.tool].url | gsub("[$]{VERSION}"; $version)' dev-tools.json)"
+    # A tool may have a separate download per OS, e.g. "url_darwin"; "url" is the default.
+    os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    url="$(jq -r --arg os "$os" '.[env.tool] | .version as $version | (.["url_" + $os] // .url) | gsub("[$]{VERSION}"; $version)' dev-tools.json)"
     pipe="$(jq -r '.[env.tool].pipe // "cat"' dev-tools.json)"
     target="$HOME/.local/bin/$tool"
     mkdir -p "$(dirname "$target")"
-    curl -Lf "$url" | "$pipe" | install -m 755 /dev/stdin "$target"
+    # Download to a file first: BSD install (macOS) cannot read from /dev/stdin.
+    download="$(mktemp)"
+    curl -Lf "$url" | "$pipe" >"$download"
+    install -m 755 "$download" "$target"
+    rm -f "$download"
     ;;
   "sh")
     version="$(jq -r '.[env.tool].version' dev-tools.json)" "$0-$tool"
