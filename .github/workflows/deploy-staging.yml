@@ -39,6 +39,15 @@ jobs:
       - name: Build reproducibly
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/build
+      - name: Check that the release uses icp-cli
+        # A release triggers this workflow from the default branch, but the checkout is the
+        # release tag.  Releases from before the icp-cli migration have no icp.yaml.
+        run: |
+          test -e icp.yaml || {
+            echo "ERROR: This release predates the icp-cli migration."
+            echo "       Deploy it with 'Run workflow' on this workflow, selecting the release tag."
+            exit 1
+          }
       - name: Install icp-cli
         run: scripts/setup icp-cli
       - name: Import deployment identity
@@ -52,7 +61,7 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.DFX_DEPLOY_KEY_STAGING }}
       - name: Deploy signer to staging
-        # The artifacts carry the init args for DFX_NETWORK=ic (ecdsa_key_name = "key_1"),
+        # The artifacts carry the init args for the ic environment (ecdsa_key_name = "key_1"),
         # which must never be applied to staging, so they are not used here.  Instead the
         # upgrade argument `(variant { Upgrade })` keeps the existing staging configuration;
         # see `scripts/build.upgrade.args.sh`.  `--yes` skips the Candid compatibility prompt.

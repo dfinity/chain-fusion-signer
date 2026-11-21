@@ -17,7 +17,8 @@
 	"didc": {
 		"method": "curl",
 		"version": "0.5.4",
-		"url": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-linux64"
+		"url": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-linux64",
+		"url_darwin": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-macos"
 	},
 	"icp-cli": {
 		"method": "sh",

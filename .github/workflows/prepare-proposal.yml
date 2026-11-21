@@ -44,8 +44,14 @@ jobs:
             fi
             echo "OK: $asset $release_hash"
           done
+      # The scripts come from the release tag.  Releases from before the icp-cli migration
+      # have no `scripts/setup-icp-cli` and their `proposal-template` uses dfx.
       - name: Install icp-cli
+        if: hashFiles('scripts/setup-icp-cli') != ''
         run: scripts/setup icp-cli
+      - name: Install dfx (releases before the icp-cli migration)
+        if: hashFiles('scripts/setup-icp-cli') == ''
+        uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
       - name: Create proposal template
         run: ./scripts/proposal-template -t "$TAG"
       - name: Summarize

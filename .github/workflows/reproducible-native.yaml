@@ -41,7 +41,7 @@ jobs:
       - name: Install build tools
         run: scripts/setup cargo-binstall candid-extractor ic-wasm didc
       - name: Build
-        run: DFX_NETWORK=ic scripts/build.signer.sh
+        run: ICP_CLI_ENVIRONMENT=ic scripts/build.signer.sh
       - name: 'Upload Wasm module'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

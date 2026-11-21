@@ -21,9 +21,8 @@ canisters:
       steps:
         - type: script
           commands:
-            # `ICP_CLI_ENVIRONMENT` is one of local, staging, beta or ic, which are the
-            # network names that the build scripts expect.
-            - DFX_NETWORK="$ICP_CLI_ENVIRONMENT" scripts/build.signer.sh
+            # icp-cli sets `ICP_CLI_ENVIRONMENT` (local, staging, beta or ic), which selects the args.
+            - scripts/build.signer.sh
             - cp out/signer.wasm.gz "$ICP_WASM_OUTPUT_PATH"
     # Install args for the local network; the other environments override them below.
     # These must match what `scripts/build.signer.args.sh` writes, which is also embedded in the

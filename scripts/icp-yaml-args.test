@@ -34,7 +34,7 @@ readarray -t -O 1 environments < <(yq '.environments[].name' icp.yaml)
 } >&2
 
 for environment in "${environments[@]}"; do
-  DFX_NETWORK="$environment" ARG_FILE="$tmp/$environment.did" scripts/build.signer.args.sh >/dev/null
+  ICP_CLI_ENVIRONMENT="$environment" ARG_FILE="$tmp/$environment.did" scripts/build.signer.args.sh >/dev/null
   expected="$(cat "$tmp/$environment.hex")"
   actual="$(didc encode "$(icp_yaml_args "$environment")")"
   if [[ "$expected" == "$actual" ]]; then

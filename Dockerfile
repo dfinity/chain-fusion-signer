@@ -75,7 +75,7 @@ COPY src src
 COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/build.signer.report.sh scripts/
 COPY target/commit target/tags target/
 RUN touch src/*/src/*.rs
-RUN DFX_NETWORK=ic scripts/build.signer.sh
+RUN ICP_CLI_ENVIRONMENT=ic scripts/build.signer.sh
 
 FROM scratch AS signer
 COPY --from=build-signer out/ /
