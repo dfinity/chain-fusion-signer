@@ -8,7 +8,7 @@ print_help() {
 	- The installation args are computed based on the target network,
 	      determined by the DFX_NETWORK environment variable.
 
-	The file is installed at the locations defined for 'signer' in 'dfx.json'.
+	The file is installed at the locations defined for 'signer' in 'dfx.json' and 'icp.yaml'.
 
 	Environment variables:
 	- DFX_NETWORK: The target network: local (default), staging, beta or ic.
@@ -25,7 +25,7 @@ print_help() {
 DFX_NETWORK="${DFX_NETWORK:-local}"
 CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-um5iw-rqaaa-aaaaq-qaaba-cai}"
 
-# Note: This path must match the 'signer' entries in 'dfx.json'.
+# Note: This path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
 ARG_FILE="out/signer.args.did"
 
 ####
