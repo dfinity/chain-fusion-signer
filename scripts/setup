@@ -19,6 +19,10 @@ for tool in "${@}"; do
     curl -Lf "$url" | "$pipe" >"$download"
     install -m 755 "$download" "$target"
     rm -f "$download"
+    # Later steps of a GitHub workflow may run in a non-login shell, which lacks this directory.
+    if [ -n "${GITHUB_PATH:-}" ] && ! [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+      echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+    fi
     ;;
   "sh")
     version="$(jq -r '.[env.tool].version' dev-tools.json)" "$0-$tool"
