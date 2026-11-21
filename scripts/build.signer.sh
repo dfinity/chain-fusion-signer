@@ -10,6 +10,10 @@ print_help() {
 	      determined by the DFX_NETWORK environment variable.
 
 	The files are installed at the locations defined for 'signer' in 'dfx.json'.
+
+	Environment variables:
+	- DFX_NETWORK: The target network: local (default), staging, beta or ic.
+	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID.
 	EOF
 }
 
@@ -20,9 +24,10 @@ print_help() {
 
 DFX_NETWORK="${DFX_NETWORK:-local}"
 
-CANDID_FILE="$(jq -r .canisters.signer.candid dfx.json)"
-ARGS_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
-WASM_FILE="$(jq -r .canisters.signer.wasm dfx.json)"
+# Note: These paths must match the 'signer' entries in 'dfx.json'.
+CANDID_FILE="src/signer/canister/signer.did"
+ARGS_FILE="out/signer.args.did"
+WASM_FILE="out/signer.wasm.gz"
 BUILD_DIR="target/wasm32-unknown-unknown/release"
 COMMIT_FILE="target/commit"
 TAGS_FILE="target/tags"

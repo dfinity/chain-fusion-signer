@@ -9,6 +9,11 @@ print_help() {
 	      determined by the DFX_NETWORK environment variable.
 
 	The file is installed at the locations defined for 'signer' in 'dfx.json'.
+
+	Environment variables:
+	- DFX_NETWORK: The target network: local (default), staging, beta or ic.
+	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID,
+	      which is also the ID used on local networks.
 	EOF
 }
 
@@ -18,8 +23,10 @@ print_help() {
 }
 
 DFX_NETWORK="${DFX_NETWORK:-local}"
+CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-um5iw-rqaaa-aaaaq-qaaba-cai}"
 
-ARG_FILE="$(jq -r .canisters.signer.init_arg_file dfx.json)"
+# Note: This path must match the 'signer' entries in 'dfx.json'.
+ARG_FILE="out/signer.args.did"
 
 ####
 # Computes the install args, overwriting any existing args file.

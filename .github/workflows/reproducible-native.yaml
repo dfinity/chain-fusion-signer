@@ -38,20 +38,20 @@ jobs:
           brew install coreutils
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install dfx
-        uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
+      - name: Install build tools
+        run: scripts/setup cargo-binstall candid-extractor ic-wasm didc
       - name: Build
-        run: dfx build --ic signer
+        run: DFX_NETWORK=ic scripts/build.signer.sh
       - name: 'Upload Wasm module'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: signer-wasm-${{ matrix.os }}
-          path: .dfx/ic/canisters/signer/signer.wasm.gz
+          path: out/signer.wasm.gz
           retention-days: 3
       - name: 'Output the wasm hash'
         run: |
           mkdir -p hashes
-          sha256sum .dfx/ic/canisters/signer/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}.txt"
+          sha256sum out/signer.wasm.gz > "hashes/signer-wasm_sha256_${{ matrix.os }}.txt"
       - name: 'Upload hashes'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
