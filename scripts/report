@@ -14,14 +14,18 @@ set -euo pipefail
   exit 0
 }
 
+# The metadata is public, so it is read with the anonymous identity: loading the user's identity
+# may need a password or fail on an expired delegation.
 report_git_ref() {
-  icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT"
+  icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT" --identity anonymous
 }
 report_git_tag() {
-  icp canister metadata signer git:tags -e "$ICP_ENVIRONMENT"
+  icp canister metadata signer git:tags -e "$ICP_ENVIRONMENT" --identity anonymous
 }
 report_args() {
-  icp canister call signer config '()' --query -e "$ICP_ENVIRONMENT"
+  # The signer rejects anonymous callers of `config`, so this uses the default icp-cli identity.
+  icp canister call signer config '()' --query -e "$ICP_ENVIRONMENT" ||
+    echo "(Could not read the config; it needs a working, non-anonymous icp-cli identity.)"
 }
 hrule() {
   echo "########################################"
