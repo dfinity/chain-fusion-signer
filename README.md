@@ -31,6 +31,15 @@ Users can now hold keys on-chain and sign with the command line with a simple [`
 
 Example: Sign an Ethereum transaction hash. The same calls may be used when signing in a web page.
 
+The signer derives your keys from your principal and rejects the anonymous identity, which is what a fresh icp-cli installation uses. Select an identity first. To keep the keys you used with dfx, import your dfx identity:
+
+```
+dfx identity export <dfx-identity> > dfx-identity.pem
+icp identity import my-identity --from-pem dfx-identity.pem
+rm dfx-identity.pem
+icp identity default my-identity
+```
+
 ```
 CHAIN_FUSION_SIGNER="grghe-syaaa-aaaar-qabyq-cai"
 CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
