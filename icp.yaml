@@ -31,18 +31,6 @@ canisters:
           commands:
             - scripts/build.example_backend.sh
             - cp out/example_backend.wasm.gz "$ICP_WASM_OUTPUT_PATH"
-  - name: example_frontend
-    recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
-      configuration:
-        dir: src/example_frontend/dist
-        build:
-          - npm ci
-          - npm run build --workspace example_frontend
-networks:
-  - name: local
-    mode: managed
-    ii: true
 environments:
   - name: staging
     network: ic
