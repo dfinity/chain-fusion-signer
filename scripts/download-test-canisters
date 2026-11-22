@@ -43,6 +43,8 @@ for canister in "${canisters[@]}"; do
     echo "OK: $file (cached)"
     continue
   fi
+  # Remove a stale file first, so that a failed download cannot leave it in place.
+  rm -f "$file"
   curl -sSfL "$url" -o "$file.part"
   actual="$(sha256 "$file.part")"
   [[ "$actual" == "$expected" ]] || {

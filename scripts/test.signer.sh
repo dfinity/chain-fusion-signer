@@ -21,7 +21,10 @@ cargo build --locked --target wasm32-unknown-unknown --release -p test_proxy
 
 echo "Downloading third-party canisters."
 # The tests load them from target/test-canisters/.
-./scripts/download-test-canisters
+./scripts/download-test-canisters || {
+  echo "ERROR: Failed to download the third-party canisters." >&2
+  exit 1
+}
 
 # We use a previous version of the release to ensure upgradability
 
