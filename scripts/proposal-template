@@ -25,7 +25,9 @@ cd "$SOURCE_DIR/.."
 export ICP_ENVIRONMENT
 
 # If the currently deployed git ref is not specified, get it from the canister metadata.
-test -n "${PROD_REF:-}" || PROD_REF="$(icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT")"
+# The metadata is public; the anonymous identity avoids loading the user's identity, which may
+# need a password or have an expired delegation.
+test -n "${PROD_REF:-}" || PROD_REF="$(icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT" --identity anonymous)"
 
 # The release tags newly included by this upgrade: those reachable from the release
 # candidate but not already deployed (not ancestors of the production ref), oldest
