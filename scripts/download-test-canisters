@@ -31,8 +31,14 @@ sha256() {
 if (($# > 0)); then
   canisters=("$@")
 else
-  readarray -t canisters < <(jq -r 'keys[]' "$MANIFEST")
+  # Not a process substitution, so that a jq failure stops the script.
+  names="$(jq -re 'keys[]' "$MANIFEST")"
+  readarray -t canisters <<<"$names"
 fi
+[[ "${#canisters[@]}" -gt 0 ]] && [[ -n "${canisters[0]}" ]] || {
+  echo "ERROR: No canisters found in $MANIFEST"
+  exit 1
+} >&2
 
 mkdir -p "$DIR"
 for canister in "${canisters[@]}"; do
