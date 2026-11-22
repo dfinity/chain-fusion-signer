@@ -34,9 +34,14 @@ Example: Sign an Ethereum transaction hash. The same calls may be used when sign
 The signer derives your keys from your principal and rejects the anonymous identity, which is what a fresh icp-cli installation uses. Select an identity first. To keep the keys you used with dfx, import your dfx identity:
 
 ```
-dfx identity export <dfx-identity> > dfx-identity.pem
-icp identity import my-identity --from-pem dfx-identity.pem
-rm dfx-identity.pem
+# The exported key is unencrypted: keep it in a private temporary file that is always deleted.
+(
+  umask 077
+  pem="$(mktemp)"
+  trap 'rm -f "$pem"' EXIT
+  dfx identity export <dfx-identity> >"$pem"
+  icp identity import my-identity --from-pem "$pem"
+)
 icp identity default my-identity
 ```
 
