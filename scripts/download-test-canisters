@@ -35,10 +35,10 @@ else
   names="$(jq -re 'keys[]' "$MANIFEST")"
   readarray -t canisters <<<"$names"
 fi
-[[ "${#canisters[@]}" -gt 0 ]] && [[ -n "${canisters[0]}" ]] || {
-  echo "ERROR: No canisters found in $MANIFEST"
+if [[ "${#canisters[@]}" -eq 0 ]] || [[ -z "${canisters[0]}" ]]; then
+  echo "ERROR: No canisters found in $MANIFEST" >&2
   exit 1
-} >&2
+fi
 
 mkdir -p "$DIR"
 for canister in "${canisters[@]}"; do
