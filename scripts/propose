@@ -47,6 +47,7 @@ icp_identity_spec() {
 
 # Gets the neuron ID.
 # ... if saved in a file, get it:
+# The path dates from dfx; it is kept so that saved neuron IDs keep working.
 NEURON_PATH="$HOME/.config/dfx/prod-neuron"
 if test -e "$NEURON_PATH"; then
   NEURON_ID="$(cat "$NEURON_PATH")"

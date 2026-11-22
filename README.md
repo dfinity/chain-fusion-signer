@@ -27,7 +27,7 @@ A front end web developer can now develop a multi-chain web app using the follow
 
 ### Command Line
 
-Users can now hold keys on-chain and sign with the command line with a simple `dfx canister call`, without having to deploy or maintain their own signing canister.
+Users can now hold keys on-chain and sign with the command line with a simple [`icp canister call`](https://github.com/dfinity/icp-cli), without having to deploy or maintain their own signing canister.
 
 Example: Sign an Ethereum transaction hash. The same calls may be used when signing in a web page.
 
@@ -36,16 +36,17 @@ CHAIN_FUSION_SIGNER="grghe-syaaa-aaaar-qabyq-cai"
 CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
 
 # Approve payment; I typically make a few large approvals rather than a separate approval for each API call:
-dfx canister call "$CYCLES_LEDGER" icrc2_approve --ic "
+icp canister call "$CYCLES_LEDGER" icrc2_approve -n ic "(
   record {
     amount = 1_000_000_000_000;
     spender = record {
       owner = principal \"${CHAIN_FUSION_SIGNER}\";
     };
-  }" >/dev/null
+  }
+)" >/dev/null
 
 # Make some calls, e.g. sign a transaction hash:
-dfx canister call "$CHAIN_FUSION_SIGNER" generic_sign_with_ecdsa --ic '
+icp canister call "$CHAIN_FUSION_SIGNER" generic_sign_with_ecdsa -n ic '
 (
   opt variant { CallerPaysIcrc2Cycles },
   record {
