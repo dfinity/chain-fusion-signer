@@ -9,8 +9,6 @@
 	},
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.9.6",
-		"prettier-plugin-organize-imports": "^4.3.0",
-		"prettier-plugin-svelte": "^4.1.1"
+		"prettier": "^3.9.6"
 	}
 }
