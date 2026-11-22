@@ -84,7 +84,7 @@ jobs:
         shell: bash
         run: scripts/test-rs
   installation:
-    name: "dfx deploy & integration"
+    name: "icp deploy & integration"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -106,14 +106,13 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-1
-      - name: Install dfx
-        uses: dfinity/setup-dfx@e50c04f104ee4285ec010f10609483cf41e4d365 # main
       - name: Install build tools
-        run: scripts/setup cargo-binstall candid-extractor ic-wasm didc
-      - name: Start dfx
-        run: dfx start --clean --background
-      - name: Deploy all canisters
-        run: dfx deploy
+        run: scripts/setup icp-cli cargo-binstall candid-extractor ic-wasm didc
+      - name: Start the local network
+        run: icp network start -d
+      - name: Deploy canisters
+        # example_frontend is left out because its build still uses `dfx generate`.
+        run: icp deploy signer cycles_depositor example_backend
       - name: Install solana cli
         run: |
           ./scripts/setup solana
@@ -132,8 +131,8 @@ jobs:
         uses: ./.github/actions/bindings
       - name: Run integration tests
         run: ./scripts/test.signer.sh
-      - name: Stop dfx
-        run: dfx stop
+      - name: Stop the local network
+        run: icp network stop
   check-pass:
     name: "Checks pass"
     needs: ["format", "rust-tests", "sh-tests", "installation"]

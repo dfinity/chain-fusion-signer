@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 CANISTER=signer
 OUTPUT="src/signer/canister/tests/it/canister/$CANISTER.rs"
-didc bind -t rs "$(jq -r .canisters.$CANISTER.candid dfx.json)" --config "scripts/bind/pic/$CANISTER.toml" >"$OUTPUT"
+didc bind -t rs "src/signer/canister/$CANISTER.did" --config "scripts/bind/pic/$CANISTER.toml" >"$OUTPUT"
 
 # didc generates `type Result = ...` which shadows std::result::Result,
 # breaking the `Result<T, String>` return types in the generated impl block.

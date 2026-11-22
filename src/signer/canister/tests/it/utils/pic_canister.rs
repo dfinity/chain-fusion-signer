@@ -87,14 +87,13 @@ pub fn cargo_wasm_path(name: &str) -> String {
         .unwrap()
         .to_string()
 }
-/// The path to the wasm after `dfx deploy`.  Expects the Wasm to be gzipped.
+/// The path to a third-party canister Wasm, as downloaded by `scripts/download-test-canisters`.
 ///
-/// If not already gzipped, please add this to the canister declaration in `dfx.json`: `"gzip":
-/// true`
+/// The canisters and their versions are listed in `scripts/test-canisters.json`.
 #[allow(dead_code)]
-pub fn dfx_wasm_path(name: &str) -> String {
+pub fn test_canister_wasm_path(name: &str) -> String {
     workspace_dir()
-        .join(format!(".dfx/local/canisters/{name}/{name}.wasm.gz"))
+        .join(format!("target/test-canisters/{name}.wasm.gz"))
         .to_str()
         .unwrap()
         .to_string()
@@ -161,7 +160,7 @@ impl PicCanister {
 /// ```
 #[derive(Debug)]
 pub struct PicCanisterBuilder {
-    /// Canister name, as it appears in dfx.json.
+    /// Canister name, as it appears in `scripts/test-canisters.json`.
     #[allow(dead_code)] // Useful in debug printouts.
     canister_name: Option<String>,
     /// Canister ID of the canister.  If not set, a new canister will be created.
@@ -206,14 +205,15 @@ impl Default for PicCanisterBuilder {
 impl PicCanisterBuilder {
     /// Create a new canister builder.
     ///
-    /// The canister name is used to find the .wasm.gz used in the local dfx deployment.
+    /// The canister name is used to find the .wasm.gz downloaded by
+    /// `scripts/download-test-canisters`.
     #[allow(dead_code)]
     fn new(name: &str) -> Self {
         Self {
             canister_name: Some(name.to_string()),
             canister_id: None,
             cycles: Self::DEFAULT_CYCLES,
-            wasm_path: dfx_wasm_path(name),
+            wasm_path: test_canister_wasm_path(name),
             arg: Self::default_arg(),
             controllers: None,
         }
@@ -313,24 +313,26 @@ mod tests {
     use super::*;
     #[test]
     fn can_deploy_canister() {
-        let _simple_single_canister_test_env = PicCanisterBuilder::new("example_backend").deploy();
+        let _simple_single_canister_test_env = PicCanisterBuilder::default()
+            .with_wasm(&cargo_wasm_path("test_proxy"))
+            .deploy();
     }
     struct MulticanisterTestEnv {
         #[allow(dead_code)] // Created in tests.
-        pub example_backend: PicCanister,
+        pub first: PicCanister,
         #[allow(dead_code)] // Created in tests.
-        pub example_frontend: PicCanister,
+        pub second: PicCanister,
     }
     impl Default for MulticanisterTestEnv {
         fn default() -> Self {
-            let example_backend = PicCanisterBuilder::new("example_backend").deploy();
-            // Deploy the frontend to the same pic:
-            let pic = example_backend.pic();
-            let example_frontend = PicCanisterBuilder::new("example_frontend").deploy_to(pic);
-            Self {
-                example_backend,
-                example_frontend,
-            }
+            let wasm = cargo_wasm_path("test_proxy");
+            let first = PicCanisterBuilder::default().with_wasm(&wasm).deploy();
+            // Deploy the second canister to the same pic:
+            let pic = first.pic();
+            let second = PicCanisterBuilder::default()
+                .with_wasm(&wasm)
+                .deploy_to(pic);
+            Self { first, second }
         }
     }
     #[test]
