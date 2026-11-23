@@ -24,7 +24,7 @@ print_help() {
 	Usage: "$(basename "$0")" [network] [method_name_pattern]
 	       "$(basename "$0")" --analyze <jsonl-file>
 	where:
-	  'network' is a dfx network name.
+	  'network' is an icp-cli environment: local, staging, beta or ic.
 	     Default: ic
 	  'method_name_pattern' is a regular expression; only API methods
 	     matching the pattern will be tested.
@@ -206,19 +206,20 @@ run_analysis() {
   exit 0
 }
 
-# --- Network check functions (requires dfx) ---
+# --- Network check functions (requires icp-cli) ---
 
-DFX_NETWORK="${1:-ic}"
+ICP_ENVIRONMENT="${1:-ic}"
 METHOD_NAME_PATTERN="${2:-.}"
-SIGNER_CANISTER_ID="$(dfx canister id --network "$DFX_NETWORK" signer)"
-LOG_FILE="check-pricing.${DFX_NETWORK}.$(date --iso-8601=second).jsonl"
+SIGNER_CANISTER_ID="$(icp canister status signer -e "$ICP_ENVIRONMENT" --id-only)"
+CYCLES_LEDGER_CANISTER_ID="um5iw-rqaaa-aaaaq-qaaba-cai"
+LOG_FILE="check-pricing.${ICP_ENVIRONMENT}.$(date --iso-8601=second).jsonl"
 
 to_number() {
   : Converts symbols such as 1K to 1_000
   numfmt --from=si | rev | sed 's/.../&_/g' | rev
 }
 signer_balance() {
-  dfx canister status --network "$DFX_NETWORK" signer | awk '($1 == "Balance:"){print $2}'
+  icp canister status signer -e "$ICP_ENVIRONMENT" --json | jq -r .cycles
 }
 add_underscores_to_number() {
   rev | sed -E 's/.../&_/g;s/_(-?)$/\1/g' | rev
@@ -234,7 +235,7 @@ check_call_pricing() {
   }
   method_name="$1"
   before="$(signer_balance)"
-  dfx canister call --network "$DFX_NETWORK" signer "${@}" >/dev/null
+  icp canister call signer "${@}" -e "$ICP_ENVIRONMENT" >/dev/null
   after="$(signer_balance)"
   diff="$(echo "$after - $before" | remove_underscores | bc | add_underscores_to_number)"
   if [[ $diff = -* ]]; then
@@ -258,13 +259,14 @@ check_call_pricing() {
 APPROVAL="1P"
 
 : Approve funds for use in the test
-dfx canister call cycles_ledger icrc2_approve --network "$DFX_NETWORK" "
+icp canister call "$CYCLES_LEDGER_CANISTER_ID" icrc2_approve -e "$ICP_ENVIRONMENT" "(
   record {
     amount = $(echo "$APPROVAL" | to_number);
     spender = record {
       owner = principal \"${SIGNER_CANISTER_ID}\";
     };
-  }" >/dev/null
+  }
+)" >/dev/null
 
 : Check that each method is making a profit
 

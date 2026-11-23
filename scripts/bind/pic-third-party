@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+[[ "${1:-}" != "--help" ]] || {
+  cat <<-EOF
+	Generates pic bindings for a third-party canister whose Candid URL is in
+	'scripts/test-canisters.json'.
+
+	Usage: $(basename "$0") CANISTER
+	EOF
+
+  exit 0
+}
+
+CANISTER="$1"
+CANDID_URL="$(canister="$CANISTER" jq -re '.[env.canister].candid' scripts/test-canisters.json)"
+CANDID="$(mktemp)"
+trap 'rm -f "$CANDID"' EXIT
+curl -sSfL "$CANDID_URL" -o "$CANDID"
+didc bind -t rs "$CANDID" --config "scripts/bind/pic/$CANISTER.toml" >"src/signer/canister/tests/it/canister/$CANISTER.rs"

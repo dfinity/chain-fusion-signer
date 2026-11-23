@@ -5,21 +5,10 @@
 	},
 	"name": "cf-signer",
 	"scripts": {
-		"build": "npm run build --workspaces --if-present",
-		"format": "prettier --write './**/*.{ts,js,mjs,json,scss,css,svelte,html,md}'",
-		"prebuild": "npm run prebuild --workspaces --if-present",
-		"pretest": "npm run prebuild --workspaces --if-present",
-		"start": "npm start --workspaces --if-present",
-		"test": "npm test --workspaces --if-present"
+		"format": "prettier --write './**/*.{ts,js,mjs,json,scss,css,svelte,html,md}'"
 	},
 	"type": "module",
-	"workspaces": [
-		"src/example_frontend"
-	],
 	"devDependencies": {
-		"@icp-sdk/auth": "^7.1.0",
-		"prettier": "^3.9.6",
-		"prettier-plugin-organize-imports": "^4.3.0",
-		"prettier-plugin-svelte": "^4.1.1"
+		"prettier": "^3.9.6"
 	}
 }

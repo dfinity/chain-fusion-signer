@@ -1,0 +1,17 @@
+{
+	"bitcoin": {
+		"wasm": "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F2024-08-30/ic-btc-canister.wasm.gz",
+		"sha256": "d0ada614be09055f37d45d8ad92560432c86b426d9e66f42609ce64007a13c3e",
+		"candid": "https://raw.githubusercontent.com/dfinity/bitcoin-canister/release/2024-08-30/canister/candid.did"
+	},
+	"cycles_depositor": {
+		"wasm": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/depositor.wasm.gz",
+		"sha256": "79d8000abb2413da7077e296bf8abc56bd425d89b9c6de90778312b193ccd025",
+		"candid": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/depositor.did"
+	},
+	"cycles_ledger": {
+		"wasm": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/cycles-ledger.wasm.gz",
+		"sha256": "2964ba9fc2afdef6fa9bf12c30ff3694c7cc0fca3122ce19a6f7f09e7798e404",
+		"candid": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/cycles-ledger.did"
+	}
+}

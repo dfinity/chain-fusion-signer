@@ -3,8 +3,8 @@ description: |
   - Creates the signer candid file
   - Creates bindings for the signer and other canisters
   - Verifies that the generated bindings match the ones in the repository
-  Prerequisites:
-  - The candid files for external canisters need to be in `.dfx/local/canisters/${canister}/`, as after `dfx deploy`.
+  Notes:
+  - The candid files for third-party canisters are downloaded from the URLs in `scripts/test-canisters.json`.
 runs:
   using: "composite"
   steps:

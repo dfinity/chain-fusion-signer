@@ -2,8 +2,6 @@
 
 POCKET_IC_SERVER_VERSION=13.0.0
 UPGRADE_VERSIONS="v0.0.13,v0.0.19,v0.0.25"
-BITCOIN_CANISTER_RELEASE="2024-08-30"
-BITCON_CANISTER_WASM="ic-btc-canister.wasm.gz"
 SIGNER_CANISTER_WASM="signer.wasm"
 
 if [ -f "./$SIGNER_CANISTER_WASM" ]; then
@@ -21,14 +19,12 @@ echo "Building test_proxy canister."
 # Used by the integration tests to reach the signer through an inter-canister call.
 cargo build --locked --target wasm32-unknown-unknown --release -p test_proxy
 
-if [ -f "./$BITCON_CANISTER_WASM" ]; then
-  echo "Use existing $BITCON_CANISTER_WASM canister."
-else
-  echo "Downloading bitcoin_canister canister."
-  curl -sSL "https://github.com/dfinity/bitcoin-canister/releases/download/release%2F$BITCOIN_CANISTER_RELEASE/ic-btc-canister.wasm.gz" -o $BITCON_CANISTER_WASM
-fi
-# Setting the environment variable that will be used in the test to load that particular file relative to the cargo workspace.
-export BITCOIN_CANISTER_WASM_FILE="/$BITCON_CANISTER_WASM"
+echo "Downloading third-party canisters."
+# The tests load them from target/test-canisters/.
+./scripts/download-test-canisters || {
+  echo "ERROR: Failed to download the third-party canisters." >&2
+  exit 1
+}
 
 # We use a previous version of the release to ensure upgradability
 
