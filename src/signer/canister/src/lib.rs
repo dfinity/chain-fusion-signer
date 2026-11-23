@@ -44,7 +44,7 @@ use sign::{
 };
 use state::{read_config, read_state, set_config, PAYMENT_GUARD};
 
-use crate::guards::caller_is_not_anonymous;
+use crate::guards::{caller_is_controller, caller_is_not_anonymous};
 
 mod convert;
 mod derivation_path;
@@ -122,6 +122,11 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 /// a funded caller can drain the signer with calls that are valid, paid and successful yet
 /// cost it far more than the fee they pay.
 ///
+/// The filter also bounds what a caller who never pays can cost.  Payment is taken inside the
+/// method, after induction, so a message the filter accepts is paid for by the signer even if
+/// the call then fails for lack of funds.  That is why every method has a cap, including the
+/// message signing methods whose fee would cover a message of any size.
+///
 /// Ingress from the anonymous principal is refused too, whatever its method and size.  The
 /// paid methods reject the anonymous principal in their guards, but a guard runs only after
 /// the message has been inducted and paid for; refusing it here means the signer pays nothing
@@ -129,21 +134,30 @@ pub fn http_request(request: HttpRequest) -> HttpResponse {
 ///
 /// Note that message inspection runs only for ingress messages, not for calls from other
 /// canisters, which is why the update methods bound what they forward as well.
+///
+/// `get_canister_status` is refused here for every caller but a controller, whatever the
+/// message size, so a call its guard would reject costs the signer nothing.  The guard still
+/// covers calls from other canisters.
 #[inspect_message]
 fn inspect_message() {
     // Returning without accepting the message refuses it, so it is never inducted.
+    if msg_method_name() == "get_canister_status" && caller_is_controller().is_err() {
+        return;
+    }
     if caller_is_not_anonymous().is_err() {
         return;
     }
     match ingress_limit(&msg_method_name()) {
-        IngressLimit::Unlimited => accept_message(),
         IngressLimit::AtMost(max_bytes) if msg_arg_data().len() <= max_bytes => accept_message(),
         IngressLimit::AtMost(_) | IngressLimit::Unknown => (),
     }
 }
 
 /// API method to get cycle balance and burn rate.
-#[update]
+///
+/// Restricted to controllers: the signer pays for the management canister call this makes,
+/// and the method takes no payment.
+#[update(guard = "caller_is_controller")]
 pub async fn get_canister_status() -> std_canister_status::CanisterStatusResultV2 {
     std_canister_status::get_canister_status_v2().await
 }
@@ -321,6 +335,9 @@ pub async fn schnorr_public_key(
 ///   APP".into_bytes()]`
 /// - Oversized derivation paths and key names are rejected with `InvalidArgument` before any
 ///   payment is taken.
+/// - Over ingress, the encoded arguments may total at most 8 KiB; larger messages are refused
+///   before they reach the canister.  See
+///   [`MAX_MESSAGE_SIGNING_ARG_BYTES`](ic_chain_fusion_signer_api::limits::MAX_MESSAGE_SIGNING_ARG_BYTES).
 ///
 ///  # Details
 /// - Calls `management_canister::schnorr::sign_with_schnorr(..)`
@@ -438,6 +455,13 @@ pub async fn eth_sign_transaction(
 }
 
 /// Computes an Ethereum signature for a hex-encoded message according to [EIP-191](https://eips.ethereum.org/EIPS/eip-191).
+///
+/// Over ingress, the encoded arguments may total at most 8 KiB, which fits a message of about
+/// 4,000 bytes; larger messages are refused before they reach the canister.  For a larger
+/// message, compute the Keccak-256 digest of
+/// `\x19Ethereum Signed Message:\n<decimal byte length><message bytes>` yourself and pass its
+/// hex encoding to `eth_sign_prehash`.  See
+/// [`MAX_MESSAGE_SIGNING_ARG_BYTES`](ic_chain_fusion_signer_api::limits::MAX_MESSAGE_SIGNING_ARG_BYTES).
 ///
 /// # Details
 /// - Formats the message as `\x19Ethereum Signed Message:\n<length><message>`
