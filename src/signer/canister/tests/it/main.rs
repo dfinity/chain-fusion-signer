@@ -1,3 +1,4 @@
+mod anonymous_ingress;
 mod bitcoin;
 mod canister;
 mod canister_status;

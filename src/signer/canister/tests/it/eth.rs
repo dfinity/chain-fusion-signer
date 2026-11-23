@@ -101,10 +101,9 @@ mod sign_transaction {
             &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
         assert!(response.is_err());
-        assert_eq!(
-            response.unwrap_err(),
-            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
-        );
+        assert!(response
+            .unwrap_err()
+            .contains("Canister rejected the message"));
     }
 }
 
@@ -176,10 +175,9 @@ mod personal_sign {
         );
 
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
-        );
+        assert!(result
+            .unwrap_err()
+            .contains("Canister rejected the message"));
     }
 }
 
@@ -253,10 +251,9 @@ mod eth_address {
             &Some(PaymentType::CallerPaysIcrc2Cycles),
         );
         assert!(response.is_err());
-        assert_eq!(
-            response.unwrap_err(),
-           "Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()
-        );
+        assert!(response
+            .unwrap_err()
+            .contains("Canister rejected the message"));
     }
 
     #[test]
