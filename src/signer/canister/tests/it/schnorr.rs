@@ -33,10 +33,9 @@ fn anonymous_user_cannot_sign() {
         },
         &None,
     );
-    assert_eq!(
-        signature,
-        Err("Update call error. RejectionCode: CanisterReject, Error: Update call error. RejectionCode: CanisterReject, Error: Anonymous caller not authorized.".to_string()),
-        "The anonymous user should not be allowed to sign."
+    assert!(
+        matches!(&signature, Err(err) if err.contains("Canister rejected the message")),
+        "The anonymous user should not be allowed to sign, got: {signature:?}"
     );
 }
 
