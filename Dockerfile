@@ -20,24 +20,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-# Gets dfx version
-#
-# Note: This can be done in the builder but is slow because unrelated changes to dfx.json can cause a rebuild.
-FROM base AS tool_versions
-SHELL ["bash", "-c"]
-RUN mkdir -p config
-COPY dfx.json dfx.json
-RUN jq -r .dfx dfx.json > config/dfx_version
-
-
 # Install tools && warm up the build cache
 FROM base AS builder
 SHELL ["bash", "-c"]
-# Install dfx
-# Note: dfx is installed in `$HOME/.local/share/dfx/bin` but we can't reference `$HOME` here so we hardcode `/root`.
-COPY --from=tool_versions /config/*_version config/
-ENV PATH="/root/.local/share/dfx/bin:/root/.local/bin:${PATH}"
-RUN DFXVM_INIT_YES=true DFX_VERSION="$(cat config/dfx_version)" sh -c "$(curl -fsSL https://sdk.dfinity.org/install.sh)" && dfx --version
+# Tools installed by `scripts/setup` with the "curl" method, such as didc, go to `$HOME/.local/bin`.
+# We can't reference `$HOME` here so we hardcode `/root`.
+ENV PATH="/root/.local/bin:${PATH}"
 # Install Rust
 COPY ./rust-toolchain.toml .
 ENV RUSTUP_HOME=/opt/rustup \
@@ -72,11 +60,10 @@ RUN    mkdir -p src/signer/canister/src \
 # Builds canister: example_backend
 FROM builder AS build-example_backend
 COPY src src
-COPY dfx.json dfx.json
-COPY canister_ids.json canister_ids.json
+COPY scripts/build.example_backend.sh scripts/
 RUN touch src/*/src/*.rs
-RUN dfx build --ic example_backend
-RUN cp .dfx/ic/canisters/example_backend/example_backend.wasm /example_backend.wasm.gz
+RUN scripts/build.example_backend.sh
+RUN cp out/example_backend.wasm.gz /example_backend.wasm.gz
 RUN sha256sum /example_backend.wasm.gz
 
 FROM scratch AS example_backend
@@ -85,12 +72,10 @@ COPY --from=build-example_backend /example_backend.wasm.gz /
 # Builds canister: signer
 FROM builder AS build-signer
 COPY src src
-COPY dfx.json dfx.json
-COPY canister_ids.json canister_ids.json
 COPY scripts/build.signer.sh scripts/build.signer.args.sh scripts/build.signer.report.sh scripts/
 COPY target/commit target/tags target/
 RUN touch src/*/src/*.rs
-RUN dfx build --ic signer
+RUN ICP_CLI_ENVIRONMENT=ic scripts/build.signer.sh
 
 FROM scratch AS signer
 COPY --from=build-signer out/ /

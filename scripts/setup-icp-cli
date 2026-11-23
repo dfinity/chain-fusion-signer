@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Installs the icp-cli binary `icp` to `$HOME/.local/bin`.
+#
+# The version and the sha256 of each release archive are pinned in `dev-tools.json`.
+# Called by `scripts/setup icp-cli`, which sets `version`.
+
+version="${version:-$(jq -r '."icp-cli".version' dev-tools.json)}"
+
+case "$(uname -s)-$(uname -m)" in
+Linux-x86_64) target="x86_64-unknown-linux-gnu" ;;
+Linux-aarch64 | Linux-arm64) target="aarch64-unknown-linux-gnu" ;;
+Darwin-x86_64) target="x86_64-apple-darwin" ;;
+Darwin-arm64) target="aarch64-apple-darwin" ;;
+*)
+  echo "ERROR: Unsupported platform: $(uname -s) $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+expected_sha="$(target="$target" jq -re '."icp-cli".sha256[env.target]' dev-tools.json)"
+archive="icp-cli-${target}.tar.xz"
+url="https://github.com/dfinity/icp-cli/releases/download/v${version}/${archive}"
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+curl -Lf --proto '=https' --tlsv1.2 -sS -o "$tmp/$archive" "$url"
+actual_sha="$(sha256sum "$tmp/$archive" 2>/dev/null || shasum -a 256 "$tmp/$archive")"
+actual_sha="${actual_sha%% *}"
+[[ "$actual_sha" == "$expected_sha" ]] || {
+  echo "ERROR: sha256 mismatch for $url"
+  echo "       expected: $expected_sha"
+  echo "       actual:   $actual_sha"
+  exit 1
+} >&2
+tar -xJf "$tmp/$archive" -C "$tmp"
+mkdir -p "$HOME/.local/bin"
+install -m 755 "$tmp/icp-cli-${target}/icp" "$HOME/.local/bin/icp"
+"$HOME/.local/bin/icp" --version
+
+if ! [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+  if [ -n "${CI:-}" ] && [ -n "${GITHUB_PATH:-}" ]; then
+    echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+  else
+    echo "WARNING: Your PATH is missing $HOME/.local/bin" >&2
+  fi
+fi
