@@ -17,7 +17,18 @@
 	"didc": {
 		"method": "curl",
 		"version": "0.5.4",
-		"url": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-linux64"
+		"url": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-linux64",
+		"url_darwin": "https://github.com/dfinity/candid/releases/download/2025-10-16/didc-macos"
+	},
+	"icp-cli": {
+		"method": "sh",
+		"version": "1.8.0",
+		"sha256": {
+			"x86_64-unknown-linux-gnu": "5c9aba0bd67645022779387f38d23a51d158624196ce4eba175aeba065eb2227",
+			"aarch64-unknown-linux-gnu": "517e49465207e5f970745d03fecd683c99ee0220bcff02219293ea888a7c4a06",
+			"x86_64-apple-darwin": "96c2f1bc47c80acae6cb847262318a08d0d88e9222d41cd39f3ca64066a26014",
+			"aarch64-apple-darwin": "3c72156f20cd21b8e51599ff34b496f03eb40093df4eddf374ebab38c8c3643d"
+		}
 	},
 	"ic-admin": {
 		"version": "release-2025-03-20_03-11-base",
