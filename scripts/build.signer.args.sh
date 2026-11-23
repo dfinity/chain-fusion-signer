@@ -15,6 +15,10 @@ print_help() {
 	      'icp build' sets it.  If it is unset, DFX_NETWORK is used, which 'dfx build' sets.
 	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID,
 	      which is also the ID used on local networks.
+	- ARG_FILE: Where to write the args; defaults to 'out/signer.args.did'.
+
+	The args must match the signer 'init_args' in 'icp.yaml'; 'scripts/icp-yaml-args.test'
+	checks that they do.
 	EOF
 }
 
@@ -28,8 +32,8 @@ print_help() {
 ICP_CLI_ENVIRONMENT="${ICP_CLI_ENVIRONMENT:-${DFX_NETWORK:-local}}"
 CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-um5iw-rqaaa-aaaaq-qaaba-cai}"
 
-# Note: This path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
-ARG_FILE="out/signer.args.did"
+# Note: The default path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
+ARG_FILE="${ARG_FILE:-out/signer.args.did}"
 
 ####
 # Computes the install args, overwriting any existing args file.

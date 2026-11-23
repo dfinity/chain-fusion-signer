@@ -7,8 +7,8 @@ canisters:
           commands:
             - scripts/build.signer.sh
             - cp out/signer.wasm.gz "$ICP_WASM_OUTPUT_PATH"
-    # Must match `scripts/build.signer.args.sh` for every environment.  icp-cli reads args files
-    # when it loads the project, so it cannot use the generated `out/signer.args.did`.
+    # Must match `scripts/build.signer.args.sh` for every environment (`scripts/icp-yaml-args.test`).
+    # icp-cli reads args files when it loads the project, so it cannot use `out/signer.args.did`.
     init_args: |
       (variant { Init = record {
         ecdsa_key_name = "dfx_test_key";

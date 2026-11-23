@@ -16,16 +16,18 @@ print_help() {
 # Source the clap.bash file ---------------------------------------------------
 source "$SOURCE_DIR/clap.bash"
 # Define options
-clap.define short=n long=network desc="The dfx network to use" variable=DFX_NETWORK default="ic"
+clap.define short=n long=network desc="The icp-cli environment to use" variable=ICP_ENVIRONMENT default="ic"
 clap.define short=t long=tag desc="The release candidate tag" variable=RELEASE_CANDIDATE_TAG
 clap.define short=p long=prod desc="The production ref" variable=PROD_REF
 # Source the output file ----------------------------------------------------------
 source "$(clap.build)"
 cd "$SOURCE_DIR/.."
-export DFX_NETWORK
+export ICP_ENVIRONMENT
 
 # If the currently deployed git ref is not specified, get it from the canister metadata.
-test -n "${PROD_REF:-}" || PROD_REF="$(dfx canister metadata signer git:commit --network "$DFX_NETWORK")"
+# The metadata is public; the anonymous identity avoids loading the user's identity, which may
+# need a password or have an expired delegation.
+test -n "${PROD_REF:-}" || PROD_REF="$(icp canister metadata signer git:commit -e "$ICP_ENVIRONMENT" --identity anonymous)"
 
 # The release tags newly included by this upgrade: those reachable from the release
 # candidate but not already deployed (not ancestors of the production ref), oldest
