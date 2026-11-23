@@ -4,18 +4,14 @@ set -euo pipefail
 [[ "${1:-}" != "--help" ]] || {
   cat <<-EOF
 	Generates canister bindings for use with pocket-ic.
+
+	Runs every 'scripts/bind/pic/<canister>.sh'.
 	EOF
 
   exit 0
 }
 
-mapfile -t canisters < <(jq -r '.canisters|keys|.[]' dfx.json)
-for canister in "${canisters[@]}"; do
-  pic_binding_builder="./scripts/bind/pic/${canister}.sh"
-  if test -f "$pic_binding_builder"; then
-    echo "INFO: Creating pic bindings for $canister..."
-    bash -x "$pic_binding_builder"
-  else
-    echo "INFO: No pic binding script for $canister at $pic_binding_builder"
-  fi
+for pic_binding_builder in scripts/bind/pic/*.sh; do
+  echo "INFO: Creating pic bindings for $(basename "$pic_binding_builder" .sh)..."
+  bash -x "$pic_binding_builder"
 done

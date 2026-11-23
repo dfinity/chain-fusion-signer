@@ -14,8 +14,8 @@ Canisters: `signer` is `tdxud-2yaaa-aaaad-aadiq-cai` on `staging` and `grghe-sya
 
 - **GitHub:** `gh` authenticated; you can run workflows and merge PRs, and a second person can approve (you cannot approve your own PR).
 - **Build tooling** (only for the manual fallbacks and the step 7 dry run): `cargo-edit` (`./scripts/setup cargo-edit`), Docker, and `bash >= 5` (for the reproducible `./scripts/docker-build`).
-- **Staging deploy (step 5):** nothing — CI deploys with `DFX_DEPLOY_KEY_STAGING`. To deploy or inspect by hand you need a `dfx` identity that is a **controller of the staging canister**.
-- **Production proposal (steps 7–8):** `ic-admin` and `didc` on your `PATH` (`./scripts/setup ic-admin didc`; macOS needs the `darwin`/`macos` builds — see [HACKING.md](HACKING.md#local-tooling)), the **HSM connected with its PIN**, and your **NNS neuron ID** (the HSM identity must be a controller or hotkey of it). `propose` reads the neuron from `~/.config/dfx/prod-neuron` if present, otherwise prompts.
+- **Staging deploy (step 5):** nothing — CI deploys with `DFX_DEPLOY_KEY_STAGING`. To deploy or inspect by hand you need icp-cli (`./scripts/setup icp-cli`) and an icp-cli identity that is a **controller of the staging canister**.
+- **Production proposal (steps 7–8):** icp-cli, `ic-admin` and `didc` on your `PATH` (`./scripts/setup icp-cli ic-admin didc`; see [HACKING.md](HACKING.md#local-tooling)), the **HSM connected with its PIN**, and your **NNS neuron ID** (the HSM identity must be a controller or hotkey of it). `propose` reads the neuron from `~/.config/dfx/prod-neuron` if present, otherwise prompts.
 
 ---
 
@@ -74,38 +74,31 @@ gh release download v<version> --pattern commit.txt --pattern report.txt
 
 [Deploy to Staging](.github/workflows/deploy-staging.yml) does this for you: it runs automatically when Release completes for a `v*` tag, importing the `DFX_DEPLOY_KEY_STAGING` secret (a controller identity in PEM form) and installing the release Wasm. Normally you only **verify** it — jump to the CHECK below.
 
-> **If you need to do it manually** (the workflow failed, or you are shipping an untagged build): if you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (verified for `v0.5.0`). For an untagged build, replace step b with `./scripts/docker-build`.
+> **If you need to do it manually** (the workflow failed, or you are shipping an untagged build): if you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (not yet run against staging with icp-cli). For an untagged build, replace step b with `./scripts/docker-build`.
 
 ```
 # a. Confirm your identity controls staging:
-dfx identity get-principal                          # must appear in the Controllers list of:
-dfx canister info signer --network staging
+icp identity principal                              # must appear in the controllers listed by:
+icp canister status signer -e staging
 
-# b. Download the release Wasm into the path dfx.json expects, and verify its hash:
+# b. Download the release Wasm and verify its hash:
 gh release download v<version> --pattern signer.wasm.gz --output out/signer.wasm.gz --clobber
 shasum -a 256 out/signer.wasm.gz                    # must equal the report.txt hash from step 3
 
-# c. Create the dfx workspace dir so dfx can RUN its Candid compat check instead of falling
-#    back to an interactive prompt (which a non-interactive shell auto-declines):
-mkdir -p .dfx/staging/canisters/signer
-
-# d. CRITICAL — neutralize the init args. dfx.json sets `init_arg_file: out/signer.args.did`,
-#    which holds the *production* args (`ecdsa_key_name = "key_1"`). dfx reads that file and
-#    IGNORES a `--argument` flag, so you must overwrite it with `(null)`, or the upgrade would
-#    repoint staging at the production key. `(null)` => `post_upgrade(None)` => staging config kept.
-printf '(null)\n' > out/signer.args.did
-
-# e. Install the upgrade (`--wasm` installs the prebuilt module; `--yes` confirms past the
-#    benign Candid check — the interface is unchanged for a pricing-only release; for any
-#    release, diff the deployed candid vs the new signer.did to be sure):
-dfx canister install signer --wasm out/signer.wasm.gz \
-  --mode upgrade --upgrade-unchanged --network staging --yes
+# c. Install the upgrade. CRITICAL: pass the `(variant { Upgrade })` argument, which keeps the
+#    staging config. Never pass the release's Init args (`out/signer.args.did`), which hold the
+#    *production* config (`ecdsa_key_name = "key_1"`) and would repoint staging at the production key.
+#    `--yes` skips the Candid compatibility prompt: for a release that changes the interface,
+#    diff the deployed candid against the new signer.did first.
+icp canister install signer -e staging --mode upgrade --wasm out/signer.wasm.gz \
+  --args '(variant { Upgrade })' --yes
 ```
 
-**CHECK** (prefix queries with `DFX_WARNING=-mainnet_plaintext_identity` if a plaintext-identity confirmation appears):
+**CHECK:**
 
-- `dfx canister info signer --network staging` → **module hash equals the release wasm hash** (step 3); `git:tags` = `v<version>`, `git:commit` = the release commit.
-- `dfx canister call signer config --network staging` → still `ecdsa_key_name = "test_key_1"` (**not** `key_1`).
+- `icp canister status signer -e staging` → **module hash equals the release wasm hash** (step 3).
+- `icp canister metadata signer git:tags -e staging` = `v<version>`, and `icp canister metadata signer git:commit -e staging` = the release commit.
+- `icp canister call signer config '()' --query -e staging` → still `ecdsa_key_name = "test_key_1"` (**not** `key_1`).
 
 > Alternative: rebuild from scratch with `./scripts/docker-build` and install the same way — but the published Wasm is already that reproducible artifact, so downloading it is simpler and provably identical. If you are not a controller, request the upgrade via Orbit (contact the Orbit team).
 
@@ -146,7 +139,7 @@ With the HSM connected and your neuron ready:
 ./scripts/propose
 ```
 
-It builds the `ic-admin` command, **prints it for review** (it authenticates with `--use-hsm --key-id 01 --slot 0` and prompts for the PIN), then signs and submits.
+It builds the `ic-admin` command, **prints it for review**, then signs and submits. It authenticates with the HSM: key ID `01` and slot `0`, unless your icp-cli identity (`-i`, default `icp identity default`) was linked with `icp identity link hsm` to another key or slot. It prompts for the PIN.
 
 **CHECK:** before confirming, read the printed command carefully — target canister `grghe-syaaa-aaaar-qabyq-cai`, `--mode upgrade`, the wasm hash from step 3/7, `--arg-sha256 100d1390…` (the `(variant { Upgrade })` argument), and your neuron ID. After submission, confirm the proposal is listed on the NNS.
 
@@ -163,7 +156,7 @@ The canister's install argument is `type Arg = variant { Upgrade; Init : InitArg
 - `Init : record { … }` → calls `set_config`, which **replaces the entire config** with a `Config` derived from those fields.
 - `Upgrade` (or no argument) → **keeps the existing config** untouched.
 
-Therefore **upgrade proposals must use `(variant { Upgrade })`**, not the `Init` args. Submitting `Init` on an upgrade re-applies the full config and would silently overwrite any field that differs from the baked-in args (e.g. a non-default root key or cycles ledger). The `Init` args (`scripts/build.signer.args.sh`, written to `out/signer.args.*`) are only for the **initial installation**; the staging deploy (step 5) achieves the same "keep config" effect by passing `(null)`.
+Therefore **upgrade proposals must use `(variant { Upgrade })`**, not the `Init` args. Submitting `Init` on an upgrade re-applies the full config and would silently overwrite any field that differs from the baked-in args (e.g. a non-default root key or cycles ledger). The `Init` args (`scripts/build.signer.args.sh`, written to `out/signer.args.*`) are only for the **initial installation**; the staging deploy (step 5) passes `(variant { Upgrade })` as well.
 
 `scripts/propose` and `scripts/proposal-template` both call `scripts/build.upgrade.args.sh`, which encodes `(variant { Upgrade })` with `didc` — a constant, network-independent value (binary sha256 `100d1390…`). Anyone can reproduce it with `didc encode '(variant { Upgrade })'`.
 

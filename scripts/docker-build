@@ -13,7 +13,7 @@ else
   exit 1
 fi
 
-DFX_TARGET=signer
+TARGET=signer
 OUTDIR=out
 PROGRESS="--progress=auto"
 image_name="chain-fusion-signer"
@@ -47,7 +47,7 @@ rm -fr "${OUTDIR}"
 scripts/docker-build.pre
 
 if DOCKER_BUILDKIT=1 docker build \
-  --target "$DFX_TARGET" \
+  --target "$TARGET" \
   "$PROGRESS" \
   -t "$image_name" \
   -o "$OUTDIR" . \
