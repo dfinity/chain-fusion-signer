@@ -74,7 +74,7 @@ gh release download v<version> --pattern commit.txt --pattern report.txt
 
 [Deploy to Staging](.github/workflows/deploy-staging.yml) does this for you: it runs automatically when Release completes for a `v*` tag, importing the `DFX_DEPLOY_KEY_STAGING` secret (a controller identity in PEM form) and installing the release Wasm. Normally you only **verify** it — jump to the CHECK below.
 
-> **If you need to do it manually** (the workflow failed, or you are shipping an untagged build): if you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (verified for `v0.5.0`). For an untagged build, replace step b with `./scripts/docker-build`.
+> **If you need to do it manually** (the workflow failed, or you are shipping an untagged build): if you are a controller of the staging canister, deploy directly. The path below installs the **already-published, hash-verified release Wasm** (no local or docker build needed) and encodes the gotchas that otherwise turn this into back-and-forth (not yet run against staging with icp-cli). For an untagged build, replace step b with `./scripts/docker-build`.
 
 ```
 # a. Confirm your identity controls staging:
