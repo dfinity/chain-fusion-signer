@@ -819,7 +819,7 @@ name = "example_backend"
 version = "0.5.2"
 dependencies = [
  "candid",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
 ]
 
 [[package]]
@@ -1291,13 +1291,13 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk"
-version = "0.20.2"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a7971f4983db147afbbc4e7f87f60b09fcd60ac707af37ff3d2468dcddbf551"
+checksum = "fc6ad46670baa42b9d802e46cb0741e5da2d747b5b74b9ac8019aec9388b05b2"
 dependencies = [
  "candid",
  "ic-cdk-executor",
- "ic-cdk-macros 0.20.2",
+ "ic-cdk-macros 0.20.3",
  "ic-error-types",
  "ic0",
  "pin-project-lite",
@@ -1313,7 +1313,7 @@ checksum = "0e8bf6dd432d5750428b8658bbe6fb0cbc26f6ad634e20d48994f48d7bf84da9"
 dependencies = [
  "candid",
  "ic-btc-interface",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
 ]
 
 [[package]]
@@ -1342,9 +1342,9 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk-macros"
-version = "0.20.2"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7c20c002200c720958f321bb78b4d4987fc2c380bf9ef69ed4404730810f45f"
+checksum = "9583454462627a6a816ffa91422c8ab7e6a21f75f63eb255d03f710248d45453"
 dependencies = [
  "candid",
  "darling 0.23.0",
@@ -1360,7 +1360,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92c1319a274caebf0ab70ab826b8905c29e8563498289356b9a59464f2a85c56"
 dependencies = [
  "candid",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
  "ic-management-canister-types 0.7.1",
  "serde",
  "serde_bytes",
@@ -1385,7 +1385,7 @@ version = "0.5.2"
 dependencies = [
  "candid",
  "ic-canister-sig-creation",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
  "ic-cdk-bitcoin-canister",
  "ic-cdk-management-canister",
  "ic-metrics-encoder",
@@ -1402,7 +1402,7 @@ version = "0.2.0-alpha.1.1"
 source = "git+https://github.com/dfinity/papi?rev=a102b459e2a7ab17de247ab68025428ea68c12e5#a102b459e2a7ab17de247ab68025428ea68c12e5"
 dependencies = [
  "candid",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
  "serde",
  "serde_bytes",
 ]
@@ -1480,7 +1480,7 @@ version = "0.2.0-alpha.1.1"
 source = "git+https://github.com/dfinity/papi?rev=a102b459e2a7ab17de247ab68025428ea68c12e5#a102b459e2a7ab17de247ab68025428ea68c12e5"
 dependencies = [
  "candid",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
  "ic-cycles-ledger-client",
  "ic-papi-api",
  "serde",
@@ -1526,9 +1526,9 @@ dependencies = [
 
 [[package]]
 name = "ic0"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c77c8932bff1f09502d0d8c079d5a206a06afe523e35e816162cf4d30b5bf80d"
+checksum = "f05349d5c51ab6cc962c8963f877f826997ee6b737c6be3aafc9779eb8a4dd05"
 
 [[package]]
 name = "ic_principal"
@@ -2888,7 +2888,7 @@ dependencies = [
  "futures",
  "getrandom 0.2.17",
  "hex",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
  "ic-cdk-bitcoin-canister",
  "ic-cdk-management-canister",
  "ic-chain-fusion-signer-api",
@@ -2979,6 +2979,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
+ "windows-sys 0.52.0",
  "windows-sys 0.59.0",
 ]
 
@@ -3117,7 +3118,7 @@ name = "test_proxy"
 version = "0.5.2"
 dependencies = [
  "candid",
- "ic-cdk 0.20.2",
+ "ic-cdk 0.20.3",
 ]
 
 [[package]]
