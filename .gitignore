@@ -7,7 +7,7 @@
 .DS_Store
 **/.DS_Store
 
-# dfx temporary files
+# dfx temporary files, from before the icp-cli migration
 .dfx/
 
 # generated files

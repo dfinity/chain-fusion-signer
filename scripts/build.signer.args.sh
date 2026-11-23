@@ -8,11 +8,11 @@ print_help() {
 	- The installation args are computed based on the target environment,
 	      determined by the ICP_CLI_ENVIRONMENT environment variable.
 
-	The file is installed at the locations defined for 'signer' in 'dfx.json' and 'icp.yaml'.
+	The file is installed at the locations that 'icp.yaml' expects for 'signer'.
 
 	Environment variables:
 	- ICP_CLI_ENVIRONMENT: The target environment: local (default), staging, beta or ic.
-	      'icp build' sets it.  If it is unset, DFX_NETWORK is used, which 'dfx build' sets.
+	      'icp build' sets it.
 	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID,
 	      which is also the ID used on local networks.
 	- ARG_FILE: Where to write the args; defaults to 'out/signer.args.did'.
@@ -27,12 +27,10 @@ print_help() {
   exit 0
 }
 
-# `icp build` sets ICP_CLI_ENVIRONMENT.  `dfx build` sets DFX_NETWORK instead; drop that fallback
-# when dfx.json is removed.
-ICP_CLI_ENVIRONMENT="${ICP_CLI_ENVIRONMENT:-${DFX_NETWORK:-local}}"
+# `icp build` sets ICP_CLI_ENVIRONMENT.
+ICP_CLI_ENVIRONMENT="${ICP_CLI_ENVIRONMENT:-local}"
 CANISTER_ID_CYCLES_LEDGER="${CANISTER_ID_CYCLES_LEDGER:-um5iw-rqaaa-aaaaq-qaaba-cai}"
 
-# Note: The default path must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
 ARG_FILE="${ARG_FILE:-out/signer.args.did}"
 
 ####

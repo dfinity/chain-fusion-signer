@@ -9,11 +9,11 @@ print_help() {
 	- The installation args are computed based on the target environment,
 	      determined by the ICP_CLI_ENVIRONMENT environment variable.
 
-	The files are installed at the locations defined for 'signer' in 'dfx.json' and 'icp.yaml'.
+	The files are installed at the locations that 'icp.yaml' expects for 'signer'.
 
 	Environment variables:
 	- ICP_CLI_ENVIRONMENT: The target environment: local (default), staging, beta or ic.
-	      'icp build' sets it.  If it is unset, DFX_NETWORK is used, which 'dfx build' sets.
+	      'icp build' sets it.
 	- CANISTER_ID_CYCLES_LEDGER: The cycles ledger canister ID; defaults to the mainnet ID.
 	EOF
 }
@@ -23,12 +23,11 @@ print_help() {
   exit 0
 }
 
-# `icp build` sets ICP_CLI_ENVIRONMENT.  `dfx build` sets DFX_NETWORK instead; drop that fallback
-# when dfx.json is removed.
-ICP_CLI_ENVIRONMENT="${ICP_CLI_ENVIRONMENT:-${DFX_NETWORK:-local}}"
+# `icp build` sets ICP_CLI_ENVIRONMENT.
+ICP_CLI_ENVIRONMENT="${ICP_CLI_ENVIRONMENT:-local}"
 export ICP_CLI_ENVIRONMENT
 
-# Note: These paths must match the 'signer' entries in 'dfx.json' and 'icp.yaml'.
+# Note: The Wasm path must match the 'signer' build steps in 'icp.yaml'.
 CANDID_FILE="src/signer/canister/signer.did"
 ARGS_FILE="out/signer.args.did"
 WASM_FILE="out/signer.wasm.gz"

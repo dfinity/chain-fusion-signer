@@ -7,38 +7,33 @@ For a concise, end-to-end release checklist (version bump, staging, and the prod
 ## Table of content
 
 - [Release checklist](RELEASE.md)
-- [Demo](#demo)
+- [Local deployment](#local-deployment)
+- [Tests](#tests)
 - [Local tooling](#local-tooling)
 
-## Demo
+## Local deployment
 
-This repository contains the chain fusion signer itself, and also an example application with front end and back end canisters.
-
-To deploy the demo:
+The project is configured for [icp-cli](https://github.com/dfinity/icp-cli) in `icp.yaml`. Install the pinned version with `./scripts/setup icp-cli`, then deploy the signer, the cycles depositor and an example backend canister to a local network:
 
 ```
-dfx start --clean --background
-dfx deploy
+icp network start -d
+icp deploy
 ```
 
-You can now visit the front end in your browser and sign messages!
+The local network runs the cycles ledger at its mainnet ID, `um5iw-rqaaa-aaaaq-qaaba-cai`. Mainnet canister IDs are in `.icp/data/mappings/<environment>.ids.json`. Stop the network with `icp network stop`.
+
+## Tests
+
+- `./scripts/test-rs` runs the unit tests.
+- `./scripts/test.signer.sh` runs the PocketIC integration tests. It downloads the third-party canisters pinned in `scripts/test-canisters.json`.
 
 ## Local tooling
 
 Most development tools are listed in `dev-tools.json` and can be installed with `./scripts/setup <tool>`. A few need extra steps, especially on macOS.
 
-### ic-admin
+### ic-admin and didc
 
-`./scripts/setup ic-admin` downloads a **Linux** binary. On macOS, fetch the `darwin` build of the pinned version (the `ic-admin` version in `dev-tools.json`) into `~/.local/bin` instead, and ensure `~/.local/bin` is on your `PATH`. From the repo root:
-
-```
-mkdir -p ~/.local/bin
-VERSION="$(jq -r '."ic-admin".version' dev-tools.json)"
-curl -Lf "https://github.com/dfinity/ic/releases/download/$VERSION/ic-admin-x86_64-darwin.gz" | gunzip > ~/.local/bin/ic-admin
-chmod 755 ~/.local/bin/ic-admin
-```
-
-This is an x86_64 binary; on Apple Silicon it runs under Rosetta 2.
+`./scripts/setup ic-admin didc` installs both into `~/.local/bin`, which must be on your `PATH`. On macOS it installs the macOS builds; they are x86_64 binaries, so on Apple Silicon they run under Rosetta 2.
 
 ### Docker
 
