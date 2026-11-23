@@ -44,13 +44,6 @@
 			"gzip": true,
 			"type": "rust"
 		},
-		"example_frontend": {
-			"build": "npm ci && npm run build",
-			"dependencies": ["example_backend", "signer"],
-			"source": ["src/example_frontend/dist"],
-			"type": "assets",
-			"workspace": "example_frontend"
-		},
 		"cycles_ledger": {
 			"type": "custom",
 			"candid": "https://github.com/dfinity/cycles-ledger/releases/download/cycles-ledger-v1.0.1/cycles-ledger.did",
@@ -74,19 +67,6 @@
 			"wasm": "out/cycles_depositor.wasm",
 			"candid": "out/cycles_depositor.did",
 			"gzip": true
-		},
-		"internet_identity": {
-			"type": "custom",
-			"candid": "https://github.com/dfinity/internet-identity/releases/download/release-2026-07-17/internet_identity.did",
-			"wasm": "https://github.com/dfinity/internet-identity/releases/download/release-2026-07-17/internet_identity_dev.wasm.gz",
-			"remote": {
-				"id": {
-					"staging": "rdmx6-jaaaa-aaaaa-aaadq-cai",
-					"beta": "rdmx6-jaaaa-aaaaa-aaadq-cai",
-					"ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-				}
-			},
-			"frontend": {}
 		}
 	},
 	"defaults": {

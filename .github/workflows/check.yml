@@ -111,8 +111,7 @@ jobs:
       - name: Start the local network
         run: icp network start -d
       - name: Deploy canisters
-        # example_frontend is left out because its build still uses `dfx generate`.
-        run: icp deploy signer cycles_depositor example_backend
+        run: icp deploy
       - name: Install solana cli
         run: |
           ./scripts/setup solana
