@@ -5,9 +5,15 @@
 //! maximum-size messages therefore makes the signer spend far more than it collects, even
 //! though every call is valid, paid and successful.  Message inspection closes that gap by
 //! refusing the message before the signer pays anything for it.
+//!
+//! The same filter bounds what a caller who never pays can cost: payment is taken inside the
+//! method, after the signer has already paid to induct the message.
 
-use candid::Nat;
-use ic_chain_fusion_signer_api::{limits::MAX_PUBLIC_KEY_ARG_BYTES, methods::SignerMethods};
+use candid::{encode_args, CandidType, Nat};
+use ic_chain_fusion_signer_api::{
+    limits::{MAX_MESSAGE_SIGNING_ARG_BYTES, MAX_PUBLIC_KEY_ARG_BYTES, MAX_TRANSACTION_ARG_BYTES},
+    methods::SignerMethods,
+};
 use ic_papi_api::principal2account;
 use serde_bytes::ByteBuf;
 
@@ -22,8 +28,10 @@ use crate::{
     canister::{
         cycles_ledger::{self, ApproveArgs},
         signer::{
-            self, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs, PaymentType, SchnorrAlgorithm,
-            SchnorrKeyId, SchnorrPublicKeyArgs,
+            self, BitcoinAddressType, BtcTxOutput, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs,
+            EthPersonalSignRequest, EthSignTransactionRequest, Network, OutPoint, PaymentType,
+            SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs, SendBtcRequest,
+            SignWithSchnorrArgs, Utxo,
         },
     },
     utils::test_environment::{TestSetup, LEDGER_FEE},
@@ -239,4 +247,372 @@ fn unknown_methods_are_refused_for_free() {
     );
     let spent = balance_before.saturating_sub(signer_balance(&test_env));
     assert_eq!(spent, 0, "Refusing an unknown method cost {spent} cycles.");
+}
+
+/// A `schnorr_sign` request whose message is `len` bytes long.
+fn schnorr_sign_args(len: usize) -> SignWithSchnorrArgs {
+    SignWithSchnorrArgs {
+        aux: None,
+        key_id: SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: KEY_NAME.to_string(),
+        },
+        derivation_path: vec![ByteBuf::from("MY APP")],
+        message: ByteBuf::from(vec![0u8; len]),
+    }
+}
+
+/// An `eth_personal_sign` request for a message of `len` bytes, hex encoded as callers send it.
+fn personal_sign_request(len: usize) -> EthPersonalSignRequest {
+    EthPersonalSignRequest {
+        message: "00".repeat(len),
+    }
+}
+
+/// The size, in bytes, of the Candid argument a call sends.
+fn encoded_len<A: CandidType>(arg: &A, payment: &Option<PaymentType>) -> usize {
+    encode_args((arg, payment))
+        .expect("Failed to encode the arguments")
+        .len()
+}
+
+/// The longest message whose request, built by `build`, encodes to at most `max_bytes`.
+fn longest_within<A: CandidType>(
+    max_bytes: usize,
+    payment: &Option<PaymentType>,
+    build: impl Fn(usize) -> A,
+) -> usize {
+    let size = |len: usize| encoded_len(&build(len), payment);
+    // Start from the framing overhead, then step past any change in the length prefix.
+    let mut len = max_bytes.saturating_sub(size(0));
+    while size(len) > max_bytes {
+        len -= 1;
+    }
+    while size(len + 1) <= max_bytes {
+        len += 1;
+    }
+    len
+}
+
+/// The signer's response when message inspection refuses an ingress message.
+const REFUSED_AT_INSPECTION: &str = "rejected the message";
+
+/// Message signing requests up to the cap are accepted and signed.
+///
+/// Guards against the cap being set, or computed, below what a caller is told it can send.
+#[test]
+fn message_signing_up_to_the_ingress_limit_is_accepted() {
+    let test_env = TestSetup::default();
+
+    let payment = Some(approve(&test_env, SignerMethods::SchnorrSign, 1));
+    let len = longest_within(MAX_MESSAGE_SIGNING_ARG_BYTES, &payment, schnorr_sign_args);
+    let args = schnorr_sign_args(len);
+    assert_eq!(
+        encoded_len(&args, &payment),
+        MAX_MESSAGE_SIGNING_ARG_BYTES,
+        "The schnorr_sign request should be exactly at the limit."
+    );
+    let schnorr = test_env.signer.schnorr_sign(test_env.user, &args, &payment);
+    assert!(
+        matches!(schnorr, Ok(Ok(_))),
+        "schnorr_sign should sign a {len} byte message at the ingress limit, got: {schnorr:?}"
+    );
+
+    let payment = Some(approve(&test_env, SignerMethods::EthPersonalSign, 1));
+    let len = longest_within(
+        MAX_MESSAGE_SIGNING_ARG_BYTES,
+        &payment,
+        personal_sign_request,
+    );
+    let request = personal_sign_request(len);
+    // Hex takes two characters per byte, so the request can fall one byte short of the limit.
+    assert!(
+        encoded_len(&request, &payment) + 1 >= MAX_MESSAGE_SIGNING_ARG_BYTES,
+        "The eth_personal_sign request should be at the limit."
+    );
+    let personal = test_env
+        .signer
+        .eth_personal_sign(test_env.user, &request, &payment);
+    assert!(
+        matches!(personal, Ok(Ok(_))),
+        "eth_personal_sign should sign a {len} byte message at the ingress limit, got: \
+         {personal:?}"
+    );
+}
+
+/// A message signing request one message byte over the cap is refused by message inspection,
+/// even from a caller who has approved payment, and costs the signer nothing.
+#[test]
+fn message_signing_over_the_ingress_limit_is_refused_at_inspection() {
+    let test_env = TestSetup::default();
+    // Approve enough for both calls, so that an accepted call could take payment and succeed.
+    let payment = Some(approve(&test_env, SignerMethods::SchnorrSign, 2));
+    let balance_before = signer_balance(&test_env);
+
+    let len = longest_within(MAX_MESSAGE_SIGNING_ARG_BYTES, &payment, schnorr_sign_args) + 1;
+    let args = schnorr_sign_args(len);
+    assert_eq!(
+        encoded_len(&args, &payment),
+        MAX_MESSAGE_SIGNING_ARG_BYTES + 1,
+        "The schnorr_sign request should be one byte over the limit."
+    );
+    let schnorr = test_env.signer.schnorr_sign(test_env.user, &args, &payment);
+    assert!(
+        matches!(&schnorr, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "schnorr_sign should refuse a request over the ingress limit at inspection, got: \
+         {schnorr:?}"
+    );
+
+    let len = longest_within(
+        MAX_MESSAGE_SIGNING_ARG_BYTES,
+        &payment,
+        personal_sign_request,
+    ) + 1;
+    let request = personal_sign_request(len);
+    assert!(
+        encoded_len(&request, &payment) > MAX_MESSAGE_SIGNING_ARG_BYTES,
+        "The eth_personal_sign request should be over the limit."
+    );
+    let personal = test_env
+        .signer
+        .eth_personal_sign(test_env.user, &request, &payment);
+    assert!(
+        matches!(&personal, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "eth_personal_sign should refuse a request over the ingress limit at inspection, got: \
+         {personal:?}"
+    );
+
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(
+        spent, 0,
+        "Refusing message signing requests over the limit should cost nothing, cost {spent} \
+         cycles."
+    );
+}
+
+/// Oversized message signing requests are refused before induction, also when the caller has
+/// not paid.
+///
+/// Payment is taken after induction, so the ingress limit, not the fee, is what bounds the
+/// induction cost of these methods.
+#[test]
+fn unfunded_oversized_message_signing_costs_nothing() {
+    let test_env = TestSetup::default();
+    // No approval and no attached cycles: an inducted call could not pay.
+    let payment = None;
+
+    let balance_before = signer_balance(&test_env);
+    for _ in 0..3 {
+        let schnorr = test_env.signer.schnorr_sign(
+            test_env.user,
+            &schnorr_sign_args(NEARLY_MAX_INGRESS),
+            &payment,
+        );
+        assert!(
+            matches!(&schnorr, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+            "An oversized schnorr_sign request should be refused at inspection, got: {schnorr:?}"
+        );
+
+        let personal = test_env.signer.eth_personal_sign(
+            test_env.user,
+            &personal_sign_request(NEARLY_MAX_INGRESS / 2),
+            &payment,
+        );
+        assert!(
+            matches!(&personal, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+            "An oversized eth_personal_sign request should be refused at inspection, got: \
+             {personal:?}"
+        );
+    }
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(
+        spent, 0,
+        "Refusing unfunded oversized message signing requests should cost nothing, cost {spent} \
+         cycles."
+    );
+}
+
+/// An `eth_sign_transaction` request whose call data is `len` hex characters long.
+fn sign_transaction_request(len: usize) -> EthSignTransactionRequest {
+    EthSignTransactionRequest {
+        chain_id: Nat::from(11_155_111u64),
+        to: format!("0x{}", "1".repeat(40)),
+        gas: Nat::from(21_000u64),
+        max_fee_per_gas: Nat::from(1u64),
+        max_priority_fee_per_gas: Nat::from(1u64),
+        value: Nat::from(0u64),
+        nonce: Nat::from(0u64),
+        data: Some("f".repeat(len)),
+    }
+}
+
+/// A `btc_caller_sign` or `btc_caller_send` request spending 600 UTXOs, with a destination
+/// address `len` characters long.
+///
+/// The address length is what the tests vary, because it changes the encoded size one byte at a
+/// time.  The UTXOs are not real, so a request that reaches the method fails there.
+fn btc_request(len: usize) -> SendBtcRequest {
+    let utxo = Utxo {
+        height: 0,
+        value: 1,
+        outpoint: OutPoint {
+            txid: ByteBuf::from(vec![0u8; 32]),
+            vout: 0,
+        },
+    };
+    SendBtcRequest {
+        fee_satoshis: None,
+        network: Network::Regtest,
+        utxos_to_spend: vec![utxo; 600],
+        address_type: BitcoinAddressType::P2WPKH,
+        outputs: vec![BtcTxOutput {
+            destination_address: "b".repeat(len),
+            sent_satoshis: 1,
+        }],
+    }
+}
+
+/// Transaction requests up to the cap reach the method.
+///
+/// `eth_sign_transaction` is paid and signs.  The Bitcoin request is unpaid, so it reaches the
+/// method and is turned away for lack of payment rather than refused at inspection.
+#[test]
+fn transaction_requests_up_to_the_ingress_limit_are_accepted() {
+    let test_env = TestSetup::default();
+
+    let payment = Some(approve(&test_env, SignerMethods::EthSignTransaction, 1));
+    // An even number of characters, so the call data is valid hex.
+    let len = 2 * longest_within(MAX_TRANSACTION_ARG_BYTES, &payment, |n| {
+        sign_transaction_request(2 * n)
+    });
+    let request = sign_transaction_request(len);
+    assert!(
+        encoded_len(&request, &payment) + 1 >= MAX_TRANSACTION_ARG_BYTES,
+        "The eth_sign_transaction request should be at the limit."
+    );
+    let eth = test_env
+        .signer
+        .eth_sign_transaction(test_env.user, &request, &payment);
+    assert!(
+        matches!(eth, Ok(Ok(_))),
+        "eth_sign_transaction should sign {len} hex characters of call data at the ingress \
+         limit, got: {eth:?}"
+    );
+
+    let payment = None;
+    let len = longest_within(MAX_TRANSACTION_ARG_BYTES, &payment, btc_request);
+    let request = btc_request(len);
+    assert_eq!(
+        encoded_len(&request, &payment),
+        MAX_TRANSACTION_ARG_BYTES,
+        "The Bitcoin request should be exactly at the limit."
+    );
+    let btc = test_env
+        .signer
+        .btc_caller_sign(test_env.user, &request, &payment);
+    assert!(
+        matches!(btc, Ok(Err(_))),
+        "btc_caller_sign should accept a request at the ingress limit and then ask for payment, \
+         got: {btc:?}"
+    );
+}
+
+/// Transaction requests one byte over the cap are refused by message inspection, even from a
+/// caller who has approved payment, and cost the signer nothing.
+#[test]
+fn transaction_requests_over_the_ingress_limit_are_refused_at_inspection() {
+    let test_env = TestSetup::default();
+    let payment = Some(approve(&test_env, SignerMethods::EthSignTransaction, 1));
+    let balance_before = signer_balance(&test_env);
+
+    let request = sign_transaction_request(
+        longest_within(
+            MAX_TRANSACTION_ARG_BYTES,
+            &payment,
+            sign_transaction_request,
+        ) + 1,
+    );
+    assert_eq!(
+        encoded_len(&request, &payment),
+        MAX_TRANSACTION_ARG_BYTES + 1,
+        "The eth_sign_transaction request should be one byte over the limit."
+    );
+    let eth = test_env
+        .signer
+        .eth_sign_transaction(test_env.user, &request, &payment);
+    assert!(
+        matches!(&eth, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "eth_sign_transaction should refuse a request over the ingress limit at inspection, \
+         got: {eth:?}"
+    );
+
+    let request = btc_request(longest_within(MAX_TRANSACTION_ARG_BYTES, &payment, btc_request) + 1);
+    assert_eq!(
+        encoded_len(&request, &payment),
+        MAX_TRANSACTION_ARG_BYTES + 1,
+        "The Bitcoin request should be one byte over the limit."
+    );
+    let sign = test_env
+        .signer
+        .btc_caller_sign(test_env.user, &request, &payment);
+    assert!(
+        matches!(&sign, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "btc_caller_sign should refuse a request over the ingress limit at inspection, got: \
+         {sign:?}"
+    );
+    let send = test_env
+        .signer
+        .btc_caller_send(test_env.user, &request, &payment);
+    assert!(
+        matches!(&send, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "btc_caller_send should refuse a request over the ingress limit at inspection, got: \
+         {send:?}"
+    );
+
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(
+        spent, 0,
+        "Refusing transaction requests over the limit should cost nothing, cost {spent} cycles."
+    );
+}
+
+/// Oversized transaction requests are refused before induction, also when the caller has not
+/// paid.
+#[test]
+fn unfunded_oversized_transaction_requests_cost_nothing() {
+    let test_env = TestSetup::default();
+    let payment = None;
+
+    let balance_before = signer_balance(&test_env);
+    let eth = test_env.signer.eth_sign_transaction(
+        test_env.user,
+        &sign_transaction_request(NEARLY_MAX_INGRESS),
+        &payment,
+    );
+    assert!(
+        matches!(&eth, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "An oversized eth_sign_transaction request should be refused at inspection, got: {eth:?}"
+    );
+    // Leaves room for the UTXOs, so the whole message stays under the ingress ceiling.
+    let request = btc_request(NEARLY_MAX_INGRESS - 100_000);
+    let sign = test_env
+        .signer
+        .btc_caller_sign(test_env.user, &request, &payment);
+    assert!(
+        matches!(&sign, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "An oversized btc_caller_sign request should be refused at inspection, got: {sign:?}"
+    );
+    let send = test_env
+        .signer
+        .btc_caller_send(test_env.user, &request, &payment);
+    assert!(
+        matches!(&send, Err(e) if e.contains(REFUSED_AT_INSPECTION)),
+        "An oversized btc_caller_send request should be refused at inspection, got: {send:?}"
+    );
+    let spent = balance_before.saturating_sub(signer_balance(&test_env));
+    assert_eq!(
+        spent, 0,
+        "Refusing unfunded oversized transaction requests should cost nothing, cost {spent} \
+         cycles."
+    );
 }

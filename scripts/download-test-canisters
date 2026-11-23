@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$(realpath "$0")")/.."
+
+print_help() {
+  cat <<-EOF
+	Downloads the third-party canister Wasms that the PocketIC integration tests use.
+
+	The URLs and sha256 hashes are in 'scripts/test-canisters.json'.  The Wasms are saved as
+	'target/test-canisters/<name>.wasm.gz'; files that already have the right hash are kept.
+
+	Usage: $(basename "$0") [NAME...]
+	  NAME defaults to all canisters in 'scripts/test-canisters.json'.
+	EOF
+}
+
+[[ "${1:-}" != "--help" ]] || {
+  print_help
+  exit 0
+}
+
+MANIFEST="scripts/test-canisters.json"
+DIR="target/test-canisters"
+
+sha256() {
+  local sum
+  sum="$(sha256sum "$1" 2>/dev/null || shasum -a 256 "$1")"
+  echo "${sum%% *}"
+}
+
+if (($# > 0)); then
+  canisters=("$@")
+else
+  # Not a process substitution, so that a jq failure stops the script.
+  names="$(jq -re 'keys[]' "$MANIFEST")"
+  readarray -t canisters <<<"$names"
+fi
+if [[ "${#canisters[@]}" -eq 0 ]] || [[ -z "${canisters[0]}" ]]; then
+  echo "ERROR: No canisters found in $MANIFEST" >&2
+  exit 1
+fi
+
+mkdir -p "$DIR"
+for canister in "${canisters[@]}"; do
+  url="$(canister="$canister" jq -re '.[env.canister].wasm' "$MANIFEST")"
+  expected="$(canister="$canister" jq -re '.[env.canister].sha256' "$MANIFEST")"
+  file="$DIR/$canister.wasm.gz"
+  if [[ -f "$file" ]] && [[ "$(sha256 "$file")" == "$expected" ]]; then
+    echo "OK: $file (cached)"
+    continue
+  fi
+  # Remove a stale file first, so that a failed download cannot leave it in place.
+  rm -f "$file"
+  curl -sSfL "$url" -o "$file.part"
+  actual="$(sha256 "$file.part")"
+  [[ "$actual" == "$expected" ]] || {
+    rm -f "$file.part"
+    echo "ERROR: sha256 mismatch for $url"
+    echo "       expected: $expected"
+    echo "       actual:   $actual"
+    exit 1
+  } >&2
+  mv "$file.part" "$file"
+  echo "OK: $file"
+done

@@ -7,7 +7,7 @@
 .DS_Store
 **/.DS_Store
 
-# dfx temporary files
+# dfx temporary files, from before the icp-cli migration
 .dfx/
 
 # generated files
@@ -34,3 +34,6 @@ assets.tar.xz
 
 # environment variables
 .env
+
+# icp-cli: local network state. `.icp/data/` holds mainnet canister IDs and is committed.
+.icp/cache/

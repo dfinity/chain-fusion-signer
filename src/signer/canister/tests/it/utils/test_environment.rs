@@ -14,7 +14,9 @@ use crate::{
         },
         signer::{Arg, InitArg, SignerPic},
     },
-    utils::pic_canister::{cargo_wasm_path, dfx_wasm_path, PicCanisterBuilder, PicCanisterTrait},
+    utils::pic_canister::{
+        cargo_wasm_path, test_canister_wasm_path, PicCanisterBuilder, PicCanisterTrait,
+    },
 };
 
 pub const BITCOIN_CANISTER_ID: &str = "g4xu7-jiaaa-aaaan-aaaaq-cai";
@@ -66,7 +68,7 @@ impl Default for TestSetup {
         let ledger = CyclesLedgerPic::from(
             PicCanisterBuilder::default()
                 .with_canister(cycles_ledger_canister_id)
-                .with_wasm(&dfx_wasm_path("cycles_ledger"))
+                .with_wasm(&test_canister_wasm_path("cycles_ledger"))
                 .with_arg(
                     encode_one(LedgerArgs::Init(LedgerInitArgs {
                         index_id: None,
@@ -103,7 +105,7 @@ impl Default for TestSetup {
         let bitcoin_canister = BitcoinPic::from(
             PicCanisterBuilder::default()
                 .with_canister(bitcoin_canister_id)
-                .with_wasm(&dfx_wasm_path("bitcoin"))
+                .with_wasm(&test_canister_wasm_path("bitcoin"))
                 .with_arg(
                     encode_one(bitcoin::InitConfig {
                         stability_threshold: None,
@@ -142,7 +144,7 @@ impl Default for TestSetup {
             Principal::from_text("rg3gz-22tjp-jh7hl-migkq-vb7in-i2ylc-6umlc-dtbug-v6jgc-uo24d-nqe")
                 .unwrap();
         let cycles_depositor = PicCanisterBuilder::default()
-            .with_wasm(&dfx_wasm_path("cycles_depositor"))
+            .with_wasm(&test_canister_wasm_path("cycles_depositor"))
             .with_controllers(vec![user])
             .with_arg(
                 encode_one(cycles_depositor::InitArg {
